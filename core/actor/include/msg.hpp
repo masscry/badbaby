@@ -21,6 +21,7 @@ namespace bb
   {
     int         type;
     msgData_t   data;
+    std::string src;
   };
 
 }
