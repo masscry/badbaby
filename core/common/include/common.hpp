@@ -51,6 +51,8 @@ namespace bb
 
   const std::string& GetThisThreadName();
 
+  std::string CurrentTime();
+
   class rwMutex_t final
   {
     std::mutex              mutex;

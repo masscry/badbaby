@@ -26,17 +26,29 @@ namespace
 namespace bb
 {
 
+  std::string CurrentTime()
+  {
+    time_t now = time(nullptr);
+
+    struct tm nowtm;
+    localtime_r(&now, &nowtm);
+
+    std::array<char, 64> buffer;
+    strftime(buffer.data(), buffer.size(), "%c", &nowtm);
+
+    return std::string(buffer.data());
+  }
+
   const std::string& GetThisThreadName()
   {
     static thread_local std::string cachedResult;
     if (cachedResult.empty())
     {
       // @see https://linux.die.net/man/3/pthread_getname_np (length is restricted to 16 characters, including the terminating null byte)
-      const size_t maxResultSize = 16; 
-      char result[maxResultSize];
-      if (pthread_getname_np(pthread_self(), result, maxResultSize) == 0)
+      std::array<char, 16> result;
+      if (pthread_getname_np(pthread_self(), result.data(), result.size()) == 0)
       {
-        cachedResult = result;
+        cachedResult = std::string(result.data());
       }
     }
     return cachedResult;
@@ -104,7 +116,7 @@ namespace bb
     logger_t(logger_t&&) = delete;
     logger_t& operator=(const logger_t&) = delete;
     logger_t& operator=(logger_t&&) = delete;
-    ~logger_t() = default;
+    ~logger_t();
 
     void Log(logLevel_t level, const char* format, va_list vl);
 
@@ -121,6 +133,15 @@ namespace bb
     }
   }
 
+  logger_t::~logger_t()
+  {
+    file_t output { fopen((GetThisThreadName() + ".log").c_str(), "at") };
+    if (output)
+    {
+      fprintf(output.get(), "%s", "Log Ended\n");
+    }
+  }
+
   logger_t& logger_t::Instance()
   {
     static thread_local logger_t self;
@@ -130,7 +151,7 @@ namespace bb
   void logger_t::Log(logLevel_t level, const char* format, va_list vl)
   {
     file_t output { fopen((GetThisThreadName() + ".log").c_str(), "at") };
-    fprintf(output.get(), "%s\t", logText[level]);
+    fprintf(output.get(), "%s %s\t", CurrentTime().c_str(), logText[level]);
     vfprintf(output.get(), format, vl);
     fputc('\n', output.get());
   }
