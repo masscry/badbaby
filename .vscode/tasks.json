@@ -19,6 +19,12 @@
       "group": "build"
     },
     {
+      "label": "Build 001render (Debug)",
+      "type": "shell",
+      "command": "cmake --build ./.debug --target 001render",
+      "group": "build"
+    },
+    {
       "label": "Build All (Release)",
       "type": "shell",
       "command": "cmake --build ./.release --clean-first",
