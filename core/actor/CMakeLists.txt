@@ -1,5 +1,5 @@
 
-add_library(actor
+add_library(actor STATIC
 # HEADERS
   include/worker.hpp
   include/actor.hpp

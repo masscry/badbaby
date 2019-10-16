@@ -1,4 +1,4 @@
-add_library(common
+add_library(common STATIC
 # HEADERS
   include/common.hpp
 
