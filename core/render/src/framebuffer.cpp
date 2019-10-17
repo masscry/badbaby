@@ -5,10 +5,9 @@
 namespace bb
 {
   framebuffer_t::framebuffer_t(framebuffer_t&& move)
-  :tex(std::move(move.tex)),self(move.self),rbo(move.rbo)
+  :tex(std::move(move.tex)),self(move.self)
   {
     move.self = 0;
-    move.rbo  = 0;
   }
 
   framebuffer_t& framebuffer_t::operator=(framebuffer_t&& move)
@@ -21,37 +20,36 @@ namespace bb
     if (this->self != 0)
     {
       glDeleteFramebuffers(1, &this->self);
-      glDeleteRenderbuffers(1, &this->rbo);
       this->tex = std::move(texture_t());
     }
 
     this->tex  = std::move(move.tex);
     this->self = move.self;
-    this->rbo  = move.rbo;
     move.self = 0;
-    move.rbo  = 0;
 
     return *this;
   }
 
   framebuffer_t::framebuffer_t()
-  :self(0),rbo(0)
+  :self(0)
   {
     ;
   }
 
   framebuffer_t::framebuffer_t(int width, int height)
-  :tex(width, height),self(0),rbo(0)
+  :tex(width, height),self(0)
   {
-    glGenRenderbuffers(1, &this->rbo);
-    glBindRenderbuffer(GL_RENDERBUFFER, this->rbo);
+    GLuint rbo;
+
+    glGenRenderbuffers(1, &rbo);
+    glBindRenderbuffer(GL_RENDERBUFFER, rbo);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
     glGenFramebuffers(1, &this->self);
     glBindFramebuffer(GL_FRAMEBUFFER, this->self);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->tex.self, 0);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, this->rbo);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rbo);
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     {
@@ -59,6 +57,8 @@ namespace bb
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    glDeleteRenderbuffers(1, &rbo);
   }
 
   framebuffer_t::~framebuffer_t()
@@ -66,7 +66,6 @@ namespace bb
     if (this->self != 0)
     {
       glDeleteFramebuffers(1, &this->self);
-      glDeleteRenderbuffers(1, &this->rbo);
     }
   }
 

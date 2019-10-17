@@ -20,7 +20,6 @@ namespace bb
   {
     texture_t tex;
     GLuint self;
-    GLuint rbo;
 
     framebuffer_t(const framebuffer_t&) = delete;
     framebuffer_t& operator=(const framebuffer_t&) = delete;
