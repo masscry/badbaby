@@ -1,6 +1,9 @@
 #include <string>
 #include <stdexcept>
+#include <fstream>
+#include <sstream>
 
+#include <common.hpp>
 #include <shader.hpp>
 
 namespace 
@@ -98,9 +101,61 @@ namespace bb
     }
   }
 
+  GLint shader_t::UniformLocation(const char* name) const
+  {
+    return glGetUniformLocation(this->handle, name);
+  }
+
+  void shader_t::SetFloat(GLint loc, float value) const
+  {
+    glUniform1f(loc, value);
+  }
+
+  void shader_t::SetVector2f(GLint loc, GLsizei count, const float* values) const
+  {
+    glUniform2fv(loc, count, values);
+  }
+
+  void shader_t::SetVector3f(GLint loc, GLsizei count, const float* values) const
+  {
+    glUniform3fv(loc, count, values);
+  }
+  void shader_t::SetVector4f(GLint loc, GLsizei count, const float* values) const
+  {
+    glUniform4fv(loc, count, values);
+  }
+
+  void shader_t::SetMatrix(GLint loc, const float* matrix) const
+  {
+    glUniformMatrix4fv(loc, 1, GL_FALSE, matrix);
+  }
+
+  void shader_t::SetTexture(GLint loc, int texUnit) const
+  {
+    glUniform1i(loc, texUnit);
+  }
+
   void shader_t::Bind(const shader_t& shader)
   {
     glUseProgram(shader.handle);
+  }
+
+  shader_t shader_t::LoadProgramFromFiles(const char* vpFilename, const char* fpFilename)
+  {
+    std::ifstream vpFile(vpFilename);
+    std::ifstream fpFile(fpFilename);
+
+    if (vpFile && fpFile)
+    {
+      std::stringstream vpText;
+      std::stringstream fpText;
+
+      vpText << vpFile.rdbuf();
+      fpText << fpFile.rdbuf();
+
+      return shader_t(vpText.str().c_str(), fpText.str().c_str());
+    }
+    throw std::runtime_error("Can't open shader files");
   }
 
   

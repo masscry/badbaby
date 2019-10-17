@@ -25,11 +25,22 @@ namespace bb
     shader_t(shader_t&& move);
     shader_t& operator=(shader_t&& move);
 
+    GLint UniformLocation(const char* name) const;
+
+    void SetFloat(GLint loc, float value) const;
+    void SetVector2f(GLint loc, GLsizei count, const float* values) const;
+    void SetVector3f(GLint loc, GLsizei count, const float* values) const;
+    void SetVector4f(GLint loc, GLsizei count, const float* values) const;
+    void SetMatrix(GLint loc, const float* matrix) const;
+    void SetTexture(GLint loc, int texUnit) const;
+
     shader_t();
     shader_t(const char* vpSource, const char* fpSource);
     ~shader_t();
 
     static void Bind(const shader_t& shader);
+
+    static shader_t LoadProgramFromFiles(const char* vpFilename, const char* fpFilename);
 
   };
 

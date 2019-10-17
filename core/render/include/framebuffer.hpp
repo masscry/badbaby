@@ -26,6 +26,11 @@ namespace bb
 
   public:
 
+    const texture_t& Texture()
+    {
+      return this->tex;
+    }
+
     framebuffer_t(framebuffer_t&&);
     framebuffer_t& operator=(framebuffer_t&&);
 

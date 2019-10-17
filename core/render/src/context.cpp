@@ -30,7 +30,7 @@ namespace
     uniform sampler2D mainTex;
 
     void main()
-    {        
+    {
       pixColor = texture(mainTex, fragUV);
     }
   )shader";
@@ -117,6 +117,7 @@ namespace bb
     framebuffer_t::Bind(framebuffer_t());
     shader_t::Bind(this->shader);
     vao_t::Bind(this->vao);
+    texture_t::Bind(this->canvas.Texture());
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -127,7 +128,7 @@ namespace bb
     glDisableVertexAttribArray(1);
 
     glfwSwapBuffers(this->wnd);
-    glfwWaitEvents();
+    glfwPollEvents();
 
     return (glfwWindowShouldClose(this->wnd) == 0);
   }
