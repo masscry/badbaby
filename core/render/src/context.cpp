@@ -9,7 +9,7 @@ namespace
     #version 330 core
 
     layout(location = 0) in vec3 pos;
-    layout(location = 3) in vec2 uv;
+    layout(location = 1) in vec2 uv;
 
     out vec2 fragUV;
 
@@ -34,6 +34,25 @@ namespace
       pixColor = texture(mainTex, fragUV);
     }
   )shader";
+
+  const float vPos[6*3] = {
+    -1.0f, -1.0f, 0.0f,
+     1.0f, -1.0f, 0.0f,
+     1.0f,  1.0f, 0.0f,
+    -1.0f, -1.0f, 0.0f,
+     1.0f,  1.0f, 0.0f,
+    -1.0f,  1.0f, 0.0f,
+  };
+
+  const float vTex[6*2] = {
+    0.0f, 0.0f,
+    1.0f, 0.0f,
+    1.0f, 1.0f,
+    0.0f, 0.0f,
+    1.0f, 1.0f,
+    0.0f, 1.0f,
+  };
+
 }
 
 namespace bb
@@ -65,12 +84,20 @@ namespace bb
 
     this->canvas = std::move(framebuffer_t(this->width, this->height));
     this->shader = std::move(shader_t(vShader, fShader));
+
+    vbo_t vPosBuffer = vbo_t::CreateArrayBuffer(vPos, sizeof(vPos));
+    vbo_t vTexBuffer = vbo_t::CreateArrayBuffer(vTex, sizeof(vTex));
+
+    this->vao = vao_t::CreateVertexAttribObject();
+    this->vao.BindVBO(vPosBuffer, 0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    this->vao.BindVBO(vTexBuffer, 1, 2, GL_FLOAT, GL_FALSE, 0, 0);
   }
 
   context_t::~context_t()
   {
     this->shader = std::move(shader_t());
     this->canvas = std::move(framebuffer_t());
+    this->vao    = std::move(vao_t());
 
     if (this->wnd != nullptr)
     {
@@ -89,8 +116,16 @@ namespace bb
   {
     framebuffer_t::Bind(framebuffer_t());
     shader_t::Bind(this->shader);
+    vao_t::Bind(this->vao);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(1);
+
     glfwSwapBuffers(this->wnd);
     glfwWaitEvents();
 

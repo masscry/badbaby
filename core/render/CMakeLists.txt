@@ -6,12 +6,14 @@ add_library(render STATIC
   include/context.hpp
   include/shader.hpp
   include/texture.hpp
+  include/vao.hpp
 
 # SOURCES
   src/framebuffer.cpp
   src/context.cpp
   src/shader.cpp
   src/texture.cpp
+  src/vao.cpp
 )
 
 target_include_directories(render PUBLIC include)

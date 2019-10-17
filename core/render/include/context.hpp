@@ -14,6 +14,7 @@
 
 #include <framebuffer.hpp>
 #include <shader.hpp>
+#include <vao.hpp>
 
 namespace bb
 {
@@ -24,7 +25,8 @@ namespace bb
     int width;
     int height;
     framebuffer_t canvas;
-    shader_t shader;
+    shader_t      shader;
+    vao_t         vao;
 
     context_t();
     ~context_t();
