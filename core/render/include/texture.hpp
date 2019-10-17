@@ -15,6 +15,8 @@ namespace bb
   
   class texture_t final
   {
+    // friend let framebuffer to have access to texture_t::self to bind it
+    friend class framebuffer_t;
     GLuint self;
 
     texture_t(const texture_t&) = delete;

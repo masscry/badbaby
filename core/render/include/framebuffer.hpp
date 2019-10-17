@@ -11,13 +11,15 @@
 
 #include <glad/glad.h>
 
+#include <texture.hpp>
+
 namespace bb
 {
 
   class framebuffer_t final
   {
+    texture_t tex;
     GLuint self;
-    GLuint tex;
     GLuint rbo;
 
     framebuffer_t(const framebuffer_t&) = delete;

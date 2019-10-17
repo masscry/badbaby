@@ -5,10 +5,9 @@
 namespace bb
 {
   framebuffer_t::framebuffer_t(framebuffer_t&& move)
-  :self(move.self),tex(move.tex),rbo(move.rbo)
+  :tex(std::move(move.tex)),self(move.self),rbo(move.rbo)
   {
     move.self = 0;
-    move.tex  = 0;
     move.rbo  = 0;
   }
 
@@ -23,35 +22,27 @@ namespace bb
     {
       glDeleteFramebuffers(1, &this->self);
       glDeleteRenderbuffers(1, &this->rbo);
-      glDeleteTextures(1, &this->tex);
+      this->tex = std::move(texture_t());
     }
 
+    this->tex  = std::move(move.tex);
     this->self = move.self;
-    this->tex  = move.tex;
     this->rbo  = move.rbo;
     move.self = 0;
-    move.tex  = 0;
     move.rbo  = 0;
 
     return *this;
   }
 
   framebuffer_t::framebuffer_t()
-  :self(0),tex(0),rbo(0)
+  :self(0),rbo(0)
   {
     ;
   }
 
   framebuffer_t::framebuffer_t(int width, int height)
-  :self(0),tex(0),rbo(0)
+  :tex(width, height),self(0),rbo(0)
   {
-    glGenTextures(1, &this->tex);
-    glBindTexture(GL_TEXTURE_2D, this->tex);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glBindTexture(GL_TEXTURE_2D, 0);
-
     glGenRenderbuffers(1, &this->rbo);
     glBindRenderbuffer(GL_RENDERBUFFER, this->rbo);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
@@ -59,7 +50,7 @@ namespace bb
 
     glGenFramebuffers(1, &this->self);
     glBindFramebuffer(GL_FRAMEBUFFER, this->self);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->tex, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->tex.self, 0);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, this->rbo);
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
@@ -76,7 +67,6 @@ namespace bb
     {
       glDeleteFramebuffers(1, &this->self);
       glDeleteRenderbuffers(1, &this->rbo);
-      glDeleteTextures(1, &this->tex);
     }
   }
 
