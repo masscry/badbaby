@@ -80,4 +80,9 @@ namespace bb
     }
   }
 
+  void framebuffer_t::Bind(const framebuffer_t& fb)
+  {
+    glBindFramebuffer(GL_FRAMEBUFFER, fb.self);
+  }
+
 } // namespace bb

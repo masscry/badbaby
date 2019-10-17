@@ -13,6 +13,7 @@
 #include <GLFW/glfw3.h>
 
 #include <framebuffer.hpp>
+#include <shader.hpp>
 
 namespace bb
 {
@@ -23,6 +24,7 @@ namespace bb
     int width;
     int height;
     framebuffer_t canvas;
+    shader_t shader;
 
     context_t();
     ~context_t();

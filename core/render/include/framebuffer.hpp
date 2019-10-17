@@ -31,6 +31,9 @@ namespace bb
     framebuffer_t();
     framebuffer_t(int width, int height);
     ~framebuffer_t();
+
+    static void Bind(const framebuffer_t& fb);
+
   };
 
 } // namespace bb
