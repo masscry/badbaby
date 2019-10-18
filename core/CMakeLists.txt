@@ -1,3 +1,4 @@
 add_subdirectory(common)
+add_subdirectory(config)
 add_subdirectory(actor)
 add_subdirectory(render)
