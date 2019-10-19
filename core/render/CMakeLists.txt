@@ -7,6 +7,7 @@ add_library(render STATIC
   include/shader.hpp
   include/texture.hpp
   include/vao.hpp
+  include/font.hpp
 
 # SOURCES
   src/framebuffer.cpp
@@ -14,8 +15,9 @@ add_library(render STATIC
   src/shader.cpp
   src/texture.cpp
   src/vao.cpp
+  src/font.cpp
 )
 
-target_include_directories(render PUBLIC include)
+target_include_directories(render PUBLIC include ${GLM_INCLUDE_DIRS})
 
 target_link_libraries(render PUBLIC common config glad glfw)

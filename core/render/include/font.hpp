@@ -1,0 +1,108 @@
+/**
+ * @file font.hpp
+ * 
+ * Simple font rendering.
+ */
+
+#pragma once
+#ifndef __CORE_RENDER_FONT_HEADER__
+#define __CORE_RENDER_FONT_HEADER__
+
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
+#include <vector>
+#include <map>
+
+#include <texture.hpp>
+#include <vao.hpp>
+
+namespace bb
+{
+
+  using vec2_t = glm::vec2;
+
+  class font_t final
+  {
+    sharedTexture_t texture;
+    std::string encoding;
+    int width;
+    int height;
+
+    using smbToVec_t = std::map<uint32_t, vec2_t>;
+    smbToVec_t offsets;
+    smbToVec_t sizes;
+
+    font_t(const font_t&) = delete;
+    font_t& operator=(const font_t&) = delete;
+
+  public:
+
+    font_t() = default;
+    font_t(font_t&&) = default;
+    font_t& operator=(font_t&&) = default;
+
+    ~font_t() = default;
+
+    void Load(const std::string& filename);
+
+    const sharedTexture_t& Texture() const 
+    {
+      return this->texture;
+    }
+
+    int Width() const 
+    {
+      return this->Width(); 
+    }
+
+    int Height() const 
+    {
+      return this->Height(); 
+    }
+
+    vec2_t SymbolOffset(uint32_t smb) const
+    {
+      auto it = this->offsets.find(smb);
+      if (it == this->offsets.end())
+      {
+        return vec2_t(0.0f, 0.0f);
+      }
+      return it->second;
+    }
+
+    vec2_t SymbolSize(uint32_t smb) const
+    {
+      auto it = this->sizes.find(smb);
+      if (it == this->sizes.end())
+      {
+        return vec2_t(1.0f, 1.0f);
+      }
+      return it->second;
+    }
+
+  };
+
+  class text_t final
+  {
+    sharedTexture_t tex;
+    vao_t vao;
+    size_t totalVertecies;
+
+    text_t(const text_t&) = delete;
+    text_t& operator=(const text_t&) = delete;
+
+  public:
+
+    void Render();
+
+    text_t(const font_t& font, const std::string& text, vec2_t chSize);
+
+    text_t(text_t&&) = default;
+    text_t& operator=(text_t&&) = default;
+    ~text_t() = default;
+
+  };
+
+} // namespace bb
+
+#endif /* __CORE_RENDER_FONT_HEADER__ */

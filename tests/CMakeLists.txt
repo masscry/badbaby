@@ -15,3 +15,10 @@ add_executable(002config
 )
 
 target_link_libraries(002config PRIVATE config)
+
+add_executable(003font
+  src/003font.cpp
+)
+
+target_link_libraries(003font PRIVATE config render)
+

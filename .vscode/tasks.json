@@ -31,11 +31,16 @@
       "group": "build"
     },
     {
+      "label": "Build 003font (Debug)",
+      "type": "shell",
+      "command": "cmake --build ./.debug --target 003font",
+      "group": "build"
+    },
+    {
       "label": "Build All (Release)",
       "type": "shell",
       "command": "cmake --build ./.release --clean-first",
       "group": "build"
-    },
-
+    }
   ]
 }

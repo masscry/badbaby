@@ -11,6 +11,7 @@
 #include <cstdio>
 #include <memory>
 
+#include <functional>
 #include <mutex>
 #include <condition_variable>
 
@@ -157,43 +158,60 @@ namespace bb
 
   };
 
-  template<typename FUNC_TYPE>
   class callOnScopeExit final
   {
-    FUNC_TYPE func;
+    std::function<void()> func;
 
     callOnScopeExit(const callOnScopeExit&) = delete;
     callOnScopeExit& operator=(const callOnScopeExit&) = delete;
 
-    callOnScopeExit() = delete;
-
   public:
 
-    callOnScopeExit(callOnScopeExit&& mv) = default;
-    callOnScopeExit& operator=(callOnScopeExit&& mv) = default;
-
-    callOnScopeExit(FUNC_TYPE func)
-    :func(func) 
+    template<typename FUNC_TYPE>
+    callOnScopeExit(FUNC_TYPE&& func)
+    :func(std::forward<FUNC_TYPE>(func))
     {
       ;
     }
 
-    ~callOnScopeExit() 
+    callOnScopeExit(callOnScopeExit&& other)
+    :func(std::move(other.func))
     {
-      this->func();
+      other.func = nullptr;
     }
+
+    callOnScopeExit& operator = (callOnScopeExit&& other)
+    {
+      if (this == &other)
+      {
+        return *this;
+      }
+
+      if (this->func)
+      {
+        this->func();
+      }
+
+      this->func = std::move(other.func);
+      other.func = nullptr;
+      return *this;
+    }
+
+    ~callOnScopeExit()
+    {
+      if (this->func)
+      {
+        this->func();
+      }
+    }
+
   };
 
-  template<typename FUNC_TYPE>
-  callOnScopeExit<FUNC_TYPE> make_defer(FUNC_TYPE func)
-  {
-    return callOnScopeExit<FUNC_TYPE>(func);
-  }
 }
 
 #define BB_CALL_SCOPE_NAME_1(PREFIX, INDEX) PREFIX ## INDEX
 #define BB_CALL_SCOPE_NAME_2(PREFIX, INDEX) BB_CALL_SCOPE_NAME_1(PREFIX, INDEX)
 #define BB_CALL_SCOPE_NAME_3(PREFIX) BB_CALL_SCOPE_NAME_2(PREFIX, __COUNTER__)
-#define BB_DEFER(CODE) auto BB_CALL_SCOPE_NAME_3(_bb_defer_) = bb::make_defer([&](){ CODE; })
+#define BB_DEFER(CODE) auto BB_CALL_SCOPE_NAME_3(_bb_defer_) = bb::callOnScopeExit([&](){ CODE; })
 
 #endif /* __BB_COMMON_HEADER__ */

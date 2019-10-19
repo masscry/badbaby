@@ -10,6 +10,8 @@
 
 #include <glad/glad.h>
 
+#include <memory>
+
 namespace bb
 {
   
@@ -24,6 +26,8 @@ namespace bb
 
   public:
 
+    void SetFilter(GLint minFiler, GLint magFilter);
+
     texture_t(texture_t&&);
     texture_t& operator=(texture_t&&);
 
@@ -36,6 +40,8 @@ namespace bb
     static void Bind(const texture_t& tex);
 
   };
+
+  using sharedTexture_t = std::shared_ptr<texture_t>;
 
 } // namespace bb
 

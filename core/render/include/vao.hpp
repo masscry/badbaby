@@ -38,6 +38,8 @@ namespace bb
 
     static vbo_t CreateArrayBuffer(const void* data, size_t dataSize);
 
+    static vbo_t CreateElementArrayBuffer(const void* data, size_t dataSize);
+
   };
 
   class vao_t final
@@ -58,6 +60,8 @@ namespace bb
     ~vao_t();
 
     void BindVBO(const vbo_t& vbo, GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, GLsizei offset);
+
+    void BindIndecies(const vbo_t& vbo);
 
     static vao_t CreateVertexAttribObject();
 

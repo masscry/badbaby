@@ -60,6 +60,18 @@ namespace bb
     return vbo_t(vbo);
   }
 
+  vbo_t vbo_t::CreateElementArrayBuffer(const void* data, size_t dataSize)
+  {
+    GLuint vbo;
+
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, dataSize, data, GL_STATIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+    return vbo_t(vbo);
+  }
+
   vao_t::vao_t(vao_t&& move)
   :self(move.self)
   {
@@ -119,6 +131,15 @@ namespace bb
     glVertexAttribPointer(index, size, type, normalized, stride, reinterpret_cast<void*>(offset));
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+  }
+
+  void vao_t::BindIndecies(const vbo_t& vbo)
+  {
+    assert(this->self != 0);
+    glBindVertexArray(this->self);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.self);
+    glBindVertexArray(0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
   }
 
   void vao_t::Bind(const vao_t& vao)

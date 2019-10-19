@@ -26,3 +26,5 @@ target_include_directories(glad PUBLIC
 )
 
 find_package(glfw3 3.2 REQUIRED)
+
+find_package(glm 0.9.9 REQUIRED)

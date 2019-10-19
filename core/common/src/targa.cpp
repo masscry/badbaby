@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <cstdio>
 
+#include <common.hpp>
 #include <image.hpp>
 
 namespace
@@ -74,6 +75,11 @@ namespace bb
   image_t LoadTGA(const char* filename)
   {
     FILE* input = fopen(filename, "rb");
+    if (input == nullptr)
+    {
+      throw std::runtime_error(std::string("TGA: image not found") + filename);
+    }
+    BB_DEFER(fclose(input));
     
     if (fseek(input, -sizeof(tgaFooter), SEEK_END) != 0) 
     {
