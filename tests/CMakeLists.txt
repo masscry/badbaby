@@ -9,3 +9,9 @@ add_executable(001render
 )
 
 target_link_libraries(001render PRIVATE actor render)
+
+add_executable(002config
+  src/002config.cpp
+)
+
+target_link_libraries(002config PRIVATE config)

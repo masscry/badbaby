@@ -32,6 +32,8 @@ namespace bb
 
   public:
 
+    virtual bool operator == (const value_t& rhs) = 0;
+    virtual std::string ToString() const = 0;
     virtual type_t Type() const = 0;
     virtual double Number() const = 0;
     virtual const std::string& String() const = 0;
@@ -61,6 +63,15 @@ namespace bb
       return type_t::none;
     }
 
+    std::string ToString() const
+    {
+      if (this->val)
+      {
+        return this->val->ToString();
+      }
+      return std::string("none");
+    }
+
     double Number() const
     {
       return this->val->Number();
@@ -85,6 +96,20 @@ namespace bb
     :val(std::move(move.val))
     {
       ;
+    }
+
+    bool operator == (const ref_t& ref)
+    {
+      if ((this->Type() == type_t::none) || (ref.Type() == type_t::none))
+      {
+        return false;
+      }
+      return this->val->operator==(*ref.val);
+    }
+
+    bool operator != (const ref_t& ref)
+    {
+      return !this->operator==(ref);
     }
 
     ref_t& operator=(ref_t&& move)

@@ -10,18 +10,49 @@
 #define __BB_COMMON_CONFIG_HEADER__
 
 #include <value.hpp>
+#include <unordered_map>
 
 namespace bb
 {
 
   class config_t final
   {
+    using dict_t = std::unordered_map<std::string, ref_t>;
+
+    dict_t dict;
+
+    config_t(const config_t&) = delete;
+    config_t& operator=(const config_t&) = delete;
+
+    void ParseString(const std::string& line);
+
   public:
 
-    ref_t& operator [] (const std::string& key);
+    void Load(const std::string& filename);
 
-    const ref_t& operator [] (const std::string& key) const;
+    void Save(const std::string& filename) const;
 
+    ref_t& operator [] (const std::string& key)
+    {
+      return this->dict[key];
+    }
+
+    const ref_t& operator [] (const std::string& key) const
+    {
+      auto it = this->dict.find(key);
+      if (it == this->dict.end())
+      {
+        throw std::runtime_error(std::string("Key '") + key + std::string("' not found"));
+      }
+      return it->second;
+    }
+
+    config_t(config_t&&);
+    config_t& operator=(config_t&&);
+
+    config_t();
+    config_t(const std::string& filename);
+    ~config_t();
   };
 
 } // namespace bb

@@ -14,6 +14,11 @@ namespace
 
   public:
 
+    std::string ToString() const override
+    {
+      return std::to_string(this->value);
+    }
+
     bb::type_t Type() const override
     {
       return bb::type_t::number;
@@ -27,6 +32,15 @@ namespace
     const std::string& String() const override
     {
       throw std::bad_cast();
+    }
+
+    bool operator == (const value_t& rhs) override
+    {
+      if (this->Type() != rhs.Type())
+      {
+        return false;
+      }
+      return (this->Number() == rhs.Number());
     }
 
     number_t(double value)
@@ -52,6 +66,11 @@ namespace
 
   public:
 
+    std::string ToString() const override
+    {
+      return std::string("\"") + this->value + std::string("\"");
+    }
+
     bb::type_t Type() const override
     {
       return bb::type_t::string;
@@ -65,6 +84,16 @@ namespace
     const std::string& String() const override
     {
       return this->value;
+    }
+
+    bool operator == (const value_t& rhs) override
+    {
+      if (this->Type() != rhs.Type())
+      {
+        return false;
+      }
+
+      return (this->String().compare(rhs.String()) == 0);
     }
 
     string_t(const std::string& value)
