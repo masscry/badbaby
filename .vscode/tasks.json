@@ -25,6 +25,12 @@
       "group": "build"
     },
     {
+      "label": "Build 002config (Debug)",
+      "type": "shell",
+      "command": "cmake --build ./.debug --target 002config",
+      "group": "build"
+    },
+    {
       "label": "Build All (Release)",
       "type": "shell",
       "command": "cmake --build ./.release --clean-first",

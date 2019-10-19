@@ -43,6 +43,26 @@
         }
       ],
       "preLaunchTask": "Build 001render (Debug)"
-    }
+    },
+    {
+      "name": "Launch 002Config (Debug)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/.debug/tests/002config",
+      "args": [ ],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}/runtime",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      "preLaunchTask": "Build 002config (Debug)"
+    },
   ]
 }
