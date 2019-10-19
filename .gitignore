@@ -4,3 +4,4 @@ runtime/*.log
 GPATH
 GRTAGS
 GTAGS
+runtime/sample.config
