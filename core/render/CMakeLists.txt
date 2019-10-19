@@ -18,4 +18,4 @@ add_library(render STATIC
 
 target_include_directories(render PUBLIC include)
 
-target_link_libraries(render PUBLIC common glad glfw)
+target_link_libraries(render PUBLIC common config glad glfw)

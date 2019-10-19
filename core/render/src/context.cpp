@@ -2,6 +2,7 @@
 #include <string>
 
 #include <context.hpp>
+#include <config.hpp>
 
 namespace
 {
@@ -70,7 +71,42 @@ namespace bb
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_RESIZABLE, 0);
 
-    this->wnd = glfwCreateWindow(this->width, this->height, "BadBaby", nullptr, nullptr);
+    config_t config;
+    try
+    {
+      config.Load("default.config");
+    }
+    catch(const std::runtime_error&)
+    {
+      // ignore file not found error
+      config["window.width"]  = ref_t::Number(800.0);
+      config["window.height"] = ref_t::Number(600.0);
+      config["window.title"] = ref_t::String("BadBaby");
+      config["window.fullscreen"] = ref_t::Number(0.0);
+      config.Save("default.config");
+    }
+
+    this->width  = config.Value("window.width",  800);
+    this->height = config.Value("window.height", 600);
+    std::string winTitle = config.Value("window.title", "BadBaby");
+    bool winFullscreen = (config.Value("window.fullscreen", 0.0) != 0.0);
+
+    if (winFullscreen)
+    {
+      auto monitor = glfwGetPrimaryMonitor();
+      const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+      glfwWindowHint(GLFW_RED_BITS, mode->redBits);
+      glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
+      glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
+      glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
+      glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
+      this->wnd = glfwCreateWindow(this->width, this->height, winTitle.c_str(), monitor, nullptr);
+    }
+    else
+    {
+      glfwWindowHint(GLFW_DECORATED, GLFW_TRUE);
+      this->wnd = glfwCreateWindow(this->width, this->height, winTitle.c_str(), nullptr, nullptr);
+    }
     if (this->wnd == nullptr)
     {
       throw std::runtime_error("glfw create window failed");

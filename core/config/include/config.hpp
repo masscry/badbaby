@@ -47,6 +47,34 @@ namespace bb
       return it->second;
     }
 
+    double Value(const std::string& key, double defaultVal) const
+    {
+      auto it = this->dict.find(key);
+      if (it == this->dict.end())
+      {
+        return defaultVal;
+      }
+      if (it->second.Type() != type_t::number)
+      {
+        return defaultVal;
+      }
+      return it->second.Number();
+    }
+
+    const std::string& Value(const std::string& key, const std::string& defaultVal) const
+    {
+      auto it = this->dict.find(key);
+      if (it == this->dict.end())
+      {
+        return defaultVal;
+      }
+      if (it->second.Type() != type_t::string)
+      {
+        return defaultVal;
+      }
+      return it->second.String();
+    }
+
     config_t(config_t&&);
     config_t& operator=(config_t&&);
 
