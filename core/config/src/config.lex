@@ -26,7 +26,7 @@ E    ([Ee][+-]?{D}+)
 %%
 
 [:]                   { yyextra->str = nullptr;                 yyextra->type = BB_SET;    return BB_SET;    }
-{D}+{E}               { yyextra->num = strtod(yytext, nullptr); yyextra->type = BB_NUMBER; return BB_NUMBER; }
+{D}+{E}?              { yyextra->num = strtod(yytext, nullptr); yyextra->type = BB_NUMBER; return BB_NUMBER; }
 {D}*"."{D}+{E}?       { yyextra->num = strtod(yytext, nullptr); yyextra->type = BB_NUMBER; return BB_NUMBER; }
 {D}+"."{D}*{E}?       { yyextra->num = strtod(yytext, nullptr); yyextra->type = BB_NUMBER; return BB_NUMBER; }
 \"[^\"]*\"            { yyextra->str = strdup(yytext+1); yyextra->str[strlen(yyextra->str)-1] = 0; yyextra->type = BB_STRING; return BB_STRING; }
