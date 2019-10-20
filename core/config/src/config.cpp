@@ -1,5 +1,6 @@
 #include <fstream>
 #include <type_traits>
+#include <clocale>
 
 #include <common.hpp>
 #include <config.hpp>
@@ -52,6 +53,14 @@ namespace bb
       return;
     }
 
+
+    locale_t c_locale = newlocale(LC_ALL_MASK, "C", NULL);
+    if (c_locale == ((locale_t)0))
+    {
+      throw std::runtime_error("Can't initialize locale");
+    }
+    BB_DEFER(freelocale(c_locale));
+
     yyscan_t scanner;
     if (yylex_init(&scanner) != 0)
     {
@@ -75,7 +84,7 @@ namespace bb
     // "key": "value"
 
     // expect key
-    if (yylex(scanner) != BB_STRING)
+    if (yylex(scanner, c_locale) != BB_STRING)
     {
       throw std::runtime_error("Invalid configuration line");
     }
@@ -84,13 +93,13 @@ namespace bb
     bbCoreConfigTokenReset(&tokenData);
 
     //expect :
-    if (yylex(scanner) != BB_SET)
+    if (yylex(scanner, c_locale) != BB_SET)
     {
       throw std::runtime_error("Invalid configuration line");
     }
     bbCoreConfigTokenReset(&tokenData);
 
-    switch (yylex(scanner))
+    switch (yylex(scanner, c_locale))
     {
     case BB_STRING:
       this->dict[key] = ref_t::String(tokenData.str);

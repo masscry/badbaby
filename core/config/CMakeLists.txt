@@ -16,6 +16,9 @@ add_library(config STATIC
   ${FLEX_ConfigScanner_OUTPUTS}
 )
 
+# add strtod_l support for C objects (aka config.lex.c)
+target_compile_definitions(config PRIVATE _GNU_SOURCE)
+
 target_include_directories(config
 PUBLIC
   include
