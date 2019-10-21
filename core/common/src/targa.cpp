@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <stdexcept>
 #include <cstdio>
+#include <cassert>
 
 #include <common.hpp>
 #include <image.hpp>
@@ -57,14 +58,116 @@ namespace
 
 const char TGA_SIGNATURE[] = "TRUEVISION-XFILE.";
 
-  bool tgaIsTrueColor(uint8_t imtype)
+  enum class tgaColorMode_t
   {
-    return (imtype & 0x3) == 0x2;
+    unknown = 0,
+    rgba,
+    bw
+  };
+
+  tgaColorMode_t tgaGetColorMode(uint8_t imtype)
+  {
+    switch(imtype & 0x3)
+    {
+      case 0x2:
+        return tgaColorMode_t::rgba;
+      case 0x3:
+        return tgaColorMode_t::bw;
+      default:
+        return tgaColorMode_t::unknown;
+    }
   }
 
   bool tgaIsRLE(uint8_t imtype)
   {
     return (imtype & 0x8) == 0x8;
+  }
+
+  void tgaRLEReadRGBA(uint8_t* data, const tgaHeader head, FILE* input)
+  {
+    uint8_t* cursor = data;
+
+    while (cursor - data < head.is.width*head.is.height*4)
+    {
+      int rc = fgetc(input);
+      if (rc == EOF)
+      {
+        throw std::runtime_error("TGA: unexpected EOF (RGBA)");
+      }
+  
+      size_t pixCount = (rc & 0x7F) + 1;
+  
+      if ((rc & 0x80) != 0) // RLE-packet
+      {
+        uint32_t copyPixel;
+        if (fread(&copyPixel, 4, 1, input) != 1)
+        {
+          throw std::runtime_error("TGA: fread RLE failed (RGBA)");
+        }
+        while(pixCount-->0)
+        {
+          memcpy(cursor, &copyPixel, sizeof(uint32_t));
+          cursor += 4;
+        }
+      }
+      else // RAW-packet
+      {
+        if (fread(cursor, 4, pixCount, input) != pixCount)
+        {
+          throw std::runtime_error("TGA: fread raw failed (RGBA)");
+        }
+        cursor += 4*pixCount;
+      }
+    }
+  }
+
+  void tgaRLEReadBW(uint8_t* data, const tgaHeader head, FILE* input)
+  {
+    uint8_t* cursor = data;
+
+    while (cursor - data < head.is.width*head.is.height*4)
+    {
+      int rc = fgetc(input);
+      if (rc == EOF)
+      {
+        throw std::runtime_error("TGA: unexpected EOF (BW)");
+      }
+  
+      size_t pixCount = (rc & 0x7F) + 1;
+  
+      if ((rc & 0x80) != 0) // RLE-packet
+      {
+        uint8_t copyPixel[2];
+        if (fread(copyPixel, 2, 1, input) != 1)
+        {
+          throw std::runtime_error("TGA: fread RLE failed (BW)");
+        }
+        while(pixCount-->0)
+        {
+          cursor[0] = copyPixel[0];
+          cursor[1] = copyPixel[0];
+          cursor[2] = copyPixel[0];
+          cursor[3] = copyPixel[1];
+          cursor += 4;
+        }
+      }
+      else // RAW-packet
+      {
+        while (pixCount-->0)
+        {
+          uint8_t copyPixel[2];
+          if (fread(copyPixel, 2, 1, input) != 1)
+          {
+            throw std::runtime_error("TGA: fread RAW failed (BW)");
+          }
+          cursor[0] = copyPixel[0];
+          cursor[1] = copyPixel[0];
+          cursor[2] = copyPixel[0];
+          cursor[3] = copyPixel[1];
+          cursor += 4;
+        }
+      }
+    }
   }
 
 } // namespace
@@ -118,69 +221,95 @@ namespace bb
       throw std::runtime_error("TGA: invalid cmtype");
     }
 
-    if (!tgaIsTrueColor(head.imtype))
+    auto colorMode = tgaGetColorMode(head.imtype);
+    if (colorMode == tgaColorMode_t::unknown)
     {
-      throw std::runtime_error("TGA: only TrueColor images supported");
+      throw std::runtime_error("TGA: only RGB and BW images supported");
     }
 
     if (head.cms.size != 0) {
       throw std::runtime_error("TGA: invalid cms.size");
     }
 
-    if (head.is.depth != 32) {
-      throw std::runtime_error("TGA: invalid bit depth");
+    switch(colorMode)
+    {
+      case tgaColorMode_t::rgba:
+        if (head.is.depth != 32)
+        {
+          throw std::runtime_error("TGA: invalid bit depth for RGB (32 expected)");
+        }
+        break;
+      case tgaColorMode_t::bw:
+        if (head.is.depth != 16)
+        {
+          throw std::runtime_error("TGA: invalid bit depth for BW (16 expected)");
+        }
+        break;
+      default:
+        // programmer error, can't reach here
+        assert(0);
     }
 
     std::unique_ptr<uint8_t[]> pixels;
 
-    pixels.reset(new uint8_t[head.is.width*head.is.height*(head.is.depth/8)]);
+    pixels.reset(new uint8_t[head.is.width*head.is.height*4]); // always allocate full 32-bit image
 
     if (!tgaIsRLE(head.imtype))
     {
-      size_t expectRead = head.is.width*head.is.height;
-      size_t totalRead = fread(
-        pixels.get(), 4, expectRead, input
-      );
-      if (totalRead  != expectRead) 
+      switch (colorMode)
       {
-        throw std::runtime_error("TGA: fread failed");
+      case tgaColorMode_t::rgba:
+        {
+          size_t expectRead = head.is.width*head.is.height;
+          size_t totalRead = fread(
+            pixels.get(), 4, expectRead, input
+          );
+          if (totalRead  != expectRead) 
+          {
+            throw std::runtime_error("TGA: not enough RGB data");
+          }
+        }
+        break;
+      case tgaColorMode_t::bw:
+        {
+          size_t expectRead = head.is.width*head.is.height;
+          uint8_t* cursor = pixels.get();
+          uint8_t tmpPixel[2];
+          while (expectRead-->0)
+          {
+            size_t totalRead = fread(tmpPixel, 2, 1, input);
+            if (totalRead != 1)
+            {
+              throw std::runtime_error("TGA: fread failed BW");
+            }
+            cursor[0] = tmpPixel[0];
+            cursor[1] = tmpPixel[0];
+            cursor[2] = tmpPixel[0];
+            cursor[3] = tmpPixel[1];
+            cursor += 4;
+          }
+        }
+        break;
+      default:
+        // can't reach here.
+        assert(0);
       }
     }
     else
     {
-      auto cursor = pixels.get();
-      while (cursor - pixels.get() < head.is.width*head.is.height*4)
+      switch (colorMode)
       {
-        int rc = fgetc(input);
-        if (rc == EOF)
-        {
-          throw std::runtime_error("TGA: unexpected EOF");
-        }
-  
-        size_t pixCount = (rc & 0x7F) + 1;
-  
-        if ((rc & 0x80) != 0) // RLE-packet
-        {
-          uint32_t copyPixel;
-          if (fread(&copyPixel, 4, 1, input) != 1)
-          {
-            throw std::runtime_error("TGA: fread failed");
-          }
-          while(pixCount-->0)
-          {
-            memcpy(cursor, &copyPixel, sizeof(uint32_t));
-            cursor += 4;
-          }
-        }
-        else // RAW-packet
-        {
-          if (fread(cursor, 4, pixCount, input) != pixCount)
-          {
-            throw std::runtime_error("TGA: fread failed");
-          }
-          cursor += 4*pixCount;
-        }
+      case tgaColorMode_t::rgba:
+        tgaRLEReadRGBA(pixels.get(), head, input);
+        break;
+      case tgaColorMode_t::bw:
+        tgaRLEReadBW(pixels.get(), head, input);
+        break;
+      default:
+        // can't reach here.
+        assert(0);
       }
+
     }
 
     auto bgra = pixels.get();
@@ -195,9 +324,9 @@ namespace bb
       // image origin in lower left corner
       // so loader must invert line order
       std::unique_ptr<uint8_t[]> tempLine;
-      tempLine.reset(new uint8_t[head.is.width*head.is.depth/8]);
+      tempLine.reset(new uint8_t[head.is.width*4]);
 
-      size_t byteWidth = head.is.width*head.is.depth/8;
+      size_t byteWidth = head.is.width*4;
 
       for (int line = 0; line < head.is.height/2; ++line) {
         memcpy(tempLine.get(), pixels.get() + line*byteWidth, byteWidth);
@@ -206,7 +335,7 @@ namespace bb
       }
     }
 
-    return bb::image_t(std::move(pixels), head.is.width, head.is.height, head.is.depth/8);
+    return bb::image_t(std::move(pixels), head.is.width, head.is.height, 4);
   }
 
 } // namespace draw
