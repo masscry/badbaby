@@ -72,9 +72,9 @@ const char TGA_SIGNATURE[] = "TRUEVISION-XFILE.";
 namespace bb
 {
 
-  image_t LoadTGA(const char* filename)
+  image_t LoadTGA(const std::string& filename)
   {
-    FILE* input = fopen(filename, "rb");
+    FILE* input = fopen(filename.c_str(), "rb");
     if (input == nullptr)
     {
       throw std::runtime_error(std::string("TGA: image not found") + filename);

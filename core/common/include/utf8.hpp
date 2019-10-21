@@ -28,7 +28,7 @@ namespace bb
     UTF8_TOTAL
   };
 
-  using utf8Symbols = std::vector<uint32_t>;
+  using utf8Symbols = std::u32string;
 
   utf8Symbols utf8extract(const char* str); 
 

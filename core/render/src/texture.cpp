@@ -2,6 +2,30 @@
 
 #include <texture.hpp>
 #include <image.hpp>
+#include <config.hpp>
+#include <common.hpp>
+
+namespace 
+{
+
+  GLint FilterString(const std::string& filterName)
+  {
+    if (filterName.compare("nearest") == 0)
+    {
+      return GL_NEAREST;
+    }
+    if (filterName.compare("linear") == 0)
+    {
+      return GL_LINEAR;
+    }
+
+    // nearest by default
+    bb::Debug("Unknown filter: \"%s\" defaults to GL_NEAREST", filterName.c_str());
+    return GL_NEAREST;
+  }
+  
+} // namespace 
+
 
 namespace bb
 {
@@ -89,10 +113,34 @@ namespace bb
     glBindTexture(GL_TEXTURE_2D, tex.self);
   }
 
-  texture_t texture_t::LoadTGA(const char* filename)
+  texture_t texture_t::LoadTGA(const std::string& filename)
   {
     image_t img = bb::LoadTGA(filename);
     return texture_t(img.Width(), img.Height(), img.Depth(), img.Data());
+  }
+
+  texture_t texture_t::LoadConfig(const config_t& config)
+  {
+    std::string imgFile = config.Value("texture.image", "");
+    if (imgFile.empty())
+    {
+      throw std::runtime_error("Texture image filename not found");
+    }
+
+    texture_t result = texture_t::LoadTGA(imgFile);
+
+    std::string minFilter = config.Value("texture.min", "nearest");
+    std::string magFilter = config.Value("texture.min", "nearest");
+
+    result.SetFilter(FilterString(minFilter), FilterString(magFilter));
+    return result;
+  }
+
+  texture_t texture_t::LoadConfig(const std::string& filename)
+  {
+    config_t config;
+    config.Load(filename);
+    return texture_t::LoadConfig(config);
   }
 
 } // namespace bb

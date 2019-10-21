@@ -12,6 +12,8 @@
 
 #include <memory>
 
+#include <config.hpp>
+
 namespace bb
 {
   
@@ -36,7 +38,9 @@ namespace bb
     texture_t(int width, int height, int depth, const uint8_t* data);
     ~texture_t();
 
-    static texture_t LoadTGA(const char* filename);
+    static texture_t LoadConfig(const config_t& config);
+    static texture_t LoadConfig(const std::string& filename);
+    static texture_t LoadTGA(const std::string& filename);
     static void Bind(const texture_t& tex);
 
   };

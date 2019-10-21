@@ -55,7 +55,7 @@ namespace bb
     ~image_t() = default;
   };
 
-  image_t LoadTGA(const char* filename);
+  image_t LoadTGA(const std::string& filename);
 
 }
 
