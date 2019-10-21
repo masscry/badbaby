@@ -6,14 +6,14 @@ in vec2 fragUV;
 
 uniform sampler2D mainTex;
 
+const float glyph_center = 0.75;
+
 void main()
 {
-#define SDF_FONT
-#ifdef SDF_FONT
-  float dist = texture(mainTex, fragUV).a;
-  dist = clamp(dist - 0.5, 0.0, 1.0)*2.0;
-  pixColor = vec4(dist, dist, dist, 1.0);
-#else
-  pixColor = texture(mainTex, fragUV);
-#endif
+  float distance = texture(mainTex, fragUV).a;
+  float width = fwidth(distance);
+
+  float glyph_alpha = smoothstep(glyph_center - width, glyph_center + width, distance);
+
+  pixColor = vec4(glyph_alpha);
 }
