@@ -22,3 +22,8 @@ add_executable(003font
 
 target_link_libraries(003font PRIVATE config render)
 
+add_executable(004camera
+  src/004camera.cpp
+)
+
+target_link_libraries(004camera PRIVATE config render)
