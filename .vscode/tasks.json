@@ -37,6 +37,12 @@
       "group": "build"
     },
     {
+      "label": "Build 004camera (Debug)",
+      "type": "shell",
+      "command": "cmake --build ./.debug --target 004camera",
+      "group": "build"
+    },
+    {
       "label": "Build All (Release)",
       "type": "shell",
       "command": "cmake --build ./.release --clean-first",
