@@ -67,7 +67,7 @@ namespace bb
   workerPool_t::workerPool_t()
   :totalMessages(0)
   {
-    auto totalWorkers = std::thread::hardware_concurrency();
+    auto totalWorkers = std::thread::hardware_concurrency() - 1;
 
     this->infos = std::move(vectorOfInfo_t(totalWorkers));
     for (decltype(totalWorkers) i = 0; i < totalWorkers; ++i)
