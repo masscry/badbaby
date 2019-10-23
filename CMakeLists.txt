@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.10)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_CXX_STANDARD 11)
+
 project(badbaby
   VERSION 0.1.0
   LANGUAGES C CXX
@@ -10,11 +13,6 @@ project(badbaby
 find_package(Threads REQUIRED)
 
 add_library(badbaby INTERFACE)
-
-target_compile_features(badbaby INTERFACE
-  cxx_std_11
-  c_std_99
-)
 
 target_compile_options(badbaby INTERFACE
   $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra -Werror -fdiagnostics-color=always>
