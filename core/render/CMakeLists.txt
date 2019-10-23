@@ -8,7 +8,7 @@ add_library(render STATIC
   include/texture.hpp
   include/vao.hpp
   include/font.hpp
-  include/camera.hpp
+  include/ubo.hpp
 
 # SOURCES
   src/framebuffer.cpp
@@ -17,7 +17,7 @@ add_library(render STATIC
   src/texture.cpp
   src/vao.cpp
   src/font.cpp
-  src/camera.cpp
+  src/ubo.cpp
 )
 
 target_include_directories(render PUBLIC include ${GLM_INCLUDE_DIRS})

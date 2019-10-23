@@ -1,4 +1,4 @@
-#include <camera.hpp>
+#include <ubo.hpp>
 
 namespace bb
 {
@@ -50,5 +50,6 @@ namespace bb
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
     return uniformBlock_t(result);
   }
+  
 
 } // namespace bb

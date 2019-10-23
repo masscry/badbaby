@@ -6,10 +6,11 @@
  */
 
 #pragma once
-#ifndef __CORE_RENDER_CAMERA_HEADER__
-#define __CORE_RENDER_CAMERA_HEADER__
+#ifndef __CORE_RENDER_UBO_HEADER__
+#define __CORE_RENDER_UBO_HEADER__
 
-#include <glm/mat4x4.hpp>
+#include <cstddef>
+
 #include <glad/glad.h>
 
 namespace bb
@@ -31,21 +32,6 @@ namespace bb
     ~uniformBlock_t();
 
     static uniformBlock_t CreateUniformBlock(size_t size);
-  };
-
-  using mat4_t = glm::mat4;
-
-  class camera_t final
-  {
-    mat4_t view;
-    mat4_t proj;
-
-    uniformBlock_t block;
-
-  public:
-
-
-
   };
 
 } // namespace bb
