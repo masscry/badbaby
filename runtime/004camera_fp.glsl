@@ -3,9 +3,9 @@
 
 layout(location = 0) out vec4 pixColor;
 
-in vec4 fragCol;
+in vec3 fragCol;
 
 void main()
 {
-  pixColor = fragCol;
+  pixColor = vec4(fragCol, 1.0);
 }
