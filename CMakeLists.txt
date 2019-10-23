@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.10)
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 project(badbaby
-  VERSION 0.1
+  VERSION 0.1.0
   LANGUAGES C CXX
 )
 
@@ -28,3 +28,17 @@ target_link_libraries(badbaby INTERFACE
 add_subdirectory(core)
 add_subdirectory(tests)
 add_subdirectory(atil)
+
+install(DIRECTORY runtime
+  DESTINATION share
+)
+
+set(CPACK_PACKAGE_DESCRIPTION "Badbaby Examples")
+set(CPACK_PACKAGE_VERSION_MAJOR "${PROJECT_VERSION_MAJOR}")
+set(CPACK_PACKAGE_VERSION_MINOR "${PROJECT_VERSION_MINOR}")
+set(CPACK_PACKAGE_VERSION_PATCH "${PROJECT_VERSION_PATCH}")
+set(CPACK_PACKAGE_VENDOR "deci.space")
+set(CPACK_PACKAGE_CONTACT "masscry@deci.space")
+set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}")
+
+include (CPack)

@@ -27,3 +27,14 @@ add_executable(004camera
 )
 
 target_link_libraries(004camera PRIVATE config render)
+
+install(TARGETS 
+    000hello
+    001render
+    002config
+    003font
+    004camera
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+)
