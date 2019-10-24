@@ -106,6 +106,16 @@ namespace bb
     return glGetUniformLocation(this->handle, name);
   }
 
+  GLuint shader_t::UniformBlockIndex(const char* name) const
+  {
+    return glGetUniformBlockIndex(this->handle, name);
+  }
+
+  void shader_t::SetBlock(GLuint blockIndex, const uniformBlock_t& block)
+  {
+    glBindBufferBase(GL_UNIFORM_BUFFER, blockIndex, block.self);
+  }
+
   void shader_t::SetFloat(GLint loc, float value) const
   {
     glUniform1f(loc, value);

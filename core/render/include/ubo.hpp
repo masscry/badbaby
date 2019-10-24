@@ -18,6 +18,8 @@ namespace bb
 
   class uniformBlock_t
   {
+    friend class shader_t;
+
     GLuint self;
 
     uniformBlock_t(const uniformBlock_t&) = delete;

@@ -10,6 +10,8 @@
 
 #include <glad/glad.h>
 
+#include <ubo.hpp>
+
 namespace bb
 {
   
@@ -33,6 +35,10 @@ namespace bb
     void SetVector4f(GLint loc, GLsizei count, const float* values) const;
     void SetMatrix(GLint loc, const float* matrix) const;
     void SetTexture(GLint loc, int texUnit) const;
+
+    GLuint UniformBlockIndex(const char* name) const;
+
+    void SetBlock(GLuint blockIndex, const uniformBlock_t& block);
 
     shader_t();
     shader_t(const char* vpSource, const char* fpSource);
