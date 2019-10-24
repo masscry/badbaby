@@ -3,6 +3,7 @@
 
 #include <context.hpp>
 #include <config.hpp>
+#include <common.hpp>
 
 namespace
 {
@@ -83,7 +84,13 @@ namespace bb
       config["window.height"] = ref_t::Number(600.0);
       config["window.title"] = ref_t::String("BadBaby");
       config["window.fullscreen"] = ref_t::Number(0.0);
+      config["opengl.debug"] = ref_t::Number(0.0);
       config.Save("default.config");
+    }
+
+    if (config.Value("opengl.debug", 0.0) != 0.0)
+    {
+      glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
     }
 
     this->width  = config.Value("window.width",  800);
@@ -117,6 +124,10 @@ namespace bb
     glfwSwapInterval(1);
 
     gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress));
+
+    Info("OpenGL:\n\tVendor: %s\n\tRenderer: %s\n\tVersion: %s",
+      glGetString(GL_VENDOR), glGetString(GL_RENDERER), glGetString(GL_VERSION)
+    );
 
     this->canvas = std::move(framebuffer_t(this->width, this->height));
     this->shader = std::move(shader_t(vShader, fShader));

@@ -69,6 +69,8 @@ namespace bb
   {
     auto totalWorkers = std::thread::hardware_concurrency() - 1;
 
+    Info("Total Worker Count: %u", totalWorkers);
+
     this->infos = std::move(vectorOfInfo_t(totalWorkers));
     for (decltype(totalWorkers) i = 0; i < totalWorkers; ++i)
     {
