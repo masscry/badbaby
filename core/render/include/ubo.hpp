@@ -29,9 +29,11 @@ namespace bb
 
   public:
 
-    uniformBlock_t(uniformBlock_t&&);
-    uniformBlock_t& operator=(uniformBlock_t&&);
+    uniformBlock_t(uniformBlock_t&& mv);
+    uniformBlock_t& operator=(uniformBlock_t&& mv);
     ~uniformBlock_t();
+
+    void UpdateData(void* data, int offset, size_t size);
 
     static uniformBlock_t CreateUniformBlock(size_t size);
   };
