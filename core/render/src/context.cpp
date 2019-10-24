@@ -1,3 +1,5 @@
+#include <cassert>
+
 #include <stdexcept>
 #include <string>
 
@@ -55,6 +57,53 @@ namespace
     0.0f, 1.0f,
   };
 
+  const char* ErrorTypeToString(GLenum type)
+  {
+    switch(type)
+    {
+      case GL_DEBUG_TYPE_ERROR:
+        return "ERROR";
+      case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
+        return "DPRCD";
+      case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+        return "UNDEF";
+      case GL_DEBUG_TYPE_PORTABILITY:
+        return "PRTBL";
+      case GL_DEBUG_TYPE_PERFORMANCE:
+        return "PRFMN";
+      case GL_DEBUG_TYPE_OTHER:
+        return "OTHER";
+      default:
+        // Must not happen!
+        assert(0);
+        return "?????";
+    }
+  }
+  
+  const char* ErrorSeverity(GLenum severity)
+  {
+    switch(severity)
+    {
+      case GL_DEBUG_SEVERITY_LOW:
+        return "~LOW";
+      case GL_DEBUG_SEVERITY_MEDIUM:
+        return "-MED";
+      case GL_DEBUG_SEVERITY_HIGH:
+        return "!HIG";
+      case GL_DEBUG_SEVERITY_NOTIFICATION_KHR:
+        return "!KHR";
+      default:
+        // Must not happen!
+        assert(0);
+        return "????";
+    }
+  }
+
+  void APIENTRY OnGLError(GLenum /*source*/, GLenum type, GLuint /*id*/, GLenum severity, GLsizei /*length*/, const GLchar* message, const void* /*userPtr*/)
+  {
+    bb::Debug("OpenGL: [%s] [%s]\n\t%s", ErrorSeverity(severity), ErrorTypeToString(type), message);
+  }
+
 }
 
 namespace bb
@@ -68,8 +117,6 @@ namespace bb
       throw std::runtime_error("glfw initialization failed");
     }
 
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_RESIZABLE, 0);
 
     config_t config;
@@ -90,8 +137,18 @@ namespace bb
 
     if (config.Value("opengl.debug", 0.0) != 0.0)
     {
+      glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+      glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
       glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
     }
+    else
+    {
+      glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+      glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+      glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_FALSE);
+    }
+
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
 
     this->width  = config.Value("window.width",  800);
     this->height = config.Value("window.height", 600);
@@ -125,8 +182,18 @@ namespace bb
 
     gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress));
 
-    Info("OpenGL:\n\tVendor: %s\n\tRenderer: %s\n\tVersion: %s",
-      glGetString(GL_VENDOR), glGetString(GL_RENDERER), glGetString(GL_VERSION)
+    if (config.Value("opengl.debug", 0.0) != 0.0)
+    {
+      glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+      glDebugMessageCallback(OnGLError, 0);
+      glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
+    }
+
+    Info("OpenGL:\n\tVendor: %s\n\tRenderer: %s\n\tVersion: %s\n\tGLSL Version: %s",
+      glGetString(GL_VENDOR),
+      glGetString(GL_RENDERER),
+      glGetString(GL_VERSION),
+      glGetString(GL_SHADING_LANGUAGE_VERSION)
     );
 
     this->canvas = std::move(framebuffer_t(this->width, this->height));
