@@ -1,13 +1,13 @@
 /**
- * @file camera.hpp
+ * @file ubo.hpp
  * 
- * Simple camera class.
+ * Uniform Block Object
  * 
  */
 
 #pragma once
-#ifndef __CORE_RENDER_UBO_HEADER__
-#define __CORE_RENDER_UBO_HEADER__
+#ifndef __BB_CORE_RENDER_UBO_HEADER__
+#define __BB_CORE_RENDER_UBO_HEADER__
 
 #include <cstddef>
 

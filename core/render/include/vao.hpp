@@ -6,8 +6,8 @@
  */
 
 #pragma once
-#ifndef __BB_RENDER_VAO_HEADER__
-#define __BB_RENDER_VAO_HEADER__
+#ifndef __BB_CORE_RENDER_VAO_HEADER__
+#define __BB_CORE_RENDER_VAO_HEADER__
 
 #include <cstddef>
 
@@ -71,4 +71,4 @@ namespace bb
 
 } // namespace bb
 
-#endif /* __BB_RENDER_VAO_HEADER__ */
+#endif /* __BB_CORE_RENDER_VAO_HEADER__ */

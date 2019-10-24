@@ -6,8 +6,8 @@
  */
 
 #pragma once
-#ifndef __CORE_COMMON_UTF8_HEADER__
-#define __CORE_COMMON_UTF8_HEADER__
+#ifndef __BB_CORE_COMMON_UTF8_HEADER__
+#define __BB_CORE_COMMON_UTF8_HEADER__
 
 #include <cstddef>
 #include <cstdint>
@@ -40,4 +40,4 @@ namespace bb
 
 } // namespace bb
 
-#endif /* __CORE_COMMON_UTF8_HEADER__ */
+#endif /* __BB_CORE_COMMON_UTF8_HEADER__ */

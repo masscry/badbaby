@@ -5,8 +5,8 @@
  */
 
 #pragma once
-#ifndef __CORE_RENDER_FONT_HEADER__
-#define __CORE_RENDER_FONT_HEADER__
+#ifndef __BB_CORE_RENDER_FONT_HEADER__
+#define __BB_CORE_RENDER_FONT_HEADER__
 
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
@@ -105,4 +105,4 @@ namespace bb
 
 } // namespace bb
 
-#endif /* __CORE_RENDER_FONT_HEADER__ */
+#endif /* __BB_CORE_RENDER_FONT_HEADER__ */

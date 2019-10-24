@@ -6,8 +6,8 @@
  */
 
 #pragma once
-#ifndef __BB_RENDER_CONTEXT_HEADER__
-#define __BB_RENDER_CONTEXT_HEADER__
+#ifndef __BB_CORE_RENDER_CONTEXT_HEADER__
+#define __BB_CORE_RENDER_CONTEXT_HEADER__
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -63,4 +63,4 @@ namespace bb
 
 } // namespace bb
 
-#endif /* __BB_RENDER_CONTEXT_HEADER__ */
+#endif /* __BB_CORE_RENDER_CONTEXT_HEADER__ */

@@ -6,8 +6,8 @@
  */
 
 #pragma once
-#ifndef __BB_RENDER_FRAMEBUFFER_HEADER__
-#define __BB_RENDER_FRAMEBUFFER_HEADER__
+#ifndef __BB_CORE_RENDER_FRAMEBUFFER_HEADER__
+#define __BB_CORE_RENDER_FRAMEBUFFER_HEADER__
 
 #include <glad/glad.h>
 
@@ -44,4 +44,4 @@ namespace bb
 
 } // namespace bb
 
-#endif /* __BB_RENDER_FRAMEBUFFER_HEADER__ */
+#endif /* __BB_CORE_RENDER_FRAMEBUFFER_HEADER__ */
