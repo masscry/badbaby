@@ -58,6 +58,11 @@ namespace bb
 
     bool Update();
 
+    bool IsKeyDown(uint16_t key)
+    {
+      return glfwGetKey(this->wnd, key) != GLFW_RELEASE;
+    }
+
   };
 
 

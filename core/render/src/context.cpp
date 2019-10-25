@@ -247,4 +247,6 @@ namespace bb
     return (glfwWindowShouldClose(this->wnd) == 0);
   }
 
+
+
 } // namespace bb
