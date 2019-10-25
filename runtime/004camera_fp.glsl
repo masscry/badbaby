@@ -7,14 +7,9 @@ in vec2 fragUV;
 
 uniform sampler2D mainTex;
 
-const float glyph_center = 0.75;
-
 void main()
 {
-  float distance = texture(mainTex, fragUV).a;
-  float width = fwidth(distance);
+  vec4 texColor = texture(mainTex, fragUV);
 
-  float glyph_alpha = smoothstep(glyph_center - width, glyph_center + width, distance);
-
-  pixColor = vec4(glyph_alpha);
+  pixColor = vec4(texColor.rgb*gl_FragCoord.w/gl_FragCoord.z, texColor.a);
 }
