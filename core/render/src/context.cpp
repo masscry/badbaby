@@ -110,7 +110,7 @@ namespace bb
 {
 
   context_t::context_t()
-  :wnd(nullptr), width(800), height(600), canvas()
+  :wnd(nullptr), width(800), height(600), canvas(),insideWnd(false),relativeCursor(false)
   {
     if (glfwInit() == GLFW_FALSE)
     {
@@ -175,6 +175,10 @@ namespace bb
     {
       throw std::runtime_error("glfw create window failed");
     }
+
+    glfwSetWindowUserPointer(this->wnd, this);
+
+    glfwSetCursorEnterCallback(this->wnd, context_t::OnCursorEnter);
 
     glfwMakeContextCurrent(this->wnd);
     glfwSetWindowUserPointer(this->wnd, this);
@@ -247,6 +251,29 @@ namespace bb
     return (glfwWindowShouldClose(this->wnd) == 0);
   }
 
+  void context_t::RelativeCursor(bool enable)
+  {
+    this->relativeCursor = enable;
+    if (this->relativeCursor)
+    {
+      glfwSetInputMode(this->wnd, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    }
+    else
+    {
+      glfwSetInputMode(this->wnd, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    }
+  }
+
+  void context_t::OnCursorEnter(GLFWwindow* wnd, int entered)
+  {
+    Debug("CursorEnter: %d", entered);
+    context_t* self = reinterpret_cast<context_t*>(glfwGetWindowUserPointer(wnd));
+    self->insideWnd = (entered != 0);
+    if (self->relativeCursor)
+    {
+      glfwSetInputMode(self->wnd, GLFW_CURSOR, (self->insideWnd)?GLFW_CURSOR_DISABLED:GLFW_CURSOR_NORMAL);
+    }
+  }
 
 
 } // namespace bb

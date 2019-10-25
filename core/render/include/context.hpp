@@ -11,6 +11,7 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <glm/vec2.hpp>
 
 #include <framebuffer.hpp>
 #include <shader.hpp>
@@ -27,6 +28,8 @@ namespace bb
     framebuffer_t canvas;
     shader_t      shader;
     vao_t         vao;
+    bool          insideWnd;
+    bool          relativeCursor;
 
     context_t();
     ~context_t();
@@ -37,34 +40,58 @@ namespace bb
     context_t& operator=(const context_t&) = delete;
     context_t& operator=(context_t&&) = delete;
 
+    static void OnCursorEnter(GLFWwindow* window, int entered);
+
   public:
 
-    framebuffer_t& Canvas()
-    {
-      return this->canvas;
-    }
+    framebuffer_t& Canvas();
 
-    int Width() const 
-    {
-      return this->width;
-    }
-
-    int Height() const 
-    {
-      return this->height;
-    }
+    int Width() const;
+    int Height() const;
 
     static context_t& Instance();
 
     bool Update();
 
-    bool IsKeyDown(uint16_t key)
-    {
-      return glfwGetKey(this->wnd, key) != GLFW_RELEASE;
-    }
+    bool IsKeyDown(uint16_t key) const;
+    glm::dvec2 MousePos() const;
+
+    void RelativeCursor(bool enable);
+    bool IsCursorInside() const;
 
   };
 
+  inline framebuffer_t& context_t::Canvas()
+  {
+    return this->canvas;
+  }
+
+  inline int context_t::Width() const 
+  {
+    return this->width;
+  }
+
+  inline int context_t::Height() const 
+  {
+    return this->height;
+  }
+
+  inline bool context_t::IsKeyDown(uint16_t key) const
+  {
+    return glfwGetKey(this->wnd, key) != GLFW_RELEASE;
+  }
+
+  inline glm::dvec2 context_t::MousePos() const
+  {
+    glm::dvec2 result;
+    glfwGetCursorPos(this->wnd, &result.x, &result.y);
+    return result;
+  }
+
+  inline bool context_t::IsCursorInside() const
+  {
+    return this->insideWnd;
+  }
 
 } // namespace bb
 
