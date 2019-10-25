@@ -18,6 +18,14 @@ namespace
     {
       return GL_LINEAR;
     }
+    if (filterName.compare("linear-mipmap-nearest") == 0)
+    {
+      return GL_LINEAR_MIPMAP_NEAREST;
+    }
+    if (filterName.compare("linear-mipmap-linear") == 0)
+    {
+      return GL_LINEAR_MIPMAP_LINEAR;
+    }
 
     // nearest by default
     bb::Debug("Unknown filter: \"%s\" defaults to GL_NEAREST", filterName.c_str());
@@ -108,6 +116,14 @@ namespace bb
     glBindTexture(GL_TEXTURE_2D, 0);
   }
 
+  void texture_t::GenerateMipmaps()
+  {
+    assert(this->self != 0);
+    glBindTexture(GL_TEXTURE_2D, this->self);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, 0);
+  }
+
   void texture_t::Bind(const texture_t& tex)
   {
     glBindTexture(GL_TEXTURE_2D, tex.self);
@@ -130,9 +146,14 @@ namespace bb
     texture_t result = texture_t::LoadTGA(imgFile);
 
     std::string minFilter = config.Value("texture.min", "nearest");
-    std::string magFilter = config.Value("texture.min", "nearest");
+    std::string magFilter = config.Value("texture.mag", "nearest");
 
     result.SetFilter(FilterString(minFilter), FilterString(magFilter));
+
+    if (config.Value("texture.mipmaps", 0.0) != 0.0)
+    {
+      result.GenerateMipmaps();
+    }
     return result;
   }
 

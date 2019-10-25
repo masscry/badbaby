@@ -29,6 +29,7 @@ namespace bb
   public:
 
     void SetFilter(GLint minFiler, GLint magFilter);
+    void GenerateMipmaps();
 
     texture_t(texture_t&&);
     texture_t& operator=(texture_t&&);
