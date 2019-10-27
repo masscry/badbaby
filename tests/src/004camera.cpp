@@ -97,8 +97,8 @@ int main(int argc, char* argv[])
     auto deltaCursorPos = (newCursorPos - lastCursorPos)*delta*10.0;
     lastCursorPos = newCursorPos;
 
-    yaw += deltaCursorPos.x;
-    pitch += deltaCursorPos.y;
+    yaw   = std::fmod(yaw + deltaCursorPos.x, 360.0f);
+    pitch = std::fmod(pitch+deltaCursorPos.y, 360.0f);
 
     glm::quat qRot = glm::normalize(
       glm::angleAxis(glm::radians(pitch), glm::vec3(1.0f, 0.0f, 0.0f)) *
@@ -108,11 +108,13 @@ int main(int argc, char* argv[])
     auto qRotMat = glm::mat4_cast(qRot);
 
     auto dir = rotate(glm::inverse(qRot), glm::vec3(0.0f, 0.0f, -1.0f));
+    auto up = rotate(glm::inverse(qRot), glm::vec3(0.0f, 1.0f, 0.0f));
 
     char buffer[80];
-    snprintf(buffer, sizeof(buffer), "[%f, %f, %f] [%f, %f, %f]",
+    snprintf(buffer, sizeof(buffer), "[%+6.3f, %+6.3f, %+6.3f] [%+6.3f, %+6.3f, %+6.3f] [%+6.3f %+6.3f]",
       pos.x, pos.y, pos.z,
-      dir.x, dir.y, dir.z
+      dir.x, dir.y, dir.z,
+      pitch, yaw
     );
 
     fpsText.Update(buffer);
@@ -125,6 +127,9 @@ int main(int argc, char* argv[])
 
     float dist = (context.IsKeyDown(GLFW_KEY_W)-context.IsKeyDown(GLFW_KEY_S))*delta;
     pos += glm::vec3(dir)*dist;
+
+    float side = (context.IsKeyDown(GLFW_KEY_D)-context.IsKeyDown(GLFW_KEY_A))*delta;
+    pos += glm::cross(dir, up)*side;
 
     worldCamera.View() = qRotMat * glm::translate(glm::mat4(1.0f), -pos);
     lastTick = nowTick;
