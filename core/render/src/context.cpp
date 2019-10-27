@@ -203,12 +203,15 @@ namespace bb
     this->canvas = std::move(framebuffer_t(this->width, this->height));
     this->shader = std::move(shader_t(vShader, fShader));
 
-    vbo_t vPosBuffer = vbo_t::CreateArrayBuffer(vPos, sizeof(vPos));
-    vbo_t vTexBuffer = vbo_t::CreateArrayBuffer(vTex, sizeof(vTex));
+    vbo_t vPosBuffer = vbo_t::CreateArrayBuffer(vPos, sizeof(vPos), false);
+    vbo_t vTexBuffer = vbo_t::CreateArrayBuffer(vTex, sizeof(vTex), false);
 
     this->vao = vao_t::CreateVertexAttribObject();
     this->vao.BindVBO(vPosBuffer, 0, 3, GL_FLOAT, GL_FALSE, 0, 0);
     this->vao.BindVBO(vTexBuffer, 1, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   }
 
   context_t::~context_t()
