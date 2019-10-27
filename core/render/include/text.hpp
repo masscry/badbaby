@@ -1,0 +1,84 @@
+/**
+ * @file text.hpp
+ * 
+ * Simple Text Class
+ * 
+ */
+#pragma once
+#ifndef __BB_CORE_RENDER_TEXT_HEADER__
+#define __BB_CORE_RENDER_TEXT_HEADER__
+
+#include <font.hpp>
+
+namespace bb
+{
+
+  class textStatic_t final
+  {
+    sharedTexture_t tex;
+    vao_t vao;
+    size_t totalVertecies;
+
+    textStatic_t(const textStatic_t&) = delete;
+    textStatic_t& operator=(const textStatic_t&) = delete;
+
+  public:
+
+    void Render();
+
+    textStatic_t(const font_t& font, const std::string& text, vec2_t chSize);
+
+    textStatic_t(textStatic_t&&) = default;
+    textStatic_t& operator=(textStatic_t&&) = default;
+    ~textStatic_t() = default;
+  };
+
+  template<typename T>
+  using storage_t = std::vector<T>;
+
+  struct textStorage_t
+  {
+    storage_t<vec3_t>   vPos;
+    storage_t<vec2_t>   vUV;
+    storage_t<uint16_t> indecies;
+  };
+
+  template<typename T>
+  size_t ByteSize(const storage_t<T>& arr)
+  {
+    return arr.size()*sizeof(T);
+  }
+
+  class textDynamic_t final
+  {
+    vao_t vao;
+    const font_t& font;
+    vec2_t chSize;
+
+    vbo_t vPosVBO;
+    vbo_t vUVVBO;
+    vbo_t indeciesVBO;
+
+    textStorage_t vertecies;
+
+    textDynamic_t(const textDynamic_t&) = delete;
+    textDynamic_t& operator=(const textDynamic_t&) = delete;
+
+  public:
+
+    void Update(const std::string& text);
+
+    void Render();
+
+    textDynamic_t(const font_t& font, const vec2_t& chSize);
+
+    textDynamic_t(textDynamic_t&&) = default;
+    textDynamic_t& operator=(textDynamic_t&&) = default;
+    ~textDynamic_t() = default;
+  };
+
+
+
+} // namespace bb
+
+#endif /* __BB_CORE_RENDER_TEXT_HEADER__ */

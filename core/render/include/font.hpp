@@ -20,6 +20,7 @@ namespace bb
 {
 
   using vec2_t = glm::vec2;
+  using vec3_t = glm::vec3;
 
   class font_t final
   {
@@ -79,27 +80,6 @@ namespace bb
       }
       return it->second;
     }
-
-  };
-
-  class text_t final
-  {
-    sharedTexture_t tex;
-    vao_t vao;
-    size_t totalVertecies;
-
-    text_t(const text_t&) = delete;
-    text_t& operator=(const text_t&) = delete;
-
-  public:
-
-    void Render();
-
-    text_t(const font_t& font, const std::string& text, vec2_t chSize);
-
-    text_t(text_t&&) = default;
-    text_t& operator=(text_t&&) = default;
-    ~text_t() = default;
 
   };
 

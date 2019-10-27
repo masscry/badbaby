@@ -3,7 +3,6 @@
 #include <common.hpp>
 #include <config.hpp>
 #include <font.hpp>
-#include <utf8.hpp>
 
 namespace
 {
@@ -95,74 +94,6 @@ namespace bb
       this->offsets[output[0]] = vec2_t { smbPos.x * (size.x + xstride), smbPos.y * (size.y + ystride) };
       this->sizes[output[0]] = size;
     }
-  }
-
-  void text_t::Render()
-  {
-    texture_t::Bind(*this->tex);
-    vao_t::Bind(this->vao);
-
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-    glDrawElements(GL_TRIANGLES, this->totalVertecies, GL_UNSIGNED_INT, nullptr);
-    glDisableVertexAttribArray(0);
-    glDisableVertexAttribArray(1);
-  }
-
-  text_t::text_t(const font_t& font, const std::string& text, vec2_t chSize)
-  :tex(font.Texture()),totalVertecies(0)
-  {
-    auto symbols = utf8extract(text.c_str());
-
-    std::vector<vec2_t>   vPos;
-    std::vector<vec2_t>   vUV;
-    std::vector<uint32_t> indecies;
-
-    vPos.reserve(symbols.size()*4);
-    vUV.reserve(symbols.size()*4);
-    indecies.reserve(symbols.size()*6);
-
-    uint32_t vID = 0;
-    vec2_t cursor = glm::vec2(0.0f);
-
-    for (auto it = symbols.begin(), e = symbols.end(); it != e; ++it)
-    {
-      vec2_t smbOffset = font.SymbolOffset(*it);
-      vec2_t smbSize   = font.SymbolSize(*it);
-
-      vPos.emplace_back(cursor.x, cursor.y);
-      vUV.emplace_back(smbOffset.x, smbOffset.y + smbSize.y);
-
-      vPos.emplace_back(cursor.x + chSize.x, cursor.y);
-      vUV.emplace_back(smbOffset.x + smbSize.x, smbOffset.y + smbSize.y);
-
-      vPos.emplace_back(cursor.x, cursor.y + chSize.y);
-      vUV.emplace_back(smbOffset.x, smbOffset.y);
-
-      vPos.emplace_back(cursor.x + chSize.x, cursor.y + chSize.y);
-      vUV.emplace_back(smbOffset.x + smbSize.x, smbOffset.y);
-
-      indecies.push_back(vID+0);
-      indecies.push_back(vID+1);
-      indecies.push_back(vID+2);
-      indecies.push_back(vID+1);
-      indecies.push_back(vID+3);
-      indecies.push_back(vID+2);
-
-      vID += 4;
-      cursor.x += chSize.x;
-    }
-
-    this->vao = vao_t::CreateVertexAttribObject();
-
-    vbo_t vPosVBO = vbo_t::CreateArrayBuffer(vPos.data(), vPos.size()*sizeof(vec2_t));
-    vbo_t vUVVBO = vbo_t::CreateArrayBuffer(vUV.data(), vUV.size()*sizeof(vec2_t));
-    vbo_t indeciesVBO = vbo_t::CreateElementArrayBuffer(indecies.data(), indecies.size()*sizeof(uint32_t));
-
-    this->vao.BindVBO(vPosVBO, 0, 2, GL_FLOAT, GL_FALSE, 0, 0);
-    this->vao.BindVBO(vUVVBO, 1, 2, GL_FLOAT, GL_FALSE, 0, 0);
-    this->vao.BindIndecies(indeciesVBO);
-    this->totalVertecies = indecies.size();
   }
 
 }
