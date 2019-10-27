@@ -66,6 +66,7 @@ namespace bb
     ~camera_t();
 
     static camera_t Perspective(float fov, float aspect, float nearZ, float farZ);
+    static camera_t Orthogonal(float left, float right, float bottom, float top);
 
   };
 

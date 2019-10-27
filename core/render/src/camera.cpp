@@ -54,5 +54,15 @@ namespace bb
     return result;
   }
 
+  camera_t camera_t::Orthogonal(float left, float right, float bottom, float top)
+  {
+    camera_t result(
+      glm::ortho(left, right, bottom, top),
+      glm::mat4(1.0f),
+      uniformBlock_t::CreateUniformBlock(sizeof(data_t))
+    );
+    result.Update();
+    return result;
+  }
 
 } // namespace bb
