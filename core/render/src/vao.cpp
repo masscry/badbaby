@@ -6,9 +6,10 @@ namespace bb
 {
 
   vbo_t::vbo_t(vbo_t&& move)
-  :self(move.self)
+  :self(move.self),type(move.type)
   {
     move.self = 0;
+    move.type = 0;
   }
   
   vbo_t& vbo_t::operator =(vbo_t&& move)
@@ -24,12 +25,14 @@ namespace bb
     }
 
     this->self = move.self;
+    this->type = move.type;
     move.self = 0;
+    move.type = 0;
     return *this;
   }
 
   vbo_t::vbo_t()
-  :self(0)
+  :self(0),type(0)
   {
     ;
   }
@@ -42,34 +45,41 @@ namespace bb
     }
   }
 
-  vbo_t::vbo_t(GLuint self)
-  :self(self)
+  vbo_t::vbo_t(GLuint self, GLenum type)
+  :self(self),type(type)
   {
     ;
   }
 
-  vbo_t vbo_t::CreateArrayBuffer(const void* data, size_t dataSize)
+  void vbo_t::Update(int offset, size_t size, const void* data)
+  {
+    glBindBuffer(this->type, this->self);
+    glBufferSubData(this->type, offset, size, data);
+    glBindBuffer(this->type, 0);
+  }
+
+  vbo_t vbo_t::CreateArrayBuffer(const void* data, size_t dataSize, bool dynamic)
   {
     GLuint vbo;
 
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, dataSize, data, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, dataSize, data, (dynamic)?GL_DYNAMIC_DRAW:GL_STATIC_DRAW);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-    return vbo_t(vbo);
+    return vbo_t(vbo, GL_ARRAY_BUFFER);
   }
 
-  vbo_t vbo_t::CreateElementArrayBuffer(const void* data, size_t dataSize)
+  vbo_t vbo_t::CreateElementArrayBuffer(const void* data, size_t dataSize, bool dynamic)
   {
     GLuint vbo;
 
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, dataSize, data, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, dataSize, data, (dynamic)?GL_DYNAMIC_DRAW:GL_STATIC_DRAW);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-    return vbo_t(vbo);
+    return vbo_t(vbo, GL_ELEMENT_ARRAY_BUFFER);
   }
 
   vao_t::vao_t(vao_t&& move)

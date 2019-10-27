@@ -22,11 +22,12 @@ namespace bb
     friend class vao_t;
 
     GLuint self;
+    GLenum type;
 
     vbo_t(const vbo_t&) = delete;
     vbo_t& operator =(const vbo_t&) = delete;
 
-    vbo_t(GLuint self);
+    vbo_t(GLuint self, GLenum type);
 
   public:
 
@@ -36,9 +37,11 @@ namespace bb
     vbo_t();
     ~vbo_t();
 
-    static vbo_t CreateArrayBuffer(const void* data, size_t dataSize);
+    void Update(int offset, size_t size, const void* data);
 
-    static vbo_t CreateElementArrayBuffer(const void* data, size_t dataSize);
+    static vbo_t CreateArrayBuffer(const void* data, size_t dataSize, bool dynamic);
+
+    static vbo_t CreateElementArrayBuffer(const void* data, size_t dataSize, bool dynamic);
 
   };
 
