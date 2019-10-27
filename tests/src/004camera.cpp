@@ -7,34 +7,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
 
-glm::mat4 DirectionRotation(glm::vec3 dir, glm::vec3 up)
-{
-  glm::mat4 result;
-  glm::vec3 xAxis = glm::normalize(glm::cross(up, dir));
-  glm::vec3 yAxis = glm::normalize(glm::cross(dir, xAxis));
-
-  result[0].x = xAxis.x;
-  result[0].y = yAxis.x;
-  result[0].z = dir.x;
-  result[0].w = 0.0f;
-
-  result[1].x = xAxis.y;
-  result[1].y = yAxis.y;
-  result[1].z = dir.y;
-  result[1].w = 0.0f;
-
-  result[2].x = xAxis.z;
-  result[2].y = yAxis.z;
-  result[2].z = dir.z;
-  result[2].w = 0.0f;
-
-  result[3].x = 0.0f;
-  result[3].y = 0.0f;
-  result[3].z = 0.0f;
-  result[3].w = 1.0f;
-  return result;
-}
-
 glm::vec3 quadPos[6] = {
   { -10.0f, -1.0f, -10.0f },
   {  10.0f, -1.0f, -10.0f },
@@ -52,6 +24,12 @@ glm::vec2 quadUV[6] = {
   { 2.0f, 2.0f },
   { 0.0f, 2.0f }
 };
+
+glm::vec3 rotate(glm::quat q, glm::vec3 v) 
+{ 
+  auto qv = glm::vec3(q.x, q.y, q.z);
+  return v + 2.0f*glm::cross(qv, glm::cross(qv,v) + q.w*v);
+}
 
 int main(int argc, char* argv[])
 {
@@ -71,9 +49,9 @@ int main(int argc, char* argv[])
   font.Load("mono.config");
   auto fpsText = bb::textDynamic_t(font, bb::vec2_t(16.0f, 32.0f));
 
-  glm::vec3 pos = glm::vec3(0.0f, 0.0f, -3.0f);
-  glm::vec3 dir = glm::vec3(0.0f, 0.0f, 1.0f);
-  glm::vec3 up  = glm::vec3(0.0f, 1.0f, 0.0f);
+  glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f);
+  float pitch = 0.0f;
+  float yaw = 0.0f;
 
   bb::vbo_t vPos = bb::vbo_t::CreateArrayBuffer(quadPos, sizeof(quadPos), false);
   bb::vbo_t vUV  = bb::vbo_t::CreateArrayBuffer(quadUV, sizeof(quadUV), false);
@@ -115,8 +93,27 @@ int main(int argc, char* argv[])
     hudCamera.Update();
     fontProgram.SetBlock(bindPointHUD, hudCamera.UniformBlock());
 
-    char buffer[64];
-    snprintf(buffer, sizeof(buffer), "FPS: %5.2f", 1.0/delta);
+    auto newCursorPos = context.MousePos();
+    auto deltaCursorPos = (newCursorPos - lastCursorPos)*delta*10.0;
+    lastCursorPos = newCursorPos;
+
+    yaw += deltaCursorPos.x;
+    pitch += deltaCursorPos.y;
+
+    glm::quat qRot = glm::normalize(
+      glm::angleAxis(glm::radians(pitch), glm::vec3(1.0f, 0.0f, 0.0f)) *
+      glm::angleAxis(glm::radians(yaw), glm::vec3(0.0f, 1.0f, 0.0f))
+    );
+
+    auto qRotMat = glm::mat4_cast(qRot);
+
+    auto dir = rotate(glm::inverse(qRot), glm::vec3(0.0f, 0.0f, -1.0f));
+
+    char buffer[80];
+    snprintf(buffer, sizeof(buffer), "[%f, %f, %f] [%f, %f, %f]",
+      pos.x, pos.y, pos.z,
+      dir.x, dir.y, dir.z
+    );
 
     fpsText.Update(buffer);
     fpsText.Render();
@@ -126,16 +123,10 @@ int main(int argc, char* argv[])
       break;
     }
 
-    auto newCursorPos = context.MousePos();
-    lastCursorPos = newCursorPos;
-    
-    float dist = (context.IsKeyDown(GLFW_KEY_W) - context.IsKeyDown(GLFW_KEY_S))*delta;
-    pos += dir*dist;
+    float dist = (context.IsKeyDown(GLFW_KEY_W)-context.IsKeyDown(GLFW_KEY_S))*delta;
+    pos += glm::vec3(dir)*dist;
 
-    float side = (context.IsKeyDown(GLFW_KEY_D) - context.IsKeyDown(GLFW_KEY_A))*delta;
-    pos += glm::cross(dir, up)*side;
-
-    worldCamera.View() = glm::translate(glm::mat4(1.0f), pos);
+    worldCamera.View() = qRotMat * glm::translate(glm::mat4(1.0f), -pos);
     lastTick = nowTick;
   }
 
