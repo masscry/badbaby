@@ -24,8 +24,8 @@ int main(int argc, char* argv[])
   auto renderProgram = bb::shader_t::LoadProgramFromFiles("001render_vp.glsl", "001render_fp.glsl");
   auto vao = bb::vao_t::CreateVertexAttribObject();
 
-  vao.BindVBO(bb::vbo_t::CreateArrayBuffer(vPos, sizeof(vPos)), 0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-  vao.BindVBO(bb::vbo_t::CreateArrayBuffer(vCol, sizeof(vCol)), 1, 4, GL_FLOAT, GL_FALSE, 0, 0);
+  vao.BindVBO(bb::vbo_t::CreateArrayBuffer(vPos, sizeof(vPos), false), 0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+  vao.BindVBO(bb::vbo_t::CreateArrayBuffer(vCol, sizeof(vCol), false), 1, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
   for(;;)
   {

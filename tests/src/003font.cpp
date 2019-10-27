@@ -1,6 +1,7 @@
 #include <common.hpp>
 #include <context.hpp>
 #include <font.hpp>
+#include <text.hpp>
 
 int main(int argc, char* argv[])
 {
@@ -14,7 +15,7 @@ int main(int argc, char* argv[])
 
   bb::font_t font;
   font.Load("mono.config");
-  auto text = bb::text_t(font, "Проверка!", bb::vec2_t(1.0f/4.5f, 1.0f));
+  auto text = bb::textStatic_t(font, "Проверка!", bb::vec2_t(1.0f/4.5f, 1.0f));
 
   for(;;)
   {

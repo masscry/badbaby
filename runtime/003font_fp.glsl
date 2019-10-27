@@ -16,5 +16,5 @@ void main()
 
   float glyph_alpha = smoothstep(glyph_center - width, glyph_center + width, distance);
 
-  pixColor = vec4(glyph_alpha);
+  pixColor = vec4(1.0f, 1.0f, 1.0f, glyph_alpha);
 }
