@@ -28,12 +28,19 @@ add_executable(004camera
 
 target_link_libraries(004camera PRIVATE config render)
 
+add_executable(005splash
+  src/005splash.cpp
+)
+
+target_link_libraries(005splash PRIVATE config render)
+
 install(TARGETS 
     000hello
     001render
     002config
     003font
     004camera
+    005splash
   RUNTIME DESTINATION bin
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
