@@ -4,24 +4,34 @@
 #include <shapes.hpp>
 #include <random>
 #include <memory>
+#include <cmath>
+
+#include <glm/gtc/constants.hpp>
 
 int main(int argc, char* argv[])
 {
+  std::random_device rd;
+  std::mt19937 mt(rd());
+  std::uniform_int_distribution<long> dist;
+
   if (bb::ProcessStartupArguments(argc, argv) != 0)
   {
     return -1;
   }
 
   auto& context = bb::context_t::Instance();
-  auto simplex = bb::simplex_t(0);
+  auto simplex = bb::simplex_t(dist(mt));
 
   std::unique_ptr<float[]> simplexMap(new float[1024*1024]);
 
   for (int j = 0; j < 1024; ++j)
   {
+    double z = j/102.4;
+
     for (int i = 0; i < 1024; ++i)
     {
-      simplexMap[j*1024 + i] = static_cast<float>(simplex(i/100.0, j/100.0, 0.0));
+      double angle = (i/1024.0)*glm::two_pi<double>();
+      simplexMap[j*1024 + i] = simplex(glm::dvec3(cos(angle), sin(angle), z));
     }
   }
 

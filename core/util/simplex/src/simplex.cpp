@@ -160,7 +160,7 @@ namespace bb
       }
   }
 
-  double simplex_t::operator()(double x, double y, double z)
+  double simplex_t::operator()(double x, double y, double z) const
   {
       auto stretchOffset = (x + y + z) * STRETCH_3D;
       auto xs = x + stretchOffset;

@@ -12,6 +12,8 @@
 #include <cstdint>
 #include <memory>
 
+#include <glm/vec3.hpp>
+
 namespace bb
 {
 
@@ -31,7 +33,12 @@ namespace bb
 
     ~simplex_t() = default;
 
-    double operator()(double x, double y, double z);
+    double operator()(double x, double y, double z) const;
+
+    double operator()(glm::dvec3 v) const
+    {
+      return this->operator()(v.x, v.y, v.z);
+    }
 
   };
 
