@@ -34,6 +34,13 @@ add_executable(005splash
 
 target_link_libraries(005splash PRIVATE config render)
 
+add_executable(006simplex
+  src/006simplex.cpp
+)
+
+target_link_libraries(006simplex PRIVATE config render actor)
+
+
 install(TARGETS 
     000hello
     001render
@@ -41,6 +48,7 @@ install(TARGETS
     003font
     004camera
     005splash
+    006simplex
   RUNTIME DESTINATION bin
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
