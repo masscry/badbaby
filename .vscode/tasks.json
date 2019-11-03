@@ -49,6 +49,12 @@
       "group": "build"
     },
     {
+      "label": "Build 006simplex (Debug)",
+      "type": "shell",
+      "command": "cmake --build ./.debug --target 006simplex",
+      "group": "build"
+    },
+    {
       "label": "Build All (Release)",
       "type": "shell",
       "command": "cmake --build ./.release --clean-first",
