@@ -90,6 +90,7 @@ namespace bb
   :self(0)
   {
     assert((depth == 3) || (depth == 4));
+    assert((data != nullptr) && (width != 0) && (height != 0));
 
     glGenTextures(1, &this->self);
     glBindTexture(GL_TEXTURE_2D, this->self);
@@ -102,6 +103,18 @@ namespace bb
       glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
       break;
     }
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glBindTexture(GL_TEXTURE_2D, 0);
+  }
+
+  texture_t::texture_t(int width, int height, const float* data)
+  {
+    assert((data != nullptr) && (width != 0) && (height != 0));
+
+    glGenTextures(1, &this->self);
+    glBindTexture(GL_TEXTURE_2D, this->self);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_FLOAT, data);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glBindTexture(GL_TEXTURE_2D, 0);
