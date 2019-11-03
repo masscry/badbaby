@@ -2,6 +2,7 @@
 
 #include <worker.hpp>
 #include <common.hpp>
+#include <config.hpp>
 
 namespace
 {
@@ -67,7 +68,23 @@ namespace bb
   workerPool_t::workerPool_t()
   :totalMessages(0)
   {
-    auto totalWorkers = std::thread::hardware_concurrency() - 1;
+
+    config_t config;
+    try
+    {
+      config.Load("default.config");
+    }
+    catch(const std::runtime_error&)
+    {
+      // ignore file not found error
+      config["actor.workers"]  = ref_t::Number(std::thread::hardware_concurrency() - 1);
+      config.Save("default.config");
+    }
+
+    auto totalWorkers = static_cast<unsigned int>(config.Value(
+      "actor.workers",
+      std::thread::hardware_concurrency() - 1
+    ));
 
     Info("Total Worker Count: %u", totalWorkers);
 
