@@ -59,6 +59,8 @@ namespace bb
     void RelativeCursor(bool enable);
     bool IsCursorInside() const;
 
+    void Title(const std::string& newTitle);
+
   };
 
   inline framebuffer_t& context_t::Canvas()

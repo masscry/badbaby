@@ -254,6 +254,11 @@ namespace bb
     return (glfwWindowShouldClose(this->wnd) == 0);
   }
 
+  void context_t::Title(const std::string& newTitle)
+  {
+    glfwSetWindowTitle(this->wnd, newTitle.c_str());
+  }
+
   void context_t::RelativeCursor(bool enable)
   {
     this->relativeCursor = enable;
