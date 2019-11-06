@@ -17,22 +17,30 @@
 namespace bb
 {
 
-  class plane_t final
+  class mesh_t final
   {
     vao_t vao;
+    size_t totalVerts;
 
-    plane_t(const plane_t&) = delete; 
-    plane_t& operator=(const plane_t&) = delete; 
+    mesh_t(const mesh_t&) = delete; 
+    mesh_t& operator=(const mesh_t&) = delete; 
 
   public:
 
     void Render();
 
-    plane_t(glm::vec2 size);
-    plane_t(plane_t&&) = default; 
-    plane_t& operator=(plane_t&&) = default; 
-    ~plane_t() = default;
+    mesh_t(vao_t&& vao, size_t totalVerts);
+
+    mesh_t(mesh_t&&) = default; 
+    mesh_t& operator=(mesh_t&&) = default; 
+    ~mesh_t() = default;
   };
+
+  mesh_t GeneratePlane(glm::vec2 size, glm::vec3 pos);
+
+  mesh_t GeneratePlaneStack(glm::vec2 size, int stackDepth, float startZ, float endZ);
+
+
 
 } // namespace bb
 
