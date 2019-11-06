@@ -10,6 +10,8 @@ uniform sampler2D mainTex;
 
 void main()
 {
-  float show = step(depth, texture(mainTex, fragUV).r);
+  float fdepth = texture(mainTex, fragUV).r;
+  float show = step(depth, fdepth);
+
   pixColor = vec4(vec3(show)*depth, show);
 }

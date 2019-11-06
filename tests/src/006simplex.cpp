@@ -63,7 +63,7 @@ int main(int argc, char* argv[])
 
   float zNearVal = 0.0f;
   float zFarVal = 20.0f;
-  int stackDepth = 40;
+  int stackDepth = 30;
 
   auto plane = bb::GeneratePlaneStack(glm::vec2(800.0f, 400.0f), stackDepth, zNearVal, zFarVal);
 
@@ -79,7 +79,7 @@ int main(int argc, char* argv[])
   auto bindCameraPoint = renderProgram.UniformBlockIndex("camera");
 
   worldCamera.View() = glm::lookAt(
-    glm::vec3(0.0f, 0.0f, 20.0f),
+    glm::vec3(0.0f, 0.0f, 40.0f),
     glm::vec3(0.0f, 0.0f, -1.0f),
     glm::vec3(0.0f, 1.0f, 0.0f)
   );
@@ -114,8 +114,8 @@ int main(int argc, char* argv[])
     context.Title(std::to_string(1.0/delta));
 
     glm::vec3 offset(
-      (context.IsKeyDown(GLFW_KEY_D)-context.IsKeyDown(GLFW_KEY_A))*delta*10,
-      (context.IsKeyDown(GLFW_KEY_W)-context.IsKeyDown(GLFW_KEY_S))*delta*10,
+      -(context.IsKeyDown(GLFW_KEY_D)-context.IsKeyDown(GLFW_KEY_A))*delta*10,
+      -(context.IsKeyDown(GLFW_KEY_W)-context.IsKeyDown(GLFW_KEY_S))*delta*10,
       0.0f
     );
 

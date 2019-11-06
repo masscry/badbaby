@@ -15,7 +15,7 @@ out float depth;
 
 void main()
 {
-  depth = pos.z/20;
+  depth = pos.z/20.0f;
   fragUV = uv;
   gl_Position = proj * view * vec4(pos, 1.0f);
 }

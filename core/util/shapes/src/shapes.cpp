@@ -81,6 +81,7 @@ namespace bb
 
     float deltaZ = (endZ - startZ)/(stackDepth-1);
 
+    uint16_t indOffset = 0;
     for (int i = 0; i < stackDepth; ++i)
     {
       glm::vec3 xPos[4] = {
@@ -93,12 +94,12 @@ namespace bb
       printf("%d %f\n", i, i*deltaZ + startZ);
 
       uint16_t indecies[6] = {
-        (uint16_t)(vInd[0] + (i*4)),
-        (uint16_t)(vInd[1] + (i*4)),
-        (uint16_t)(vInd[2] + (i*4)),
-        (uint16_t)(vInd[3] + (i*4)),
-        (uint16_t)(vInd[4] + (i*4)),
-        (uint16_t)(vInd[5] + (i*4))
+        (uint16_t)(vInd[0] + indOffset),
+        (uint16_t)(vInd[1] + indOffset),
+        (uint16_t)(vInd[2] + indOffset),
+        (uint16_t)(vInd[3] + indOffset),
+        (uint16_t)(vInd[4] + indOffset),
+        (uint16_t)(vInd[5] + indOffset)
       };
 
       printf("\t%d %d %d %d %d %d\n",
@@ -113,6 +114,8 @@ namespace bb
       memcpy(posBuf.get() + i*4,     xPos, sizeof(glm::vec3)*4);
       memcpy(uvBuf.get()  + i*4,      vUV, sizeof(glm::vec2)*4);
       memcpy(indBuf.get() + i*6, indecies, sizeof(uint16_t)*6);
+
+      indOffset += 4;
     }
 
     auto vboPos = bb::vbo_t::CreateArrayBuffer(posBuf.get(),        sizeof(glm::vec3)*stackDepth*4, false);
