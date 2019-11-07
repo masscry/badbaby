@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file
 
 ## [Unreleased]
 
+## [0.0.3] - 2019-11-07
+### Added
+- tests: 005splash, 006simplex
+- libraries: core.util.shapes, core.util.simplex
+- core.render.context: title text update routine
+
+### Changed
+- core.actor: total worker thread count: can be set in config file
+
 ## [0.0.2] - 2019-10-28
 ### Added
 - tests: 004camera 
@@ -25,6 +34,7 @@ All notable changes to this project will be documented in this file
 - tests: 000hello, 001render, 002config, 003font
 - documentation: README.md, CHANGELOG.md, plan.md, LICENSE.md
 
-[Unreleased]: https://github.com/masscry/badbaby/compare/v0.0.2...HEAD
+[Unreleased]: https://github.com/masscry/badbaby/compare/v0.0.3...HEAD
+[0.0.3]: https://github.com/masscry/badbaby/releases/tag/v0.0.3
 [0.0.2]: https://github.com/masscry/badbaby/releases/tag/v0.0.2
 [0.0.1]: https://github.com/masscry/badbaby/releases/tag/v0.0.1
