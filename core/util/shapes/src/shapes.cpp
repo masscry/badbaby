@@ -91,8 +91,6 @@ namespace bb
         glm::vec3(vPos[3]*size, i*deltaZ + startZ)
       };
 
-      printf("%d %f\n", i, i*deltaZ + startZ);
-
       uint16_t indecies[6] = {
         (uint16_t)(vInd[0] + indOffset),
         (uint16_t)(vInd[1] + indOffset),
@@ -101,15 +99,6 @@ namespace bb
         (uint16_t)(vInd[4] + indOffset),
         (uint16_t)(vInd[5] + indOffset)
       };
-
-      printf("\t%d %d %d %d %d %d\n",
-        indecies[0],
-        indecies[1],
-        indecies[2],
-        indecies[3],
-        indecies[4],
-        indecies[5]
-      );
 
       memcpy(posBuf.get() + i*4,     xPos, sizeof(glm::vec3)*4);
       memcpy(uvBuf.get()  + i*4,      vUV, sizeof(glm::vec2)*4);
