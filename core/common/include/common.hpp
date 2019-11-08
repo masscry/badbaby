@@ -15,24 +15,8 @@
 #include <mutex>
 #include <condition_variable>
 
-namespace std
-{
-
-  template<>
-  struct default_delete<FILE>
-  {
-    void operator()(FILE* file) const
-    {
-      fclose(file);
-    }
-  };
-
-}
-
 namespace bb
 {
-
-  using file_t = std::unique_ptr<FILE>;
 
   /**
    * @brief Process common startup arguments.

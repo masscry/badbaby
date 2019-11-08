@@ -126,19 +126,21 @@ namespace bb
 
   logger_t::logger_t()
   {
-    file_t output { fopen((GetThisThreadName() + ".log").c_str(), "wt") };
-    if (output)
+    FILE* output = fopen((GetThisThreadName() + ".log").c_str(), "wt");
+    if (output != nullptr)
     {
-      fprintf(output.get(), "%s", "Log Started\n");
+      BB_DEFER(fclose(output));
+      fprintf(output, "%s", "Log Started\n");
     }
   }
 
   logger_t::~logger_t()
   {
-    file_t output { fopen((GetThisThreadName() + ".log").c_str(), "at") };
-    if (output)
+    FILE* output = fopen((GetThisThreadName() + ".log").c_str(), "at");
+    if (output != nullptr)
     {
-      fprintf(output.get(), "%s", "Log Ended\n");
+      BB_DEFER(fclose(output));
+      fprintf(output, "%s", "Log Ended\n");
     }
   }
 
@@ -150,10 +152,15 @@ namespace bb
 
   void logger_t::Log(logLevel_t level, const char* format, va_list vl)
   {
-    file_t output { fopen((GetThisThreadName() + ".log").c_str(), "at") };
-    fprintf(output.get(), "%s %s\t", CurrentTime().c_str(), logText[level]);
-    vfprintf(output.get(), format, vl);
-    fputc('\n', output.get());
+    FILE* output = fopen((GetThisThreadName() + ".log").c_str(), "at");
+    if (output != nullptr)
+    {
+      BB_DEFER(fclose(output));
+
+      fprintf(output, "%s %s\t", CurrentTime().c_str(), logText[level]);
+      vfprintf(output, format, vl);
+      fputc('\n', output);
+    }
   }
 
   void Debug(const char* format, ...)
