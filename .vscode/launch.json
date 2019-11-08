@@ -144,5 +144,25 @@
       ],
       "preLaunchTask": "Build 006simplex (Debug)"
     },
+    {
+      "name": "Launch 007menu (Debug)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/.debug/tests/007menu",
+      "args": [ ],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}/runtime",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      "preLaunchTask": "Build 007menu (Debug)"
+    }
   ]
 }

@@ -13,6 +13,12 @@
       }
     },
     {
+      "label": "Build All (Release)",
+      "type": "shell",
+      "command": "cmake --build ./.release --clean-first",
+      "group": "build"
+    },
+    {
       "label": "Build 000hello (Debug)",
       "type": "shell",
       "command": "cmake --build ./.debug --target 000hello",
@@ -55,9 +61,9 @@
       "group": "build"
     },
     {
-      "label": "Build All (Release)",
+      "label": "Build 007menu (Debug)",
       "type": "shell",
-      "command": "cmake --build ./.release --clean-first",
+      "command": "cmake --build ./.debug --target 007menu",
       "group": "build"
     }
   ]

@@ -41,6 +41,12 @@ add_executable(006simplex
 target_link_libraries(006simplex PRIVATE config render simplex shapes)
 
 
+add_executable(007menu
+  src/007menu.cpp
+)
+
+target_link_libraries(007menu PRIVATE config render)
+
 install(TARGETS 
     000hello
     001render
@@ -49,6 +55,7 @@ install(TARGETS
     004camera
     005splash
     006simplex
+    007menu
   RUNTIME DESTINATION bin
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
