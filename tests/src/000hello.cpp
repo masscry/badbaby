@@ -28,12 +28,12 @@ int main(int argc, char* argv[])
     return -1;
   }
 
-  bb::workerPool_t::Instance().Register("global.hello", std::unique_ptr<bb::actor_t>(new hello_t));
+  int actorID = bb::workerPool_t::Instance().Register(std::unique_ptr<bb::actor_t>(new hello_t));
 
   for (int i = 0; i < 10; ++i)
   {
     bb::Debug("Say Hello!");
-    bb::workerPool_t::Instance().PostMessage("global.hello", bb::msg_t{ simpleMessage_t::hello, nullptr, "" });
+    bb::workerPool_t::Instance().PostMessage(actorID, bb::msg_t{ 0, simpleMessage_t::hello, nullptr });
     std::this_thread::sleep_for(std::chrono::seconds(2));
   }
   return 0;

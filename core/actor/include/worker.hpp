@@ -15,7 +15,7 @@
 #include <condition_variable>
 #include <list>
 #include <atomic>
-#include <unordered_map>
+#include <deque>
 
 #include <common.hpp>
 #include <actor.hpp>
@@ -43,7 +43,9 @@ namespace bb
     using workerID_t = unsigned int;
     using vectorOfWorkers_t = std::vector<std::thread>;
     using vectorOfInfo_t = std::vector<workerInfo_t>;
-    using actorStorage_t = std::unordered_map<std::string, std::unique_ptr<actorInfo_t>>;
+
+    using actorStorage_t = std::vector<std::unique_ptr<actorInfo_t>>;
+    using deletedActorList_t = std::list<actorStorage_t::iterator>; 
 
     void PrepareInfo(workerID_t id);
     void WorkerThread(workerID_t id);
@@ -51,8 +53,9 @@ namespace bb
     vectorOfWorkers_t workers;
     vectorOfInfo_t    infos;
 
-    rwMutex_t         actorsGuard;
-    actorStorage_t    actors;
+    rwMutex_t          actorsGuard;
+    actorStorage_t     actors;
+    deletedActorList_t deletedActors;
 
     std::atomic_int   totalMessages;
 
@@ -69,10 +72,11 @@ namespace bb
 
     static workerPool_t& Instance();
 
-    void Register(const std::string& name, std::unique_ptr<actor_t> actor);
-    void Unregister(const std::string& name);
+    int Register(std::unique_ptr<actor_t> actor);
+    void Unregister(int id);
+    int FindFirstByName(const std::string name);
 
-    void PostMessage(const std::string& name, msg_t message);
+    void PostMessage(int actorID, msg_t message);
 
   };
 

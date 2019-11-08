@@ -1,3 +1,5 @@
+#include <cassert>
+
 #include <atomic>
 
 #include <worker.hpp>
@@ -47,16 +49,16 @@ namespace bb
         for(auto& actor: this->actors)
         {
           int expected = -1;
-          if (std::atomic_compare_exchange_strong(&actor.second->ownerID, &expected, static_cast<int>(id)))
+          if (std::atomic_compare_exchange_strong(&actor->ownerID, &expected, static_cast<int>(id)))
           { // actor captured
-            size_t totalMsg = actor.second->mailbox->Has();
+            size_t totalMsg = actor->mailbox->Has();
             while (totalMsg-->0)
             {
-              auto msg = actor.second->mailbox->Wait();
-              actor.second->actor->ProcessMessage(msg);
+              auto msg = actor->mailbox->Wait();
+              actor->actor->ProcessMessage(msg);
               this->totalMessages--;
             }
-            actor.second->ownerID = -1; // actor released
+            actor->ownerID = -1; // actor released
           }
         }
       }
@@ -120,44 +122,78 @@ namespace bb
     return self;
   }
 
-  void workerPool_t::Unregister(const std::string& name)
+  int workerPool_t::Register(std::unique_ptr<actor_t> actor)
   {
-    auto lock = this->actorsGuard.GetWriteLock();
-    auto act = this->actors.find(name);
-    if (act != this->actors.end())
-    {
-      this->actors.erase(act);
-    }
-  }
+    assert(actor);
 
-  void workerPool_t::Register(const std::string& name, std::unique_ptr<actor_t> actor)
-  {
     auto lock = this->actorsGuard.GetWriteLock();
-    if (this->actors.find(name) != this->actors.end())
-    {
-      throw std::runtime_error(std::string("Actor '") + name + "' already exists!");
-    }
-
     std::unique_ptr<actorInfo_t> actInfo(new actorInfo_t);
 
     actInfo->actor = std::move(actor);
     actInfo->mailbox.reset(new mailbox_t);
     actInfo->ownerID.store(-1);
 
-    this->actors.emplace(name, std::move(actInfo));
+    if (this->deletedActors.empty())
+    {
+      this->actors.emplace_back(std::move(actInfo));
+      return this->actors.size() - 1;
+    }
+    else
+    {
+      actorStorage_t::iterator first = this->deletedActors.front();
+      this->deletedActors.pop_front();
+      (*first) = std::move(actInfo);
+      return first - this->actors.begin();
+    }
   }
 
-  void workerPool_t::PostMessage(const std::string& name, msg_t message)
+  void workerPool_t::Unregister(int id)
+  {
+    size_t uid = static_cast<size_t>(id);
+
+    auto lock = this->actorsGuard.GetWriteLock();
+    if (uid > this->actors.size())
+    {
+      throw std::runtime_error("Unregister: Invalid actor ID");
+    }
+
+    this->deletedActors.emplace_back(this->actors.begin() + uid);
+    (this->actors.begin() + uid)->reset();
+  }
+
+  int workerPool_t::FindFirstByName(const std::string name)
   {
     auto lock = this->actorsGuard.GetReadLock();
-    auto act = this->actors.find(name);
-    if (act == this->actors.end())
+    int index = 0;
+    for(auto& actIt: this->actors)
     {
-      throw std::runtime_error(std::string("Actor '") + name + "' not found!");
+      if ((actIt) && (actIt->actor->Name() == name))
+      {
+        return index;
+      }
+      ++index;
     }
-    act->second->mailbox->Put(std::move(message));
-    this->totalMessages++;
+    return -1;
+  }
 
+  void workerPool_t::PostMessage(int actorID, msg_t message)
+  {
+    size_t uid = static_cast<size_t>(actorID);
+    {
+      auto lock = this->actorsGuard.GetReadLock();
+      if (uid > this->actors.size())
+      {
+        throw std::runtime_error("PostMessage: Invalid actor ID");
+      }
+
+      auto actIt = this->actors.begin() + uid;
+
+      if (*actIt)
+      {
+        (*actIt)->mailbox->Put(std::move(message));
+        this->totalMessages++;
+      }
+    }
     for (auto& info: this->infos)
     {
       info.notify.notify_one();
