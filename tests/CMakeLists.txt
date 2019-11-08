@@ -45,7 +45,7 @@ add_executable(007menu
   src/007menu.cpp
 )
 
-target_link_libraries(007menu PRIVATE config render)
+target_link_libraries(007menu PRIVATE config render actor)
 
 install(TARGETS 
     000hello
