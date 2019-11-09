@@ -1,5 +1,7 @@
 #include <mailbox.hpp>
 
+#include <cassert>
+
 namespace bb
 {
 
@@ -15,15 +17,17 @@ namespace bb
     return this->storage.empty();
   }
 
-  bool mailbox_t::Poll(msg_t& result)
+  bool mailbox_t::Poll(msg_t* result)
   {
+    assert(result != nullptr);
+
     std::unique_lock<std::mutex> lock(this->guard);
     if (this->storage.empty())
     {
       return false;
     }
 
-    result = this->storage.front();
+    *result = this->storage.front();
     this->storage.pop();
     return true;
   }

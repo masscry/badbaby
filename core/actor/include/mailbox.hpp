@@ -40,7 +40,7 @@ namespace bb
 
     msg_t Wait();
 
-    bool Poll(msg_t& result);
+    bool Poll(msg_t* result);
 
     void Put(msg_t msg);
 
