@@ -12,6 +12,9 @@ model.
   * common - common routines, like logging, UTF-8 etc.
   * config - simple config file parser/printer
   * render - OpenGL based renderer
+  * util - utility libraries
+    * shapes - rotuines and classes uses core.render to create objects to render
+    * simplex - 3D OpenSimplex noise implementation 
 * runtime - working directory for examples, resources stored here
 * tests - engine feature test programs
 
