@@ -1,5 +1,6 @@
 #include <text.hpp>
 #include <utf8.hpp>
+#include <common.hpp>
 
 namespace
 {
@@ -92,6 +93,8 @@ namespace bb
 
     if (this->totalI < textI)
     { // new bigger VBO needed
+      Debug("Allocate New VBO (%lu)", textI);
+
       this->vPosVBO = vbo_t::CreateArrayBuffer(
         this->vertecies.vPos.data(),
         ByteSize(this->vertecies.vPos),
