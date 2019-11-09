@@ -38,6 +38,11 @@ namespace bb
 
   public:
 
+    font_t(const std::string& filename)
+    {
+      this->Load(filename);
+    }
+
     font_t() = default;
     font_t(font_t&&) = default;
     font_t& operator=(font_t&&) = default;

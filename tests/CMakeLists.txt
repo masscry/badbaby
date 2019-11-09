@@ -20,13 +20,13 @@ add_executable(003font
   src/003font.cpp
 )
 
-target_link_libraries(003font PRIVATE config render)
+target_link_libraries(003font PRIVATE config render shapes)
 
 add_executable(004camera
   src/004camera.cpp
 )
 
-target_link_libraries(004camera PRIVATE config render)
+target_link_libraries(004camera PRIVATE config render shapes)
 
 add_executable(005splash
   src/005splash.cpp
@@ -45,7 +45,7 @@ add_executable(007menu
   src/007menu.cpp
 )
 
-target_link_libraries(007menu PRIVATE config render actor)
+target_link_libraries(007menu PRIVATE config render actor shapes)
 
 install(TARGETS 
     000hello

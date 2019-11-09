@@ -13,6 +13,9 @@
 #include <GLFW/glfw3.h>
 #include <glm/vec2.hpp>
 
+#include <list>
+#include <utility>
+
 #include <framebuffer.hpp>
 #include <shader.hpp>
 #include <vao.hpp>
@@ -20,16 +23,31 @@
 namespace bb
 {
 
+  enum contextMsgFlag_t: uint32_t 
+  {
+    cmfNone     = 0x0000,
+    cmfKeyboard = 0x0001
+  };
+
+  struct keyEvent_t
+  {
+    int32_t key;
+    int32_t press;
+  };
+
   class context_t final
   {
-    GLFWwindow* wnd;
-    int width;
-    int height;
-    framebuffer_t canvas;
-    shader_t      shader;
-    vao_t         vao;
-    bool          insideWnd;
-    bool          relativeCursor;
+    using actorCallbackList_t = std::list<std::pair<int, contextMsgFlag_t>>;
+
+    GLFWwindow*         wnd;
+    int                 width;
+    int                 height;
+    framebuffer_t       canvas;
+    shader_t            shader;
+    vao_t               vao;
+    actorCallbackList_t actorCallbackList;
+    bool                insideWnd;
+    bool                relativeCursor;
 
     context_t();
     ~context_t();
@@ -41,6 +59,7 @@ namespace bb
     context_t& operator=(context_t&&) = delete;
 
     static void OnCursorEnter(GLFWwindow* window, int entered);
+    static void OnKey(GLFWwindow* window, int key, int scancode, int action, int mods);
 
   public:
 
@@ -60,6 +79,8 @@ namespace bb
     bool IsCursorInside() const;
 
     void Title(const std::string& newTitle);
+
+    void RegisterActorCallback(int actorID, contextMsgFlag_t flags);
 
   };
 

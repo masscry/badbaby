@@ -156,5 +156,11 @@ namespace bb
   {
     glBindVertexArray(vao.self);
   }
+  
+  void vao_t::Unbind()
+  {
+    glBindVertexArray(0);
+  }
+
 
 } // namespace bb

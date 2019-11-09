@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
   for (int i = 0; i < 10; ++i)
   {
     bb::Debug("Say Hello!");
-    bb::workerPool_t::Instance().PostMessage(actorID, bb::msg_t{ 0, simpleMessage_t::hello, nullptr });
+    bb::workerPool_t::Instance().PostMessage(actorID, bb::MakeMsg(-1, simpleMessage_t::hello, 0));
     std::this_thread::sleep_for(std::chrono::seconds(2));
   }
   return 0;

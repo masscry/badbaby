@@ -29,6 +29,8 @@ namespace bb
 
     void Render();
 
+    mesh_t();
+
     mesh_t(vao_t&& vao, size_t totalVerts);
 
     mesh_t(mesh_t&&) = default; 

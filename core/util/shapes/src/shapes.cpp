@@ -40,6 +40,12 @@ namespace bb
     glDisableVertexAttribArray(1);
   }
 
+  mesh_t::mesh_t()
+  :totalVerts(0)
+  {
+    ;
+  }
+
   mesh_t::mesh_t(vao_t&& vao, size_t totalVerts)
   :vao(std::move(vao)),
    totalVerts(totalVerts)

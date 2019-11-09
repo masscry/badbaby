@@ -9,6 +9,7 @@
 #define __BB_CORE_RENDER_TEXT_HEADER__
 
 #include <font.hpp>
+#include <shapes.hpp>
 
 namespace bb
 {
@@ -16,8 +17,7 @@ namespace bb
   class textStatic_t final
   {
     sharedTexture_t tex;
-    vao_t vao;
-    size_t totalVertecies;
+    mesh_t mesh;
 
     textStatic_t(const textStatic_t&) = delete;
     textStatic_t& operator=(const textStatic_t&) = delete;

@@ -10,7 +10,6 @@ add_library(render STATIC
   include/font.hpp
   include/ubo.hpp
   include/camera.hpp
-  include/text.hpp
 
 # SOURCES
   src/framebuffer.cpp
@@ -21,9 +20,8 @@ add_library(render STATIC
   src/font.cpp
   src/ubo.cpp
   src/camera.cpp
-  src/text.cpp
 )
 
 target_include_directories(render PUBLIC include ${GLM_INCLUDE_DIRS})
 
-target_link_libraries(render PUBLIC common config glad glfw)
+target_link_libraries(render PUBLIC common config glad glfw actor)

@@ -6,6 +6,7 @@
 #include <context.hpp>
 #include <config.hpp>
 #include <common.hpp>
+#include <worker.hpp>
 
 namespace
 {
@@ -179,6 +180,7 @@ namespace bb
     glfwSetWindowUserPointer(this->wnd, this);
 
     glfwSetCursorEnterCallback(this->wnd, context_t::OnCursorEnter);
+    glfwSetKeyCallback(this->wnd, context_t::OnKey);
 
     glfwMakeContextCurrent(this->wnd);
     glfwSetWindowUserPointer(this->wnd, this);
@@ -281,6 +283,24 @@ namespace bb
     {
       glfwSetInputMode(self->wnd, GLFW_CURSOR, (self->insideWnd)?GLFW_CURSOR_DISABLED:GLFW_CURSOR_NORMAL);
     }
+  }
+
+  void context_t::OnKey(GLFWwindow* window, int key, int /*scancode*/, int action, int /*mods*/)
+  {
+    context_t* self = reinterpret_cast<context_t*>(glfwGetWindowUserPointer(window));
+
+    for (auto actorPair: self->actorCallbackList)
+    {
+      if ((actorPair.second & cmfKeyboard) != 0)
+      {
+        workerPool_t::Instance().PostMessage(actorPair.first, bb::MakeMsg(-1, -cmfKeyboard, keyEvent_t{ key, action }));
+      }
+    }
+  }
+
+  void context_t::RegisterActorCallback(int actorID, contextMsgFlag_t flags)
+  {
+    this->actorCallbackList.emplace_back(std::make_pair(actorID, flags));
   }
 
 

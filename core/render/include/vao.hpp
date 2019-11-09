@@ -69,6 +69,7 @@ namespace bb
     static vao_t CreateVertexAttribObject();
 
     static void Bind(const vao_t& vao);
+    static void Unbind();
 
   };
 

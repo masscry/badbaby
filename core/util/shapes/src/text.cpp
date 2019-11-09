@@ -60,31 +60,26 @@ namespace bb
   void textStatic_t::Render()
   {
     texture_t::Bind(*this->tex);
-    vao_t::Bind(this->vao);
-
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-    glDrawElements(GL_TRIANGLES, this->totalVertecies, GL_UNSIGNED_SHORT, nullptr);
-    glDisableVertexAttribArray(0);
-    glDisableVertexAttribArray(1);
+    this->mesh.Render();
   }
 
   textStatic_t::textStatic_t(const font_t& font, const std::string& text, vec2_t chSize)
-  :tex(font.Texture()),totalVertecies(0)
+  :tex(font.Texture())
   {
     textStorage_t textV;
     MakeText(font, text, chSize, textV);
-
-    this->vao = vao_t::CreateVertexAttribObject();
 
     vbo_t vPosVBO = vbo_t::CreateArrayBuffer(textV.vPos.data(), ByteSize(textV.vPos), false);
     vbo_t vUVVBO = vbo_t::CreateArrayBuffer(textV.vUV.data(), ByteSize(textV.vUV), false);
     vbo_t indeciesVBO = vbo_t::CreateElementArrayBuffer(textV.indecies.data(), ByteSize(textV.indecies), false);
 
-    this->vao.BindVBO(vPosVBO, 0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    this->vao.BindVBO(vUVVBO, 1, 2, GL_FLOAT, GL_FALSE, 0, 0);
-    this->vao.BindIndecies(indeciesVBO);
-    this->totalVertecies = textV.indecies.size();
+    vao_t vao = vao_t::CreateVertexAttribObject();
+
+    vao.BindVBO(vPosVBO, 0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    vao.BindVBO(vUVVBO, 1, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    vao.BindIndecies(indeciesVBO);
+
+    this->mesh = mesh_t(std::move(vao), textV.indecies.size());
   }
 
   void textDynamic_t::Update(const std::string& text)
