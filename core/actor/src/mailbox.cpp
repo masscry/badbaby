@@ -15,26 +15,39 @@ namespace bb
     return this->storage.empty();
   }
 
+  bool mailbox_t::Poll(msg_t& result)
+  {
+    std::unique_lock<std::mutex> lock(this->guard);
+    if (this->storage.empty())
+    {
+      return false;
+    }
+
+    result = this->storage.front();
+    this->storage.pop();
+    return true;
+  }
+
   msg_t mailbox_t::Wait()
   {
     std::unique_lock<std::mutex> lock(this->guard);
     if (!this->storage.empty())
     {
       msg_t result = this->storage.front();
-      this->storage.pop_front();
+      this->storage.pop();
       return result;
     }
 
     this->notify.wait(lock, [this](){ return !this->storage.empty(); });
     msg_t result = this->storage.front();
-    this->storage.pop_front();
+    this->storage.pop();
     return result;
   }
 
   void mailbox_t::Put(msg_t msg)
   {
     std::lock_guard<std::mutex> lock(this->guard);
-    this->storage.emplace_back(std::move(msg));
+    this->storage.emplace(std::move(msg));
     this->notify.notify_one();
   }
 
