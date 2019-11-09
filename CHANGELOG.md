@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file
 
 ## [Unreleased]
 
+## [0.0.4] - 2019-11-09
+### Added
+- tests: 007menu
+- core.render: actor binding to callbacks
+- core.actor: search actor ID by actor's name
+
+### Changed
+- plan: new game vision
+- core.shapes: plane stack object removed debug output
+- core.common: file_t replaced with BB_DEFER
+- core.actor: msg_t is no POD, actor names replaced with actor IDs
+- core.shapes: text classes moved here from core.render
+- core.shapes: textDynamic_t buffer allocation bug fixed and optimized
+- core.actor: message polling added to mailbox class
+
 ## [0.0.3] - 2019-11-07
 ### Added
 - tests: 005splash, 006simplex
@@ -34,7 +49,8 @@ All notable changes to this project will be documented in this file
 - tests: 000hello, 001render, 002config, 003font
 - documentation: README.md, CHANGELOG.md, plan.md, LICENSE.md
 
-[Unreleased]: https://github.com/masscry/badbaby/compare/v0.0.3...HEAD
+[Unreleased]: https://github.com/masscry/badbaby/compare/v0.0.4...HEAD
+[0.0.4]: https://github.com/masscry/badbaby/releases/tag/v0.0.4
 [0.0.3]: https://github.com/masscry/badbaby/releases/tag/v0.0.3
 [0.0.2]: https://github.com/masscry/badbaby/releases/tag/v0.0.2
 [0.0.1]: https://github.com/masscry/badbaby/releases/tag/v0.0.1
