@@ -142,7 +142,7 @@ int main(int argc, char* argv[])
 
   bb::msg_t renderMsg; 
 
-  while(run)
+  do
   {
     while(renderTasks.Poll(&renderMsg))
     {
@@ -173,12 +173,9 @@ int main(int argc, char* argv[])
     bb::shader_t::Bind(renderProgram);
     text.Render();
 
-    if (!context.Update())
-    {
-      break;
-    }
     context.Title(std::to_string(1.0/delta));
-  }
+
+  } while (run && context.Update());
 
   pool.Unregister(menuActor);
 
