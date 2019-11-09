@@ -58,6 +58,9 @@ namespace bb
     vbo_t vPosVBO;
     vbo_t vUVVBO;
     vbo_t indeciesVBO;
+    size_t totalV;  /**< total allocated vertecies */ 
+    size_t totalI;  /**< total allocated indecies  */
+    size_t renderI; /**< total indecies to render  */
 
     textStorage_t vertecies;
 

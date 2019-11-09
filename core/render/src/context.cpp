@@ -237,7 +237,7 @@ namespace bb
 
   bool context_t::Update()
   {
-    framebuffer_t::Bind(framebuffer_t());
+    framebuffer_t::RenderToScreen();
     shader_t::Bind(this->shader);
     vao_t::Bind(this->vao);
     texture_t::Bind(this->canvas.Texture());
@@ -250,6 +250,7 @@ namespace bb
     glDisableVertexAttribArray(0);
     glDisableVertexAttribArray(1);
 
+    glFinish();
     glfwSwapBuffers(this->wnd);
     glfwPollEvents();
 

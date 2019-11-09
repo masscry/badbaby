@@ -39,6 +39,7 @@ namespace bb
     ~framebuffer_t();
 
     static void Bind(const framebuffer_t& fb);
+    static void RenderToScreen();
 
   };
 

@@ -74,4 +74,10 @@ namespace bb
     glBindFramebuffer(GL_FRAMEBUFFER, fb.self);
   }
 
+  void framebuffer_t::RenderToScreen()
+  {
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  }
+
+
 } // namespace bb

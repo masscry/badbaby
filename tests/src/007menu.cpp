@@ -142,6 +142,23 @@ int main(int argc, char* argv[])
 
   while(run)
   {
+    if (!renderTasks.Empty())
+    {
+      auto msg = renderTasks.Wait();
+      switch (msg.type)
+      {
+      case MT_ANIMATION_START:
+        text.Update(menuTextLines[bb::GetMsgData<int>(msg)]);
+        pool.PostMessage(menuActor, bb::MakeMsg(-1, MT_ANIMATION_DONE, bb::GetMsgData<int>(msg)));
+        break;
+      case MT_EXIT_GAME:
+        run = false;
+        break;
+      default:
+        assert(0);
+      }
+    }
+
     auto nowTick = glfwGetTime();
     auto delta = nowTick - lastTick;
     lastTick = nowTick;
@@ -157,25 +174,6 @@ int main(int argc, char* argv[])
       break;
     }
     context.Title(std::to_string(1.0/delta));
-
-    if (!renderTasks.Empty())
-    {
-      auto msg = renderTasks.Wait();
-      switch (msg.type)
-      {
-      case MT_ANIMATION_START:
-        bb::vao_t::Unbind();
-        text.Update(menuTextLines[bb::GetMsgData<int>(msg)]);
-        pool.PostMessage(menuActor, bb::MakeMsg(-1, MT_ANIMATION_DONE, bb::GetMsgData<int>(msg)));
-        break;
-      case MT_EXIT_GAME:
-        run = false;
-        break;
-      default:
-        assert(0);
-      }
-    }
-
   }
 
   pool.Unregister(menuActor);
