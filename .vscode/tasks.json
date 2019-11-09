@@ -65,6 +65,12 @@
       "type": "shell",
       "command": "cmake --build ./.debug --target 007menu",
       "group": "build"
+    },
+    {
+      "label": "Build 008bson (Debug)",
+      "type": "shell",
+      "command": "cmake --build ./.debug --target 008bson",
+      "group": "build"
     }
   ]
 }

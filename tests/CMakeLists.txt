@@ -47,6 +47,12 @@ add_executable(007menu
 
 target_link_libraries(007menu PRIVATE config render actor shapes)
 
+add_executable(008bson
+  src/008bson.cpp
+)
+
+target_link_libraries(008bson PRIVATE config)
+
 install(TARGETS 
     000hello
     001render
@@ -56,6 +62,7 @@ install(TARGETS
     005splash
     006simplex
     007menu
+    008bson
   RUNTIME DESTINATION bin
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
