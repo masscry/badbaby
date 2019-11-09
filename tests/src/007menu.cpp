@@ -140,17 +140,21 @@ int main(int argc, char* argv[])
 
   bool run = true;
 
+  bb::msg_t renderMsg; 
+
   while(run)
   {
-    if (!renderTasks.Empty())
+    while(renderTasks.Poll(&renderMsg))
     {
-      auto msg = renderTasks.Wait();
-      switch (msg.type)
+      switch (renderMsg.type)
       {
       case MT_ANIMATION_START:
-        text.Update(menuTextLines[bb::GetMsgData<int>(msg)]);
-        pool.PostMessage(menuActor, bb::MakeMsg(-1, MT_ANIMATION_DONE, bb::GetMsgData<int>(msg)));
+      {
+        auto msgData = bb::GetMsgData<int>(renderMsg);
+        text.Update(menuTextLines[msgData]);
+        pool.PostMessage(menuActor, bb::MakeMsg(-1, MT_ANIMATION_DONE, msgData));
         break;
+      }
       case MT_EXIT_GAME:
         run = false;
         break;
