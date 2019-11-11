@@ -9,6 +9,7 @@ add_library(config STATIC
   include/config.hpp
   include/value.hpp
   ${FLEX_ConfigScanner_OUTPUT_HEADER}
+  include/elemInfo.hpp
   include/bson.hpp
 
 # SOURCES

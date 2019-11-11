@@ -11,20 +11,90 @@ namespace bb
   namespace bson
   {
 
-    document_t::document_t()
-    :self(std::make_shared<dataArray_t>())
-    {
-      this->self->push_back('\x00');
-    }
-
-    document_t::document_t(const document_t& cp)
-    :self(std::make_shared<dataArray_t>(*cp.self))
+    document_t::iterator_t::iterator_t(weakStorage_t arr, dataArray_t::const_iterator offset)
+    :weakArr(arr), offset(offset)
     {
       ;
     }
 
+    document_t::iterator_t::iterator_t(const iterator_t& cp)
+    :weakArr(cp.weakArr), offset(cp.offset)
+    {
+
+    }
+
+    document_t::iterator_t& document_t::iterator_t::operator=(const iterator_t& cp)
+    {
+      if (this != &cp)
+      {
+        this->weakArr = cp.weakArr;
+        this->offset = cp.offset;
+      }
+      return *this;
+    }
+
+    document_t::iterator_t& document_t::iterator_t::operator++()
+    {
+      auto arr = this->weakArr.lock();
+      dataArray_t::const_iterator cursor = offset;
+      switch (*cursor)
+      {
+        case '\x00':
+          this->offset = arr->end();
+          break;
+        case elemInfo_t<double>::typeID:
+          this->offset = elemInfo_t<double>::next(cursor);
+          break;
+        case elemInfo_t<std::string>::typeID:
+          this->offset = elemInfo_t<std::string>::next(cursor);
+          break;
+        case elemInfo_t<document_t>::typeID:
+          this->offset = elemInfo_t<document_t>::next(cursor);
+          break;
+        default:
+          throw std::runtime_error(std::string("Unknow data type ") + std::to_string(*cursor));
+      }
+      return *this;
+    }
+
+    document_t::iterator_t document_t::Begin() const
+    {
+      return document_t::iterator_t(this->self, this->offset);
+    }
+
+    document_t::iterator_t document_t::End() const
+    {
+      return document_t::iterator_t(this->self, this->self->end());
+    }
+
+    document_t::document_t()
+    :self(std::make_shared<dataArray_t>())
+    {
+      this->self->push_back('\x00');
+      this->offset = this->self->begin();
+      this->size = 1;
+    }
+
+    document_t::document_t(storage_t doc, dataArray_t::const_iterator offset, size_t size)
+    :self(doc),
+     offset(offset),
+     size(size)
+    {
+      ;
+    }
+
+    document_t::document_t(const document_t& cp)
+    :self(std::make_shared<dataArray_t>(*cp.self)),
+     offset(cp.offset),
+     size(cp.size)
+    {
+      this->offset = this->self->begin() + (cp.offset - cp.self->begin());
+    }
+
     document_t::document_t(document_t&& mv)
-    :self(std::move(mv.self))
+    :self(std::move(mv.self)),
+     offset(std::move(mv.offset)),
+     size(mv.size)
     {
       ;
     }
@@ -34,6 +104,8 @@ namespace bb
       if (this != &cp)
       {
         this->self = std::make_shared<dataArray_t>(*cp.self);
+        this->offset = this->self->begin() + (cp.offset - cp.self->begin());
+        this->size = cp.size;
       }
       return *this;
     }
@@ -43,8 +115,28 @@ namespace bb
       if (this != &mv)
       {
         this->self = std::move(mv.self);
+        this->offset = std::move(mv.offset);
+        this->size = mv.size;
       }
       return *this;
+    }
+
+    std::string document_t::iterator_t::Key() const
+    {
+      dataArray_t::const_iterator cursor = this->offset;
+      if (*cursor == '\x00')
+      {
+        throw std::runtime_error("Can't dereference iterator");
+      }
+      
+      ++cursor; // skip type byte
+      
+      std::string result;
+      while(*cursor != '\x00')
+      {
+        result.push_back(*cursor++);
+      }
+      return result;
     }
 
     void document_t::Load(const std::string& filename)
@@ -77,15 +169,22 @@ namespace bb
         *dataIt++ = static_cast<uint8_t>(tmp&0xFF);
       }
 
-      if (newSelfData[totalDocSize-1] != '\x00')
+      if (newSelfData.back() != '\x00')
       {
         throw std::runtime_error("Invalid BSON document format");
       }
       this->self = std::make_shared<dataArray_t>(std::move(newSelfData));
+      this->offset = this->self->begin();
+      this->size = this->self->size();
     }
 
     void document_t::Store(const std::string& filename) const
     {
+      if (this->offset != this->self->begin())
+      {
+        throw std::runtime_error("Only top level document can be stored to file");
+      }
+
       FILE* output = fopen(filename.c_str(), "wb");
       if (output == nullptr)
       {
@@ -108,10 +207,6 @@ namespace bb
       }
     }
 
-
-
-
-    
   } // namespace bson
 
 } // namespace bb
