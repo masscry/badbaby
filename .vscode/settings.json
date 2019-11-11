@@ -53,5 +53,11 @@
     "random": "cpp",
     "string": "cpp",
     "map": "cpp"
+  },
+  "files.exclude": {
+    "**/.classpath": true,
+    "**/.project": true,
+    "**/.settings": true,
+    "**/.factorypath": true
   }
 }
