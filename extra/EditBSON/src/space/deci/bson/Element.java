@@ -4,7 +4,8 @@ public interface Element {
 
 	DataType GetType();
 	String GetKey();	
-	Double GetNumber();	
+
+	double GetNumber();	
 	String GetString();
 	Document GetDocument();
 	

@@ -6,7 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Iterator;
 
-public final class BSONDocument implements Document, Iterable<Element> {
+public final class BSONDocument implements Document {
 	
 	private byte[] data;
 
@@ -36,7 +36,15 @@ public final class BSONDocument implements Document, Iterable<Element> {
 
 	@Override
 	public Iterator<Element> iterator() {
-		return new BSONElement(data);
+		return new BSONIterator(data);
+	}
+	
+	public BSONDocument() {
+		this.data = null;
+	}
+	
+	public BSONDocument(byte[] data) {
+		this.data = data;
 	}
 
 }

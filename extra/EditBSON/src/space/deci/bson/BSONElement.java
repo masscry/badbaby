@@ -2,80 +2,75 @@ package space.deci.bson;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.Iterator;
 
-public class BSONElement implements Element, Iterator<Element> {
-	
+public class BSONElement implements Element {
+
 	private final byte[] data;
-	private int offset;
-	
-	private int findZeroByte(int start)
-	{
-		for (int i = start; i < data.length; ++i)
-		{
-			if (data[i] == 0x00)
-			{
-				return i;
-			}
-		}
-		throw new RuntimeException("Zero not found!");
+	private final int offset;	
+
+	private String key;
+	private int keyEnd;
+
+	public BSONElement(byte[] data, int offset) {
+		this.data = data;
+		this.offset = offset;
+		this.key = null;
+		this.keyEnd = -1;
 	}
 	
-	@Override
-	public Document GetDocument() {
-		// TODO Auto-generated method stub
-		return null;
+	private void updateKeyEnd()
+	{
+		if (this.keyEnd < 0)
+		{
+			this.keyEnd = CommonUtils.findZeroByte(this.data, this.offset + 1);
+		}		
 	}
 	
 	@Override
 	public String GetKey() {
-		int keyStart = this.offset + 1;
-		int keyEnd = this.findZeroByte(keyStart);
-		
-		byte[] key = Arrays.copyOfRange(data, keyStart, keyEnd);
-		
-		return new String(key, StandardCharsets.UTF_8);
+		if (this.key == null)
+		{
+			this.updateKeyEnd();					
+			this.key = new String(
+				this.data,
+				this.offset + 1,
+				this.keyEnd - (this.offset + 1),
+				StandardCharsets.UTF_8
+			);
+		}
+		return this.key;
 	}
 	
 	@Override
-	public Double GetNumber() {
-		// TODO Auto-generated method stub
-		return null;
+	public double GetNumber() {
+		this.updateKeyEnd();		
+		return CommonUtils.getDouble(this.data, this.keyEnd + 1);
 	}
+	
 	@Override
-	public String GetString() {
-		// TODO Auto-generated method stub
-		return null;
+	public String GetString() {		
+		this.updateKeyEnd();
+		int size = CommonUtils.getInt(this.data, this.keyEnd+1);
+		
+		String result = new String(
+			this.data,
+			this.keyEnd + 5,
+			size-1,
+			StandardCharsets.UTF_8
+		);
+		return result;
+	}
+
+	@Override
+	public Document GetDocument() {
+		this.updateKeyEnd();
+		int size = CommonUtils.getInt(this.data, this.keyEnd + 1);		
+		return new BSONDocument(Arrays.copyOfRange(this.data, this.keyEnd+5, this.keyEnd+size+1));
 	}
 	
 	@Override
 	public DataType GetType() {
 		return DataType.fromID(this.data[this.offset]);		
 	}
-	
-	@Override
-	public boolean hasNext() {
-		return this.data[this.offset] != DataType.END.ID();
-	}
-	
-	@Override
-	public Element next() {
-		if (this.offset == -1)
-		{
-			return new BSONElement(data, 0);
-		}
-		return null;
-	}
-	
-	private BSONElement(byte[] data, int offset)
-	{
-		this.data = data;
-		this.offset = offset;
-	}
-	
-	public BSONElement(byte[] data) {
-		this.data = data;
-		this.offset = -1;
-	}
-	
+
 }
