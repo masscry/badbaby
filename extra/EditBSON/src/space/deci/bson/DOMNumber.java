@@ -1,5 +1,9 @@
 package space.deci.bson;
 
+import java.nio.charset.StandardCharsets;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+
 public class DOMNumber extends DOMElement {
 	
 	private double value;
@@ -26,6 +30,20 @@ public class DOMNumber extends DOMElement {
 	public DOMNumber(String key, Element element) {
 		super(key);
 		this.value = element.GetNumber();
+	}
+	
+	@Override
+	public byte[] ToByteArray()
+	{
+		byte[] byteKey = this.GetKey().getBytes(StandardCharsets.UTF_8);
+		ByteBuffer tmp = ByteBuffer.allocate(1 + byteKey.length + 1 + 8);
+		
+		tmp.order(ByteOrder.LITTLE_ENDIAN);
+		tmp.put((byte)0x01); // number
+		tmp.put(byteKey);    // key
+		tmp.put((byte)0x00); // zero terminated
+		tmp.putDouble(this.GetNumber());		
+		return tmp.array();
 	}
 	
 }

@@ -11,7 +11,11 @@ import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
+import space.deci.bson.SAXDocument;
+
 public class ReadBSONFile {
+	
+	private static BSONTree tree;
 	
 	private static JMenu buildMenu()
 	{
@@ -43,6 +47,8 @@ public class ReadBSONFile {
 		saveItem.addActionListener(new ActionListener() {			
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				SAXDocument saxdoc = new SAXDocument(tree.doc.ToByteArrayAsRoot());
+				saxdoc.Store("test.bson");
 			}
 		});
 				
@@ -67,16 +73,18 @@ public class ReadBSONFile {
 			System.err.print("Can't set system look and feel");
 			error.printStackTrace();
 		}
-	
+					
 		JMenuBar menuBar = new JMenuBar();
 		menuBar.add(buildMenu());
 
 		String filename = args[0];
 		
+		tree = new BSONTree(filename);
+
 		JFrame frame = new JFrame(filename + " - EditBSON");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);		
 		frame.setMinimumSize(new Dimension(600, 300));		
-		frame.add(new BSONTree(filename));
+		frame.add(tree);
 		frame.setJMenuBar(menuBar);
 		frame.pack();
 		frame.setVisible(true);

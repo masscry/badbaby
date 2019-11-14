@@ -1,5 +1,10 @@
 package space.deci.bson;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -28,7 +33,7 @@ public class DOMDocument extends DOMElement {
 		this(key, element.GetDocument());
 	}
 
-	public DOMDocument(String key, SAXParser parser)
+	public DOMDocument(String key, SAXDocument parser)
 	{
 		super(key);
 		
@@ -54,6 +59,49 @@ public class DOMDocument extends DOMElement {
 				throw new RuntimeException("Unknown Element Type");
 			}
 		}
+	}
+	
+	public byte[] ToByteArrayAsRoot()
+	{
+		ByteArrayOutputStream resultBuild = new ByteArrayOutputStream();	
+		
+		Iterator<DOMElement> it = elements.iterator();
+		while(it.hasNext())
+		{
+			DOMElement elem = it.next();
+			try
+			{
+				resultBuild.write(elem.ToByteArray());
+			}
+			catch (IOException ioexcept)
+			{
+				throw new RuntimeException("Failed to write to ByteArray stream");
+			}
+		}			
+		
+		ByteBuffer tmp = ByteBuffer.allocate(resultBuild.size() + 1);
+		
+		tmp.order(ByteOrder.LITTLE_ENDIAN);
+		tmp.put(resultBuild.toByteArray());
+		tmp.put((byte)0x00);
+		return tmp.array();
+	}
+	
+	@Override
+	public byte[] ToByteArray()
+	{
+		byte[] byteKey = this.GetKey().getBytes(StandardCharsets.UTF_8);		
+		byte[] byteValue = this.ToByteArrayAsRoot();
+		
+		ByteBuffer tmp = ByteBuffer.allocate(1 + byteKey.length + 1 + 4 + byteValue.length);
+		
+		tmp.order(ByteOrder.LITTLE_ENDIAN);
+		tmp.put((byte)0x03);
+		tmp.put(byteKey);
+		tmp.put((byte)0x00);
+		tmp.putInt(byteValue.length + 4);
+		tmp.put(byteValue);
+		return tmp.array();
 	}
 	
 }

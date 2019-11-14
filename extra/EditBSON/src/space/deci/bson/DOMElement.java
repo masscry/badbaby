@@ -43,5 +43,9 @@ public abstract class DOMElement implements Element {
 	public String toString() {
 		return this.GetKey();
 	}
+	
+	public byte[] ToByteArray() {
+		throw new RuntimeException("Can't convert to byte array");
+	}
 
 }

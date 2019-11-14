@@ -61,10 +61,10 @@ public class SAXElement implements Element {
 		return result;
 	}
 
-	public SAXParser GetDocument() {
+	public SAXDocument GetDocument() {
 		this.updateKeyEnd();
 		int size = CommonUtils.getInt(this.data, this.keyEnd + 1);		
-		return new SAXParser(Arrays.copyOfRange(this.data, this.keyEnd+5, this.keyEnd+size+1));
+		return new SAXDocument(Arrays.copyOfRange(this.data, this.keyEnd+5, this.keyEnd+size+1));
 	}
 	
 	@Override
