@@ -1,15 +1,16 @@
 package space.deci.bson;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
 
-public final class BSONDocument implements Document {
+public final class SAXDocument implements Document {
 	
 	private byte[] data;
-	private String filename;
 
 	@Override
 	public void Load(String filename) {
@@ -23,7 +24,6 @@ public final class BSONDocument implements Document {
 				return;
 			}
 			this.data = tempData;
-			this.filename = filename;
 		}
 		catch(FileNotFoundException notFound)
 		{
@@ -35,20 +35,38 @@ public final class BSONDocument implements Document {
 			System.err.println("IOException on loading \"" + filename + "\"");
 		}
 	}
-
+	
+	@Override
+	public void Save(String filename) {
+		try(LEDataOutputStream output = new LEDataOutputStream(new BufferedOutputStream(new FileOutputStream(filename))))
+		{
+			int docSize = this.data.length + 4;
+			
+			output.write(docSize);
+			output.write(this.data);			
+		}
+		catch (FileNotFoundException notFound)
+		{
+			System.err.println("File \"" + filename + "\" not found");
+			notFound.printStackTrace();			
+		}
+		catch (IOException ioexcept)
+		{
+			System.err.println("IOException on storing \"" + filename + "\"");			
+		}
+	}
+	
 	@Override
 	public Iterator<Element> iterator() {
-		return new BSONIterator(data);
+		return new SAXIterator(data);
 	}
 	
-	public BSONDocument() {
+	public SAXDocument() {
 		this.data = null;
-		this.filename = null;
 	}
 	
-	public BSONDocument(byte[] data) {
+	public SAXDocument(byte[] data) {
 		this.data = data;
-		this.filename = null;
 	}
 
 }

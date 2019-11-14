@@ -3,7 +3,7 @@ package space.deci.bson;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
-public class BSONElement implements Element {
+public class SAXElement implements Element {
 
 	private final byte[] data;
 	private final int offset;	
@@ -11,7 +11,7 @@ public class BSONElement implements Element {
 	private String key;
 	private int keyEnd;
 
-	public BSONElement(byte[] data, int offset) {
+	public SAXElement(byte[] data, int offset) {
 		this.data = data;
 		this.offset = offset;
 		this.key = null;
@@ -65,7 +65,7 @@ public class BSONElement implements Element {
 	public Document GetDocument() {
 		this.updateKeyEnd();
 		int size = CommonUtils.getInt(this.data, this.keyEnd + 1);		
-		return new BSONDocument(Arrays.copyOfRange(this.data, this.keyEnd+5, this.keyEnd+size+1));
+		return new SAXDocument(Arrays.copyOfRange(this.data, this.keyEnd+5, this.keyEnd+size+1));
 	}
 	
 	@Override

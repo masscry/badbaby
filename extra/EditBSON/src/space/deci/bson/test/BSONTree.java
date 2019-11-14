@@ -10,7 +10,7 @@ import javax.swing.tree.TreeSelectionModel;
 
 import de.javagl.treetable.JTreeTable;
 
-import space.deci.bson.BSONDocument;
+import space.deci.bson.SAXDocument;
 import space.deci.bson.DataType;
 import space.deci.bson.Document;
 import space.deci.bson.Element;
@@ -45,7 +45,7 @@ public class BSONTree extends JPanel {
 	{
 		super(new GridLayout(1, 0));
 		
-		BSONDocument doc = new BSONDocument();
+		SAXDocument doc = new SAXDocument();
 		
 		doc.Load(filename);
 		

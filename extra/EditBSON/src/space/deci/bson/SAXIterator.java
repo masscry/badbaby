@@ -3,7 +3,7 @@ package space.deci.bson;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-public class BSONIterator implements Iterator<Element> {
+public class SAXIterator implements Iterator<Element> {
 	
 	private final byte[] data;
 	private int offset;
@@ -35,10 +35,10 @@ public class BSONIterator implements Iterator<Element> {
 		default:
 			throw new RuntimeException("Can't deal with this type...");
 		}
-		return new BSONElement(data, currentOffset);
+		return new SAXElement(data, currentOffset);
 	}
 	
-	public BSONIterator(byte[] data) {
+	public SAXIterator(byte[] data) {
 		this.data = data;
 		this.offset = 0;
 	}
