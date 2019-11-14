@@ -1,18 +1,15 @@
 package space.deci.bson;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
 
-public final class SAXDocument implements Document {
+public final class SAXParser implements Iterable<SAXElement> {
 	
 	private byte[] data;
 
-	@Override
 	public void Load(String filename) {
 		try(LEDataInputStream input = new LEDataInputStream(new BufferedInputStream(new FileInputStream(filename))))
 		{
@@ -37,35 +34,15 @@ public final class SAXDocument implements Document {
 	}
 	
 	@Override
-	public void Save(String filename) {
-		try(LEDataOutputStream output = new LEDataOutputStream(new BufferedOutputStream(new FileOutputStream(filename))))
-		{
-			int docSize = this.data.length + 4;
-			
-			output.write(docSize);
-			output.write(this.data);			
-		}
-		catch (FileNotFoundException notFound)
-		{
-			System.err.println("File \"" + filename + "\" not found");
-			notFound.printStackTrace();			
-		}
-		catch (IOException ioexcept)
-		{
-			System.err.println("IOException on storing \"" + filename + "\"");			
-		}
-	}
-	
-	@Override
-	public Iterator<Element> iterator() {
+	public Iterator<SAXElement> iterator() {
 		return new SAXIterator(data);
 	}
 	
-	public SAXDocument() {
+	public SAXParser() {
 		this.data = null;
 	}
 	
-	public SAXDocument(byte[] data) {
+	public SAXParser(byte[] data) {
 		this.data = data;
 	}
 

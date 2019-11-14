@@ -3,7 +3,7 @@ package space.deci.bson;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-public class SAXIterator implements Iterator<Element> {
+public class SAXIterator implements Iterator<SAXElement> {
 	
 	private final byte[] data;
 	private int offset;
@@ -14,7 +14,7 @@ public class SAXIterator implements Iterator<Element> {
 	}
 	
 	@Override
-	public Element next() {		
+	public SAXElement next() {		
 		int currentOffset = this.offset;
 		switch (DataType.fromID(this.data[this.offset]))
 		{

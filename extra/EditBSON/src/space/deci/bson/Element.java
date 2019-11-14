@@ -2,11 +2,10 @@ package space.deci.bson;
 
 public interface Element {
 
+	String GetKey();
+	
 	DataType GetType();
-	String GetKey();	
-
 	double GetNumber();	
 	String GetString();
-	Document GetDocument();
-	
+		
 }

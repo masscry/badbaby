@@ -1,15 +1,15 @@
 package space.deci.bson.test;
 
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreeNode;
+import java.util.List;
 
 import de.javagl.treetable.AbstractTreeTableModel;
 import de.javagl.treetable.TreeTableModel;
-import space.deci.bson.Element;
+import space.deci.bson.DOMElement;
+import space.deci.bson.DataType;
 
 public class BSONTreeModel extends AbstractTreeTableModel {
 	
-	protected BSONTreeModel(TreeNode root) {
+	public BSONTreeModel(DOMElement root) {
 		super(root);
 	}
 
@@ -42,51 +42,47 @@ public class BSONTreeModel extends AbstractTreeTableModel {
 
 	@Override
 	public Object getValueAt(Object node, int column) {
-		DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) node;
+		DOMElement treeNode = (DOMElement) node;
 		
-		if (treeNode.getChildCount() != 0)
-		{
-			switch(column)
+		switch(column)
+		{	
+		case 0:
+			return treeNode.GetKey();
+		case 1:			
+			switch (treeNode.GetType())
 			{
-			case 0:
-				return treeNode.getUserObject();
-			default:
+			case NUMBER:
+				return treeNode.GetNumber();
+			case STRING:
+				return treeNode.GetString();
+			case DOCUMENT:
 				return null;
-			}
-		}
-		else
-		{
-			Element treeElement = (Element) treeNode.getUserObject();
-			switch (column)
-			{
-			case 0:
-				return treeElement.GetKey();
-			case 1:
-				switch(treeElement.GetType())
-				{
-				case NUMBER:
-					return treeElement.GetNumber();
-				case STRING:
-					return treeElement.GetString();
-				default:
-					throw new RuntimeException("Unknown TreeElement data type");
-				}
 			default:
-				return null;
+				throw new RuntimeException("Unknown Element Type");
 			}
+		default:
+			throw new RuntimeException("Invalid Column");			
 		}
 	}
 
 	@Override
 	public Object getChild(Object parent, int index) {
-		TreeNode treeNode = (TreeNode) parent;		
-		return treeNode.getChildAt(index);
+		DOMElement treeNode = (DOMElement) parent;
+		List<DOMElement> itemMap = treeNode.GetDocument();		
+		return itemMap.get(index);
 	}
 
 	@Override
 	public int getChildCount(Object parent) {
-		TreeNode treeNode = (TreeNode) parent;
-		return treeNode.getChildCount();
+		DOMElement treeNode = (DOMElement) parent;
+		if (treeNode.GetType() == DataType.DOCUMENT)
+		{
+			return treeNode.GetDocument().size();		
+		}
+		else
+		{
+			return 0;
+		}
 	}
 
 
