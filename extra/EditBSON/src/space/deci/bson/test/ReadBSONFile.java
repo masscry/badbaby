@@ -73,7 +73,7 @@ public class ReadBSONFile {
 
 		String filename = args[0];
 		
-		JFrame frame = new JFrame(filename);
+		JFrame frame = new JFrame(filename + " - EditBSON");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);		
 		frame.setMinimumSize(new Dimension(600, 300));		
 		frame.add(new BSONTree(filename));
