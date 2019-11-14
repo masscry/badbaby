@@ -49,17 +49,17 @@ public class BSONTree extends JPanel {
 		
 		doc.Load(filename);
 		
-		DefaultMutableTreeNode root = new DefaultMutableTreeNode(doc.GetFilename());
+		DefaultMutableTreeNode root = new DefaultMutableTreeNode(filename);
 		this.FillTreeNode(doc, root);
 		
 		this.tree = new JTreeTable(new BSONTreeModel(root));
 		this.tree.getSelectionModel().setSelectionMode(
 			TreeSelectionModel.SINGLE_TREE_SELECTION
 		);
-		
+				
 		JScrollPane treeScrollPane = new JScrollPane(this.tree);
 		
 		this.add(treeScrollPane);
-	}		
+	}
 
 }

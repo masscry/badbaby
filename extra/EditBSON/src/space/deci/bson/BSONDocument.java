@@ -10,11 +10,6 @@ public final class BSONDocument implements Document {
 	
 	private byte[] data;
 	private String filename;
-	
-	@Override
-	public String GetFilename() {
-		return this.filename;
-	}
 
 	@Override
 	public void Load(String filename) {
