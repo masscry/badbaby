@@ -72,5 +72,10 @@ public class BSONElement implements Element {
 	public DataType GetType() {
 		return DataType.fromID(this.data[this.offset]);		
 	}
+	
+	@Override
+	public String toString() {
+		return this.GetKey();
+	}
 
 }

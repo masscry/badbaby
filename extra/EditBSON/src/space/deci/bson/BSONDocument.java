@@ -9,6 +9,12 @@ import java.util.Iterator;
 public final class BSONDocument implements Document {
 	
 	private byte[] data;
+	private String filename;
+	
+	@Override
+	public String GetFilename() {
+		return this.filename;
+	}
 
 	@Override
 	public void Load(String filename) {
@@ -22,6 +28,7 @@ public final class BSONDocument implements Document {
 				return;
 			}
 			this.data = tempData;
+			this.filename = filename;
 		}
 		catch(FileNotFoundException notFound)
 		{
@@ -41,10 +48,12 @@ public final class BSONDocument implements Document {
 	
 	public BSONDocument() {
 		this.data = null;
+		this.filename = null;
 	}
 	
 	public BSONDocument(byte[] data) {
 		this.data = data;
+		this.filename = null;
 	}
 
 }
