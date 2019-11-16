@@ -15,7 +15,7 @@ public class BSONTreeModel extends AbstractTreeTableModel {
 
 	@Override
 	public int getColumnCount() {
-		return 2;
+		return 3;
 	}
 
 	@Override
@@ -23,8 +23,10 @@ public class BSONTreeModel extends AbstractTreeTableModel {
 		switch(column)
 		{
 		case 0:
-			return "Elements";
+			return "Name";
 		case 1:
+			return "Type";
+		case 2:
 			return "Values";
 		default:
 			return "???";
@@ -48,7 +50,9 @@ public class BSONTreeModel extends AbstractTreeTableModel {
 		{	
 		case 0:
 			return treeNode.GetKey();
-		case 1:			
+		case 1:
+			return treeNode.GetType().toString();
+		case 2:			
 			switch (treeNode.GetType())
 			{
 			case NUMBER:

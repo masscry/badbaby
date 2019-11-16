@@ -39,8 +39,17 @@ public class SAXIterator implements Iterator<SAXElement> {
 	}
 	
 	public SAXIterator(byte[] data) {
-		this.data = data;
-		this.offset = 0;
+		if (data != null)
+		{
+			this.data = data;
+			this.offset = 0;
+		}
+		else
+		{
+			this.data = new byte[1];
+			this.data[0] = DataType.END.ID();
+			this.offset = 0;
+		}
 	}
 	
 }

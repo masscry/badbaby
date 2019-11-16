@@ -83,7 +83,7 @@ public class DOMDocument extends DOMElement {
 		
 		tmp.order(ByteOrder.LITTLE_ENDIAN);
 		tmp.put(resultBuild.toByteArray());
-		tmp.put((byte)0x00);
+		tmp.put(DataType.END.ID());
 		return tmp.array();
 	}
 	
@@ -96,9 +96,9 @@ public class DOMDocument extends DOMElement {
 		ByteBuffer tmp = ByteBuffer.allocate(1 + byteKey.length + 1 + 4 + byteValue.length);
 		
 		tmp.order(ByteOrder.LITTLE_ENDIAN);
-		tmp.put((byte)0x03);
+		tmp.put(DataType.DOCUMENT.ID());
 		tmp.put(byteKey);
-		tmp.put((byte)0x00);
+		tmp.put(DataType.END.ID());
 		tmp.putInt(byteValue.length + 4);
 		tmp.put(byteValue);
 		return tmp.array();

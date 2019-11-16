@@ -39,9 +39,9 @@ public class DOMNumber extends DOMElement {
 		ByteBuffer tmp = ByteBuffer.allocate(1 + byteKey.length + 1 + 8);
 		
 		tmp.order(ByteOrder.LITTLE_ENDIAN);
-		tmp.put((byte)0x01); // number
+		tmp.put(DataType.NUMBER.ID()); // number
 		tmp.put(byteKey);    // key
-		tmp.put((byte)0x00); // zero terminated
+		tmp.put(DataType.END.ID());
 		tmp.putDouble(this.GetNumber());		
 		return tmp.array();
 	}

@@ -3,11 +3,15 @@ package space.deci.bson.test;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
 
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
@@ -16,6 +20,9 @@ import space.deci.bson.SAXDocument;
 public class ReadBSONFile {
 	
 	private static BSONTree tree;
+	private static JFileChooser fileDialog;
+	private static JFrame frame;
+	
 	
 	private static JMenu buildMenu()
 	{
@@ -33,6 +40,8 @@ public class ReadBSONFile {
 		newItem.addActionListener(new ActionListener() {			
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				tree.New();
+				frame.setTitle("EditBSON");
 			}
 		});
 		
@@ -40,6 +49,14 @@ public class ReadBSONFile {
 		loadItem.addActionListener(new ActionListener() {			
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				int selectFileResult = fileDialog.showOpenDialog(tree);
+				if (selectFileResult == JFileChooser.APPROVE_OPTION)
+				{
+					File file = fileDialog.getSelectedFile();
+					tree.Load(file);
+					frame.setTitle(file.getName() + " - EditBSON");
+				}
+				
 			}
 		});
 		
@@ -47,8 +64,27 @@ public class ReadBSONFile {
 		saveItem.addActionListener(new ActionListener() {			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				SAXDocument saxdoc = new SAXDocument(tree.doc.ToByteArrayAsRoot());
-				saxdoc.Store("test.bson");
+				int selectFileResult = fileDialog.showSaveDialog(tree);
+				if (selectFileResult == JFileChooser.APPROVE_OPTION)
+				{
+					File file = fileDialog.getSelectedFile();					
+					SAXDocument saxdoc = new SAXDocument(tree.doc.ToByteArrayAsRoot());
+					try
+					{
+						if (BSONFileFilter.GetExtension(file).equalsIgnoreCase("BSON"))
+						{
+							saxdoc.Store(file.getCanonicalPath());												
+						}
+						else
+						{
+							saxdoc.Store(file.getCanonicalPath() + ".bson");																			
+						}
+					}
+					catch (IOException ioerror)
+					{
+						JOptionPane.showMessageDialog(null, ioerror.getMessage(), "IOError", JOptionPane.INFORMATION_MESSAGE);
+					}
+				}
 			}
 		});
 				
@@ -60,7 +96,7 @@ public class ReadBSONFile {
 		return menu;
 	}
 		
-	private static void buildUI(String[] args)
+	private static void buildUI(String filename)
 	{
 		try
 		{
@@ -76,33 +112,39 @@ public class ReadBSONFile {
 					
 		JMenuBar menuBar = new JMenuBar();
 		menuBar.add(buildMenu());
-
-		String filename = args[0];
 		
 		tree = new BSONTree(filename);
 
-		JFrame frame = new JFrame(filename + " - EditBSON");
+		frame = new JFrame("EditBSON");
+		if (filename != null)
+		{
+			frame.setTitle(filename + " - EditBSON");
+		}		
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);		
 		frame.setMinimumSize(new Dimension(600, 300));		
 		frame.add(tree);
 		frame.setJMenuBar(menuBar);
 		frame.pack();
 		frame.setVisible(true);
+		
+		fileDialog = new JFileChooser();
+		fileDialog.addChoosableFileFilter(new BSONFileFilter());
+		fileDialog.setAcceptAllFileFilterUsed(false);
 	}
 
 	public static void main(String[] args) {
 		
-		if (args.length != 1)
-		{
-			System.err.print("Usage: ReadBSONFile filename\n\n");
-			System.err.print("Basic BSON document editor");
-			System.exit(-1);
-		}
-				
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				buildUI(args);
+				if (args.length == 1)
+				{
+					buildUI(args[0]);
+				}
+				else
+				{
+					buildUI(null);					
+				}				
 			}
 		});
 

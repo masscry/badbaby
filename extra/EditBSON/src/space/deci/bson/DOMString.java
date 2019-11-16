@@ -45,12 +45,12 @@ public class DOMString extends DOMElement {
 		);
 		
 		tmp.order(ByteOrder.LITTLE_ENDIAN);
-		tmp.put((byte)0x02); // string
+		tmp.put(DataType.STRING.ID()); // string
 		tmp.put(byteKey);    // key
-		tmp.put((byte)0x00); // zero terminated
+		tmp.put(DataType.END.ID());
 		tmp.putInt(byteValue.length + 1);
 		tmp.put(byteValue);
-		tmp.put((byte)0x00);
+		tmp.put(DataType.END.ID());
 				
 		return tmp.array();
 	}
