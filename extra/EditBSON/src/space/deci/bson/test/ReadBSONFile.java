@@ -56,7 +56,6 @@ public class ReadBSONFile {
 					tree.Load(file);
 					frame.setTitle(file.getName() + " - EditBSON");
 				}
-				
 			}
 		});
 		
