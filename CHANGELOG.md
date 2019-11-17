@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file
 
 ## [Unreleased]
 
+## [0.0.5] - 2019-11-17
+### Added
+- core.config: simple BSON parser
+- extra: EditBSON application
+
 ## [0.0.4] - 2019-11-09
 ### Added
 - tests: 007menu
@@ -49,7 +54,8 @@ All notable changes to this project will be documented in this file
 - tests: 000hello, 001render, 002config, 003font
 - documentation: README.md, CHANGELOG.md, plan.md, LICENSE.md
 
-[Unreleased]: https://github.com/masscry/badbaby/compare/v0.0.4...HEAD
+[Unreleased]: https://github.com/masscry/badbaby/compare/v0.0.5...HEAD
+[0.0.5]: https://github.com/masscry/badbaby/releases/tag/v0.0.5
 [0.0.4]: https://github.com/masscry/badbaby/releases/tag/v0.0.4
 [0.0.3]: https://github.com/masscry/badbaby/releases/tag/v0.0.3
 [0.0.2]: https://github.com/masscry/badbaby/releases/tag/v0.0.2
