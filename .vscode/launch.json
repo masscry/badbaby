@@ -163,26 +163,6 @@
         }
       ],
       "preLaunchTask": "Build 007menu (Debug)"
-    },
-    {
-      "name": "Launch 008bson (Debug)",
-      "type": "cppdbg",
-      "request": "launch",
-      "program": "${workspaceFolder}/.debug/tests/008bson",
-      "args": [ ],
-      "stopAtEntry": false,
-      "cwd": "${workspaceFolder}/runtime",
-      "environment": [],
-      "externalConsole": false,
-      "MIMode": "gdb",
-      "setupCommands": [
-        {
-          "description": "Enable pretty-printing for gdb",
-          "text": "-enable-pretty-printing",
-          "ignoreFailures": true
-        }
-      ],
-      "preLaunchTask": "Build 008bson (Debug)"
     }
   ]
 }
