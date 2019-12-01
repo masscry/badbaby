@@ -9,14 +9,11 @@ add_library(config STATIC
   include/config.hpp
   include/value.hpp
   ${FLEX_ConfigScanner_OUTPUT_HEADER}
-  include/elemInfo.hpp
-  include/bson.hpp
 
 # SOURCES
   src/config.cpp
   src/value.cpp
   ${FLEX_ConfigScanner_OUTPUTS}
-  src/bson.cpp
 )
 
 # add strtod_l support for C objects (aka config.lex.c)
