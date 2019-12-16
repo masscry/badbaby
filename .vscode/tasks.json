@@ -65,6 +65,12 @@
       "type": "shell",
       "command": "cmake --build ./.debug --target 007menu",
       "group": "build"
+    },
+    {
+      "label": "Build Submarine-3000 (Debug)",
+      "type": "shell",
+      "command": "cmake --build ./.debug --target sub3000",
+      "group": "build"
     }
   ]
 }

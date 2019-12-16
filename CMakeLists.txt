@@ -25,7 +25,7 @@ target_link_libraries(badbaby INTERFACE
 
 add_subdirectory(core)
 add_subdirectory(tests)
-add_subdirectory(atil)
+add_subdirectory(sub3000)
 
 install(DIRECTORY runtime
   DESTINATION share

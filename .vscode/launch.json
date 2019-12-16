@@ -163,6 +163,26 @@
         }
       ],
       "preLaunchTask": "Build 007menu (Debug)"
+    },
+    {
+      "name": "Launch Submarine-3000 (Debug)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/.debug/sub3000/sub3000",
+      "args": [ ],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}/runtime/sub3000",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      "preLaunchTask": "Build Submarine-3000 (Debug)"
     }
   ]
 }

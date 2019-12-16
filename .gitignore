@@ -6,3 +6,4 @@ GRTAGS
 GTAGS
 runtime/sample.config
 runtime/test.bson
+runtime/sub3000/*.log
