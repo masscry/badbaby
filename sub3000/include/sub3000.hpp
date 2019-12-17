@@ -14,6 +14,8 @@
 
 #include <memory>
 
+#include <msg.hpp>
+
 namespace sub3000
 {
 
@@ -48,6 +50,14 @@ namespace sub3000
       ;
     }
 
+  };
+
+  void PostToMain(bb::msg_t msg);
+
+  enum mainMessage_t
+  {
+    nop = 0,
+    change_scene = 1,
   };
 
 } // namespace sub3000

@@ -54,6 +54,10 @@ namespace sub3000
   void splashScene_t::OnUpdate(double delta)
   {
     this->currentTimePassed += delta;
+    if (this->currentTimePassed > this->duration)
+    {
+      PostChangeScene(sceneID_t::mainMenu);
+    }
   }
 
   void splashScene_t::OnRender()
@@ -80,9 +84,11 @@ namespace sub3000
   }
 
   splashScene_t::splashScene_t()
-  : duration(0.0),
+  : scene_t(sceneID_t::splash, "Splash Screen"),
+    duration(0.0),
     timePassedUniform(0),
-    currentTimePassed(0.0)
+    currentTimePassed(0.0),
+    pContext(nullptr)
   {
     bb::config_t splashConfig;
     splashConfig.Load("./logo.config");

@@ -31,15 +31,15 @@ namespace sub3000
 
     bb::context_t* pContext;
 
-  public:
-
     void OnPrepare() override;
     void OnUpdate(double delta) override;
     void OnRender() override;
     void OnCleanup() override;
 
+  public:
+
     splashScene_t();
-    ~splashScene_t();
+    ~splashScene_t() override;
 
   };
 

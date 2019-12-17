@@ -5,11 +5,13 @@ add_executable(sub3000
   include/sub3000.hpp
   include/scene.hpp
   include/splash.hpp
+  include/mainMenu.hpp
 
 # Sources
   src/sub3000.cpp
   src/scene.cpp
   src/splash.cpp
+  src/mainMenu.cpp
 )
 
 target_include_directories(sub3000
