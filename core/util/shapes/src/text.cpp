@@ -89,7 +89,7 @@ namespace bb
 
   void textDynamic_t::Update(const std::string& text)
   {
-    size_t textI = MakeText(this->font, text, this->chSize, this->vertecies);
+    size_t textI = MakeText(*this->font, text, this->chSize, this->vertecies);
 
     if (this->totalI < textI)
     { // new bigger VBO needed
@@ -134,7 +134,7 @@ namespace bb
   {
     if (!this->vertecies.indecies.empty())
     {
-      texture_t::Bind(*this->font.Texture());
+      texture_t::Bind(*this->font->Texture());
       vao_t::Bind(this->vao);
 
       glEnableVertexAttribArray(0);
@@ -145,8 +145,16 @@ namespace bb
     }
   }
 
+  textDynamic_t::textDynamic_t()
+  : font(nullptr),
+    totalV(0),
+    totalI(0)
+  {
+    ;
+  }
+
   textDynamic_t::textDynamic_t(const font_t& font, const vec2_t& chSize)
-  :vao(vao_t::CreateVertexAttribObject()),font(font),chSize(chSize),totalV(0),totalI(0)
+  :vao(vao_t::CreateVertexAttribObject()),font(&font),chSize(chSize),totalV(0),totalI(0)
   {
     ;
   }

@@ -52,7 +52,7 @@ namespace bb
   class textDynamic_t final
   {
     vao_t vao;
-    const font_t& font;
+    const font_t* font;
     vec2_t chSize;
 
     vbo_t vPosVBO;
@@ -72,6 +72,8 @@ namespace bb
     void Update(const std::string& text);
 
     void Render();
+
+    textDynamic_t();
 
     textDynamic_t(const font_t& font, const vec2_t& chSize);
 
