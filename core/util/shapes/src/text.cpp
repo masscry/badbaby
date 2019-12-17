@@ -89,6 +89,7 @@ namespace bb
 
   void textDynamic_t::Update(const std::string& text)
   {
+    assert(this->font != nullptr);
     size_t textI = MakeText(*this->font, text, this->chSize, this->vertecies);
 
     if (this->totalI < textI)
@@ -134,6 +135,8 @@ namespace bb
   {
     if (!this->vertecies.indecies.empty())
     {
+      assert(this->font != nullptr);
+
       texture_t::Bind(*this->font->Texture());
       vao_t::Bind(this->vao);
 
