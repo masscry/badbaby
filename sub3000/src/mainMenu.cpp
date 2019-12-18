@@ -16,8 +16,14 @@ namespace sub3000
     );
 
     this->font = bb::font_t(this->fontConfig);
-    this->text =  bb::textDynamic_t(font, bb::vec2_t(0.1, 0.3));
+    this->text = bb::textDynamic_t(font, bb::vec2_t(32.0, 128.0));
     text.Update("Главное меню");
+    this->camera = bb::camera_t::Orthogonal(
+      0.0f, this->pContext->Width(),
+      0.0f, this->pContext->Height()
+    );
+
+    this->camBindBlock = this->shader.UniformBlockIndex("camera");
 
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glEnable(GL_DEPTH_TEST);
@@ -35,6 +41,12 @@ namespace sub3000
     bb::framebuffer_t::Bind(this->pContext->Canvas());
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     bb::shader_t::Bind(this->shader);
+    this->camera.Update();
+    this->shader.SetBlock(
+      this->camBindBlock,
+      this->camera.UniformBlock()
+    );
+
     this->text.Render();
   }
 

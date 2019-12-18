@@ -13,6 +13,7 @@
 #include <context.hpp>
 #include <font.hpp>
 #include <text.hpp>
+#include <camera.hpp>
 
 namespace sub3000
 {
@@ -24,9 +25,12 @@ namespace sub3000
     std::string shader_fp;
     std::string fontConfig;
 
+    bb::camera_t      camera;
     bb::shader_t      shader;
     bb::font_t        font;
     bb::textDynamic_t text;
+
+    uint32_t          camBindBlock;
 
     void OnPrepare() override;
     void OnUpdate(double delta) override;
