@@ -1,0 +1,9 @@
+Log Started
+Tue Oct 29 23:23:31 2019 [INF]	OpenGL:
+	Vendor: Intel Open Source Technology Center
+	Renderer: Mesa DRI Intel(R) HD Graphics 5500 (Broadwell GT2) 
+	Version: 4.5 (Core Profile) Mesa 19.0.8
+	GLSL Version: 4.50
+Tue Oct 29 23:23:31 2019 [DBG]	CursorEnter: 1
+Tue Oct 29 23:23:32 2019 [DBG]	CursorEnter: 0
+Log Ended
