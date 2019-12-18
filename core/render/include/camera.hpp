@@ -63,6 +63,7 @@ namespace bb
     camera_t(camera_t&&);
     camera_t& operator =(camera_t&&);
 
+    camera_t();
     ~camera_t();
 
     static camera_t Perspective(float fov, float aspect, float nearZ, float farZ);

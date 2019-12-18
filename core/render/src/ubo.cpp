@@ -32,6 +32,12 @@ namespace bb
 
     return *this;
   }
+
+  uniformBlock_t::uniformBlock_t()
+  : self(0)
+  {
+    ;
+  }
   
   uniformBlock_t::~uniformBlock_t()
   {

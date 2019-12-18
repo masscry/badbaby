@@ -33,6 +33,12 @@ namespace bb
     this->data.view = std::move(view);
   }
 
+  camera_t::camera_t()
+  {
+    this->data.proj = glm::mat4(1.0);
+    this->data.view = glm::mat4(1.0);
+  }
+
   camera_t::~camera_t()
   {
     ;

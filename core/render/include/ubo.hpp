@@ -31,6 +31,8 @@ namespace bb
 
     uniformBlock_t(uniformBlock_t&& mv);
     uniformBlock_t& operator=(uniformBlock_t&& mv);
+
+    uniformBlock_t();
     ~uniformBlock_t();
 
     void UpdateData(void* data, int offset, size_t size);
