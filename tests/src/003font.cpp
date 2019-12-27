@@ -15,7 +15,8 @@ int main(int argc, char* argv[])
 
   bb::font_t font;
   font.Load("mono.config");
-  auto text = bb::textStatic_t(font, "Проверка!", bb::vec2_t(1.0f/4.5f, 1.0f));
+
+  auto text = bb::textStatic_t(font, "Проверка!", bb::vec2_t(1.0f/10.0f, 0.2f), 3);
 
   for(;;)
   {

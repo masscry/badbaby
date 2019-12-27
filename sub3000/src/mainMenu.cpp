@@ -148,7 +148,7 @@ namespace sub3000
       ++line;
     }
 
-    this->gameInfoText = bb::textStatic_t(this->font, this->gameInfo, this->textSize*1.6f);
+    this->gameInfoText = bb::textStatic_t(this->font, this->gameInfo, this->textSize*1.6f, 0);
     this->gameInfoNode.Reset();
     this->gameInfoNode.Translate(bb::vec3_t(0.0f, this->textSize.y*1.6f/2.0f, 0.0f));
     this->gameInfoNode.Scale(bb::vec3_t(1.0f, -1.0f, 1.0f));
