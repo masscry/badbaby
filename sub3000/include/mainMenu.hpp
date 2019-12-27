@@ -70,6 +70,7 @@ namespace sub3000
     std::string shader_vp;
     std::string shader_fp;
     std::string fontConfig;
+    std::string gameInfo;
     bb::vec2_t  textSize;
 
     menuLines_t textLines; // text to show
@@ -88,6 +89,9 @@ namespace sub3000
     uint32_t selectedMenuLine;
 
     textList_t textList;
+
+    bb::textStatic_t gameInfoText;
+    bb::node_t       gameInfoNode;
 
     void OnPrepare() override;
     void OnUpdate(double delta) override;

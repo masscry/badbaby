@@ -9,6 +9,22 @@
 #include <worker.hpp>
 #include <sub3000.hpp>
 
+namespace
+{
+
+  template<typename array_t>
+  size_t MaxStringLengthInArray(const array_t& array)
+  {
+    size_t result = 0;
+    for(const auto& item: array)
+    {
+      result = std::max(result, item.size());
+    }
+    return result;
+  }
+
+}
+
 namespace sub3000
 {
 
@@ -104,21 +120,39 @@ namespace sub3000
 
     int line = 0;
 
+    size_t maxCharacters = MaxStringLengthInArray(this->textLines);
+
     for(size_t i = 0, e = this->textLines.size(); i < e; ++i)
     {
       this->textList.emplace_back(
-          bb::textDynamic_t(font, this->textSize),
+          bb::textDynamic_t(this->font, this->textSize),
           bb::node_t(),
           GetActionFromText(this->msgLines[i])
       );
 
-      this->textList.back().text.Update(this->textLines[i]);
-      this->textList.back().node.Reset();
-      this->textList.back().node.Translate(bb::vec3_t(0.0f, this->textSize.y/2.0f, 0.0f));
-      this->textList.back().node.Scale(bb::vec3_t(1.0f, -1.0f, 1.0f));
-      this->textList.back().node.Translate(bb::vec3_t(0.0f, -line*this->textSize.y - this->textSize.y/2.0f, 0.0f));
+      auto& textListBack = this->textList.back();
+
+      textListBack.text.Update(this->textLines[i]);
+      textListBack.node.Reset();
+      textListBack.node.Translate(bb::vec3_t(0.0f, this->textSize.y/2.0f, 0.0f));
+      textListBack.node.Scale(bb::vec3_t(1.0f, -1.0f, 1.0f));
+      textListBack.node.Translate(bb::vec3_t(0.0f, -line*this->textSize.y - this->textSize.y/2.0f, 0.0f));
+      textListBack.node.Translate(
+        bb::vec3_t(
+          this->pContext->Width()/2.0f - maxCharacters*this->textSize.x/4.0,
+          -this->pContext->Height()/2.0f + e*this->textSize.y/2.0f,
+          0.0f
+        )
+      );
+
       ++line;
     }
+
+    this->gameInfoText = bb::textStatic_t(this->font, this->gameInfo, this->textSize*1.6f);
+    this->gameInfoNode.Reset();
+    this->gameInfoNode.Translate(bb::vec3_t(0.0f, this->textSize.y*1.6f/2.0f, 0.0f));
+    this->gameInfoNode.Scale(bb::vec3_t(1.0f, -1.0f, 1.0f));
+    this->gameInfoNode.Translate(bb::vec3_t(100.0f, -100.0f, 0.0f));
 
     auto& pool = bb::workerPool_t::Instance();
     this->menuModelID = pool.Register(std::unique_ptr<bb::actor_t>(new sub3000::mainMenuModel_t(this->textList, this->mailbox)));
@@ -141,6 +175,10 @@ namespace sub3000
       }
     }
   }
+
+  static const bb::vec3_t infoNodeColor = {
+    0.7f, 0.7f, 0.7f
+  };
 
   void mainMenuScene_t::OnRender()
   {
@@ -171,11 +209,16 @@ namespace sub3000
         itemColor.b = 0.4f;
       }
       
-      this->shader.SetVector3f(this->glyphColorBindPoint, 1, &itemColor.x);
+      this->shader.SetVector3f(this->glyphColorBindPoint, 1, &itemColor.r);
       this->shader.SetMatrix(this->modelBindPoint, &item.node.Model()[0][0]);
       item.text.Render();
       ++line;
     }
+
+    this->shader.SetVector3f(this->glyphColorBindPoint, 1, &infoNodeColor.r);
+    this->shader.SetMatrix(this->modelBindPoint, &this->gameInfoNode.Model()[0][0]);
+    this->gameInfoText.Render();
+
   }
 
   void mainMenuScene_t::OnCleanup()
@@ -189,17 +232,18 @@ namespace sub3000
   : scene_t(sceneID_t::mainMenu, "Main Menu"),
     pContext(nullptr)
   {
-    bb::config_t splashConfig;
-    splashConfig.Load("./mainMenu.config");
+    bb::config_t menuConfig;
+    menuConfig.Load("./mainMenu.config");
 
-    this->shader_vp  = splashConfig["shader.vp"].String();
-    this->shader_fp  = splashConfig["shader.fp"].String();
-    this->fontConfig = splashConfig["menu.font"].String();
-    this->textSize.x = splashConfig["text.width"].Number();
-    this->textSize.y = splashConfig["text.height"].Number();
+    this->shader_vp  = menuConfig["shader.vp"].String();
+    this->shader_fp  = menuConfig["shader.fp"].String();
+    this->fontConfig = menuConfig["menu.font"].String();
+    this->textSize.x = menuConfig["text.width"].Number();
+    this->textSize.y = menuConfig["text.height"].Number();
 
-    this->textLines = this->LoadMenuLines(splashConfig, "menu.text");
-    this->msgLines  = this->LoadMenuLines(splashConfig, "menu.msg");
+    this->textLines = this->LoadMenuLines(menuConfig, "menu.text");
+    this->msgLines  = this->LoadMenuLines(menuConfig, "menu.msg");
+    this->gameInfo  = menuConfig["game.info"].String();
   }
 
   mainMenuScene_t::~mainMenuScene_t()
