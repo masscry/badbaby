@@ -57,6 +57,72 @@ namespace
     return symbols.size()*6;
   }
 
+  size_t MakeTextMultiline(
+    const bb::font_t& font,
+    const std::string& text,
+    bb::vec2_t chSize,
+    bb::textStorage_t& output,
+    size_t maxWidth)
+  {
+    auto symbols = bb::utf8extract(text.c_str());
+
+    if (output.vPos.size() < symbols.size()*4)
+    {
+      output.vPos.resize(symbols.size()*4);
+      output.vUV.resize(symbols.size()*4);
+      output.indecies.resize(symbols.size()*6);
+    }
+
+    assert(symbols.size()*6 <= output.indecies.size());
+
+    uint16_t vID = 0;
+    bb::vec3_t cursor = bb::vec3_t(0.0f);
+
+    auto vPosIt = output.vPos.begin();
+    auto vUVIt = output.vUV.begin();
+    auto indIt = output.indecies.begin();
+
+    size_t curLineSize = 0;
+    for (auto it = symbols.begin(), e = symbols.end(); it != e; ++it)
+    {
+      if ((*it == '\n') || (curLineSize >= maxWidth))
+      {
+        cursor.x = 0.0f;
+        cursor.y -= chSize.y*1.1f;
+        curLineSize = 0;
+        if (*it == '\n')
+        {
+          continue;
+        }
+      }
+
+      bb::vec2_t smbOffset = font.SymbolOffset(*it);
+      bb::vec2_t smbSize   = font.SymbolSize(*it);
+
+      *vPosIt++ = { cursor.x, cursor.y, cursor.z };
+      *vPosIt++ = { cursor.x + chSize.x, cursor.y, cursor.z};
+      *vPosIt++ = { cursor.x, cursor.y + chSize.y, cursor.z};
+      *vPosIt++ = { cursor.x + chSize.x, cursor.y + chSize.y, cursor.z};
+
+      *vUVIt++ = { smbOffset.x, smbOffset.y + smbSize.y };
+      *vUVIt++ = { smbOffset.x + smbSize.x, smbOffset.y + smbSize.y };
+      *vUVIt++ = { smbOffset.x, smbOffset.y };
+      *vUVIt++ = { smbOffset.x + smbSize.x, smbOffset.y };
+
+      *indIt++ = vID+0;
+      *indIt++ = vID+1;
+      *indIt++ = vID+2;
+      *indIt++ = vID+1;
+      *indIt++ = vID+3;
+      *indIt++ = vID+2;
+
+      vID += 4;
+      cursor.x += chSize.x;
+      ++curLineSize;
+    }
+    return symbols.size()*6;
+  }
+
 }
 
 namespace bb
@@ -74,11 +140,19 @@ namespace bb
     ;
   }
 
-  textStatic_t::textStatic_t(const font_t& font, const std::string& text, vec2_t chSize)
+  textStatic_t::textStatic_t(const font_t& font, const std::string& text, vec2_t chSize, size_t maxWidth)
   :tex(font.Texture())
   {
     textStorage_t textV;
-    MakeText(font, text, chSize, textV);
+
+    if (maxWidth == 0)
+    {
+      MakeText(font, text, chSize, textV);
+    }
+    else
+    {
+      MakeTextMultiline(font, text, chSize, textV, maxWidth);
+    }
 
     vbo_t vPosVBO = vbo_t::CreateArrayBuffer(textV.vPos.data(), ByteSize(textV.vPos), false);
     vbo_t vUVVBO = vbo_t::CreateArrayBuffer(textV.vUV.data(), ByteSize(textV.vUV), false);

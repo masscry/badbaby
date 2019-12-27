@@ -27,7 +27,7 @@ namespace bb
     void Render();
 
     textStatic_t();
-    textStatic_t(const font_t& font, const std::string& text, vec2_t chSize);
+    textStatic_t(const font_t& font, const std::string& text, vec2_t chSize, size_t maxWidth);
 
     textStatic_t(textStatic_t&&) = default;
     textStatic_t& operator=(textStatic_t&&) = default;
@@ -82,6 +82,9 @@ namespace bb
     textDynamic_t& operator=(textDynamic_t&&) = default;
     ~textDynamic_t() = default;
   };
+
+
+
 
 
 
