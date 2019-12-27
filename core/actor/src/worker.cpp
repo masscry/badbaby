@@ -5,6 +5,7 @@
 #include <worker.hpp>
 #include <common.hpp>
 #include <config.hpp>
+#include <context.hpp>
 
 namespace
 {
@@ -149,6 +150,8 @@ namespace bb
 
   void workerPool_t::Unregister(int id)
   {
+    auto& context = bb::context_t::Instance();
+
     size_t uid = static_cast<size_t>(id);
 
     auto lock = this->actorsGuard.GetWriteLock();
@@ -157,6 +160,7 @@ namespace bb
       throw std::runtime_error("Unregister: Invalid actor ID");
     }
 
+    context.UnregisterActorCallbacks(id);
     this->deletedActors.emplace_back(this->actors.begin() + uid);
     (this->actors.begin() + uid)->reset();
   }

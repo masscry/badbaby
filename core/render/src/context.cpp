@@ -304,5 +304,14 @@ namespace bb
     this->actorCallbackList.emplace_back(std::make_pair(actorID, flags));
   }
 
+  void context_t::UnregisterActorCallbacks(int actorID)
+  {
+    this->actorCallbackList.remove_if(
+      [actorID](const pairOfFlags& pof) -> bool
+      {
+        return (pof.first == actorID);
+      }
+    );
+  }
 
 } // namespace bb

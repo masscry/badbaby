@@ -12,4 +12,4 @@ add_library(actor STATIC
 )
 
 target_include_directories(actor PUBLIC include)
-target_link_libraries(actor PUBLIC badbaby common config)
+target_link_libraries(actor PUBLIC badbaby common config render)

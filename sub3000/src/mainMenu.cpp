@@ -182,6 +182,7 @@ namespace sub3000
   {
     auto& pool = bb::workerPool_t::Instance();
     pool.Unregister(this->menuModelID);
+    this->textList.clear();
   }
 
   mainMenuScene_t::mainMenuScene_t()

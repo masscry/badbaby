@@ -37,7 +37,8 @@ namespace bb
 
   class context_t final
   {
-    using actorCallbackList_t = std::list<std::pair<int, contextMsgFlag_t>>;
+    using pairOfFlags = std::pair<int, contextMsgFlag_t>;
+    using actorCallbackList_t = std::list<pairOfFlags>;
 
     GLFWwindow*         wnd;
     int                 width;
@@ -81,6 +82,7 @@ namespace bb
     void Title(const std::string& newTitle);
 
     void RegisterActorCallback(int actorID, contextMsgFlag_t flags);
+    void UnregisterActorCallbacks(int actorID);
 
   };
 

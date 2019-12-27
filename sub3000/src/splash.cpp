@@ -49,6 +49,11 @@ namespace sub3000
     this->object.BindVBO(vboPos, 0, 2, GL_FLOAT, GL_FALSE, 0, 0);
     this->object.BindVBO(vboUV,  1, 2, GL_FLOAT, GL_FALSE, 0, 0);
     this->object.BindIndecies(vboInd);
+
+    this->currentTimePassed = 0.0;
+
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glDisable(GL_DEPTH_TEST);
   }
 
   void splashScene_t::OnUpdate(double delta)
