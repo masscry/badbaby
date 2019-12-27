@@ -83,6 +83,8 @@ namespace sub3000
 
   void PostChangeScene(sceneID_t newScene);
 
+  void PostExit();
+
 } // namespace sub3000
 
 #endif /* __SUB3000_SCENE_HEADER__ */

@@ -6,12 +6,14 @@ add_executable(sub3000
   include/scene.hpp
   include/splash.hpp
   include/mainMenu.hpp
+  include/actionTable.hpp
 
 # Sources
   src/sub3000.cpp
   src/scene.cpp
   src/splash.cpp
   src/mainMenu.cpp
+  src/actionTable.cpp
 )
 
 target_include_directories(sub3000

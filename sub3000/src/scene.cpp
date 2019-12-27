@@ -81,4 +81,10 @@ namespace sub3000
     PostToMain(bb::MakeMsg(0, static_cast<int>(mainMessage_t::change_scene), newScene));
   }
 
+  void PostExit()
+  {
+    PostToMain(bb::MakeMsg(0, static_cast<int>(mainMessage_t::exit), 0));
+  }
+
+
 } // namespace sub3000

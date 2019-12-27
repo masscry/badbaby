@@ -57,9 +57,13 @@ namespace sub3000
   enum mainMessage_t
   {
     nop = 0,
-    change_scene = 1,
+    change_scene,
+    exit,
+    action
   };
 
 } // namespace sub3000
+
+#include "actionTable.hpp"
 
 #endif /* __SUB3000_HEADER__ */
