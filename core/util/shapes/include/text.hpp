@@ -26,6 +26,7 @@ namespace bb
 
     void Render();
 
+    textStatic_t();
     textStatic_t(const font_t& font, const std::string& text, vec2_t chSize);
 
     textStatic_t(textStatic_t&&) = default;

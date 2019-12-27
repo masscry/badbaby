@@ -64,8 +64,14 @@ namespace bb
 
   void textStatic_t::Render()
   {
+    assert(this->tex);
     texture_t::Bind(*this->tex);
     this->mesh.Render();
+  }
+
+  textStatic_t::textStatic_t()
+  {
+    ;
   }
 
   textStatic_t::textStatic_t(const font_t& font, const std::string& text, vec2_t chSize)
