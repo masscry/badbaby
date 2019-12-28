@@ -57,6 +57,41 @@ namespace
     return symbols.size()*6;
   }
 
+  using range_t = std::tuple<bb::utf8Symbols::iterator, bb::utf8Symbols::iterator>;
+
+  bool ExtractLine(bb::utf8Symbols::iterator cursor, bb::utf8Symbols::iterator end, size_t maxWidth, range_t* result)
+  {
+    assert(result != nullptr);
+
+    auto start = cursor;
+
+    bb::utf8Symbols::iterator lastSpace = end;
+    for (size_t curWidth = 0; cursor != end; ++cursor, ++curWidth)
+    {
+      if (curWidth > maxWidth)
+      {
+        *result = std::make_tuple(start, lastSpace);
+        return true;
+      }
+
+      switch (*cursor)
+      {
+      case '\n':
+        *result = std::make_tuple(start, cursor);
+        return true;
+      case ' ':
+        lastSpace = cursor;
+        break;
+      
+      default:
+        break;
+      }
+    }
+
+    *result = std::make_tuple(cursor, end);
+    return (cursor != end);
+  }
+
   size_t MakeTextMultiline(
     const bb::font_t& font,
     const std::string& text,
@@ -82,44 +117,55 @@ namespace
     auto vUVIt = output.vUV.begin();
     auto indIt = output.indecies.begin();
 
-    size_t curLineSize = 0;
-    for (auto it = symbols.begin(), e = symbols.end(); it != e; ++it)
+    bool newLine = true;
+
+    range_t line = std::make_tuple(symbols.begin(), symbols.end());
+    while(ExtractLine(std::get<0>(line), std::get<1>(line), maxWidth - (newLine*2), &line))
     {
-      if ((*it == '\n') || (curLineSize >= maxWidth))
+      if (newLine)
       {
-        cursor.x = 0.0f;
-        cursor.y -= chSize.y*1.1f;
-        curLineSize = 0;
-        if (*it == '\n')
-        {
-          continue;
-        }
+        cursor.x += chSize.x*2;
+        newLine = false;
       }
 
-      bb::vec2_t smbOffset = font.SymbolOffset(*it);
-      bb::vec2_t smbSize   = font.SymbolSize(*it);
+      for (auto it = std::get<0>(line), e = std::get<1>(line); it != e; ++it)
+      {
 
-      *vPosIt++ = { cursor.x, cursor.y, cursor.z };
-      *vPosIt++ = { cursor.x + chSize.x, cursor.y, cursor.z};
-      *vPosIt++ = { cursor.x, cursor.y + chSize.y, cursor.z};
-      *vPosIt++ = { cursor.x + chSize.x, cursor.y + chSize.y, cursor.z};
+        bb::vec2_t smbOffset = font.SymbolOffset(*it);
+        bb::vec2_t smbSize   = font.SymbolSize(*it);
 
-      *vUVIt++ = { smbOffset.x, smbOffset.y + smbSize.y };
-      *vUVIt++ = { smbOffset.x + smbSize.x, smbOffset.y + smbSize.y };
-      *vUVIt++ = { smbOffset.x, smbOffset.y };
-      *vUVIt++ = { smbOffset.x + smbSize.x, smbOffset.y };
+        *vPosIt++ = { cursor.x, cursor.y, cursor.z };
+        *vPosIt++ = { cursor.x + chSize.x, cursor.y, cursor.z};
+        *vPosIt++ = { cursor.x, cursor.y + chSize.y, cursor.z};
+        *vPosIt++ = { cursor.x + chSize.x, cursor.y + chSize.y, cursor.z};
 
-      *indIt++ = vID+0;
-      *indIt++ = vID+1;
-      *indIt++ = vID+2;
-      *indIt++ = vID+1;
-      *indIt++ = vID+3;
-      *indIt++ = vID+2;
+        *vUVIt++ = { smbOffset.x, smbOffset.y + smbSize.y };
+        *vUVIt++ = { smbOffset.x + smbSize.x, smbOffset.y + smbSize.y };
+        *vUVIt++ = { smbOffset.x, smbOffset.y };
+        *vUVIt++ = { smbOffset.x + smbSize.x, smbOffset.y };
 
-      vID += 4;
-      cursor.x += chSize.x;
-      ++curLineSize;
+        *indIt++ = vID+0;
+        *indIt++ = vID+1;
+        *indIt++ = vID+2;
+        *indIt++ = vID+1;
+        *indIt++ = vID+3;
+        *indIt++ = vID+2;
+
+        vID += 4;
+        cursor.x += chSize.x;
+      }
+
+      if (*std::get<1>(line) == '\n')
+      {
+        newLine = true;
+      }
+
+      cursor.x = 0.0f;
+      cursor.y -= chSize.y;
+
+      line = std::make_tuple(std::get<1>(line)+1, symbols.end());
     }
+
     return symbols.size()*6;
   }
 
