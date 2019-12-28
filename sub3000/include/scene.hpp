@@ -11,7 +11,8 @@ namespace sub3000
   enum class sceneID_t
   {
     splash = 0,
-    mainMenu
+    mainMenu,
+    authors
   };
 
   class scene_t

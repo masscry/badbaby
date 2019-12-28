@@ -1,12 +1,14 @@
 #include <scene.hpp>
 #include <splash.hpp>
 #include <mainMenu.hpp>
-#include <deque>
-#include <set>
-#include <cassert>
+#include <authors.hpp>
 
 #include <msg.hpp>
 #include <sub3000.hpp>
+
+#include <deque>
+#include <set>
+#include <cassert>
 
 namespace
 {
@@ -47,6 +49,11 @@ namespace sub3000
       {
         static mainMenuScene_t mainMenu;
         return &mainMenu;
+      }
+    case sceneID_t::authors:
+      {
+        static authorsScene_t authors;
+        return &authors;
       }
     default:
       throw std::runtime_error("Unknown Scene Requested");

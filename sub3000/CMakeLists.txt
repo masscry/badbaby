@@ -7,6 +7,7 @@ add_executable(sub3000
   include/splash.hpp
   include/mainMenu.hpp
   include/actionTable.hpp
+  include/authors.hpp
 
 # Sources
   src/sub3000.cpp
@@ -14,6 +15,7 @@ add_executable(sub3000
   src/splash.cpp
   src/mainMenu.cpp
   src/actionTable.cpp
+  src/authors.cpp
 )
 
 target_include_directories(sub3000

@@ -33,6 +33,7 @@ void ProcessGameAction(sub3000::gameAction_t action)
   case sub3000::gameAction_t::loadGame:
     break;
   case sub3000::gameAction_t::authors:
+    sub3000::PostChangeScene(sub3000::sceneID_t::authors);
     break;
   case sub3000::gameAction_t::exit:
     sub3000::PostExit();
