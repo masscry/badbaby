@@ -66,6 +66,8 @@ namespace
     auto start = cursor;
 
     bb::utf8Symbols::iterator lastSpace = end;
+    bool newLine = false;
+
     for (size_t curWidth = 0; cursor != end; ++cursor, ++curWidth)
     {
       if (curWidth > maxWidth)
@@ -77,13 +79,18 @@ namespace
       switch (*cursor)
       {
       case '\n':
-        *result = std::make_tuple(start, cursor);
-        return true;
+        if (newLine)
+        { // break when two new lines reached
+          *result = std::make_tuple(start, cursor);
+          return true;
+        }
+        newLine = true;
+        break;
       case ' ':
         lastSpace = cursor;
         break;
-      
       default:
+        newLine = false;
         break;
       }
     }
@@ -130,6 +137,10 @@ namespace
 
       for (auto it = std::get<0>(line), e = std::get<1>(line); it != e; ++it)
       {
+        if (*it == '\n')
+        {
+          *it = ' ';
+        }
 
         bb::vec2_t smbOffset = font.SymbolOffset(*it);
         bb::vec2_t smbSize   = font.SymbolSize(*it);
