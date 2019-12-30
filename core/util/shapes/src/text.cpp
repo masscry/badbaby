@@ -137,33 +137,38 @@ namespace
 
       for (auto it = std::get<0>(line), e = std::get<1>(line); it != e; ++it)
       {
-        if (*it == '\n')
+        switch(*it)
         {
-          *it = ' ';
+          case '\n':
+          case ' ':
+            cursor.x += chSize.x;
+            break;
+          default:
+          {
+            bb::vec2_t smbOffset = font.SymbolOffset(*it);
+            bb::vec2_t smbSize   = font.SymbolSize(*it);
+
+            *vPosIt++ = { cursor.x, cursor.y, cursor.z };
+            *vPosIt++ = { cursor.x + chSize.x, cursor.y, cursor.z};
+            *vPosIt++ = { cursor.x, cursor.y + chSize.y, cursor.z};
+            *vPosIt++ = { cursor.x + chSize.x, cursor.y + chSize.y, cursor.z};
+
+            *vUVIt++ = { smbOffset.x, smbOffset.y + smbSize.y };
+            *vUVIt++ = { smbOffset.x + smbSize.x, smbOffset.y + smbSize.y };
+            *vUVIt++ = { smbOffset.x, smbOffset.y };
+            *vUVIt++ = { smbOffset.x + smbSize.x, smbOffset.y };
+
+            *indIt++ = vID+0;
+            *indIt++ = vID+1;
+            *indIt++ = vID+2;
+            *indIt++ = vID+1;
+            *indIt++ = vID+3;
+            *indIt++ = vID+2;
+
+            vID += 4;
+            cursor.x += chSize.x;
+          }
         }
-
-        bb::vec2_t smbOffset = font.SymbolOffset(*it);
-        bb::vec2_t smbSize   = font.SymbolSize(*it);
-
-        *vPosIt++ = { cursor.x, cursor.y, cursor.z };
-        *vPosIt++ = { cursor.x + chSize.x, cursor.y, cursor.z};
-        *vPosIt++ = { cursor.x, cursor.y + chSize.y, cursor.z};
-        *vPosIt++ = { cursor.x + chSize.x, cursor.y + chSize.y, cursor.z};
-
-        *vUVIt++ = { smbOffset.x, smbOffset.y + smbSize.y };
-        *vUVIt++ = { smbOffset.x + smbSize.x, smbOffset.y + smbSize.y };
-        *vUVIt++ = { smbOffset.x, smbOffset.y };
-        *vUVIt++ = { smbOffset.x + smbSize.x, smbOffset.y };
-
-        *indIt++ = vID+0;
-        *indIt++ = vID+1;
-        *indIt++ = vID+2;
-        *indIt++ = vID+1;
-        *indIt++ = vID+3;
-        *indIt++ = vID+2;
-
-        vID += 4;
-        cursor.x += chSize.x;
       }
 
       if (*std::get<1>(line) == '\n')
