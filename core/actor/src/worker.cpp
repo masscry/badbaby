@@ -47,19 +47,52 @@ namespace bb
       }
       {
         auto lock = this->actorsGuard.GetReadLock();
-        for(auto& actor: this->actors)
+        for(auto actorIt = this->actors.begin(), actorEnd = this->actors.end(); actorIt != actorEnd; ++actorIt)
         {
-          int expected = -1;
-          if (std::atomic_compare_exchange_strong(&actor->ownerID, &expected, static_cast<int>(id)))
-          { // actor captured
-            size_t totalMsg = actor->mailbox->Has();
-            while (totalMsg-->0)
-            {
-              auto msg = actor->mailbox->Wait();
-              actor->actor->ProcessMessage(msg);
-              this->totalMessages--;
+          if (*actorIt)
+          {
+            auto& curActor = *actorIt;
+
+            uint16_t expected = SOI_FREE;
+            if (std::atomic_compare_exchange_strong(&curActor->ownerID, &expected, id))
+            { // actor captured
+
+              size_t totalMsg = curActor->mailbox->Has();
+              while (totalMsg-->0)
+              {
+                auto msg = curActor->mailbox->Wait();
+                switch (msg.type)
+                {
+                  case SET_ID:
+                    curActor->actor->SetPoolID(this, bb::GetMsgData<int>(msg));
+                    break;
+                  case POISON:
+                    {
+                      lock.reset();
+                      auto writeLock = this->actorsGuard.GetWriteLock();
+                      auto& context = bb::context_t::Instance();
+
+                      context.UnregisterActorCallbacks(curActor->actor->ID());
+                      this->deletedActors.emplace_back(actorIt);
+                      curActor->actor->SetPoolID(nullptr, -1);
+                      curActor.reset();
+                      writeLock.reset();
+                      lock = this->actorsGuard.GetReadLock();
+                      totalMsg = 0; // this stop loop
+                      continue;     // this goes to loop condition check
+                    }
+                  default:
+                    assert(curActor->actor->ID() >= 0);
+                    curActor->actor->ProcessMessage(msg);
+                }
+                --this->totalMessages;
+              }
+
+              if (curActor)
+              { // When actor poisoned, no owner to remove
+                curActor->ownerID = -1; // actor released
+              }
             }
-            actor->ownerID = -1; // actor released
           }
         }
       }
@@ -132,37 +165,24 @@ namespace bb
 
     actInfo->actor = std::move(actor);
     actInfo->mailbox.reset(new mailbox_t);
-    actInfo->ownerID.store(-1);
+    actInfo->ownerID.store(SOI_FREE);
 
     if (this->deletedActors.empty())
     {
       this->actors.emplace_back(std::move(actInfo));
-      return this->actors.size() - 1;
+      int result = this->actors.size() - 1;
+      this->actors.back()->mailbox->Put(bb::MakeMsg(-1, SET_ID, result));
+      return result;
     }
     else
     {
       actorStorage_t::iterator first = this->deletedActors.front();
       this->deletedActors.pop_front();
-      (*first) = std::move(actInfo);
-      return first - this->actors.begin();
+      (*first).swap(actInfo);
+      int result = first - this->actors.begin();
+      (*first)->mailbox->Put(bb::MakeMsg(-1, SET_ID, result));
+      return result;
     }
-  }
-
-  void workerPool_t::Unregister(int id)
-  {
-    auto& context = bb::context_t::Instance();
-
-    size_t uid = static_cast<size_t>(id);
-
-    auto lock = this->actorsGuard.GetWriteLock();
-    if (uid > this->actors.size())
-    {
-      throw std::runtime_error("Unregister: Invalid actor ID");
-    }
-
-    context.UnregisterActorCallbacks(id);
-    this->deletedActors.emplace_back(this->actors.begin() + uid);
-    (this->actors.begin() + uid)->reset();
   }
 
   int workerPool_t::FindFirstByName(const std::string name)
@@ -194,7 +214,8 @@ namespace bb
 
       if (*actIt)
       {
-        (*actIt)->mailbox->Put(std::move(message));
+        auto& actor = *actIt;
+        actor->mailbox->Put(std::move(message));
         this->totalMessages++;
       }
     }
@@ -202,6 +223,11 @@ namespace bb
     {
       info.notify.notify_one();
     }
+  }
+
+  void workerPool_t::Unregister(int actorID)
+  {
+    this->PostMessage(actorID, bb::MakeMsg(-1, POISON, 0));
   }
 
 

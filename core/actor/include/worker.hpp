@@ -26,6 +26,13 @@ namespace bb
 
   class workerPool_t final
   {
+
+    enum specialOwnerID_t: uint16_t
+    {
+      SOI_DELETED = 0xFFFE,
+      SOI_FREE    = 0xFFFF
+    };
+
     struct workerInfo_t final
     {
       std::mutex              guard;
@@ -37,10 +44,10 @@ namespace bb
     {
       std::unique_ptr<mailbox_t> mailbox;
       std::unique_ptr<actor_t>   actor;
-      std::atomic_int            ownerID;
+      std::atomic_uint16_t       ownerID;
     };
 
-    using workerID_t = unsigned int;
+    using workerID_t = uint16_t;
     using vectorOfWorkers_t = std::vector<std::thread>;
     using vectorOfInfo_t = std::vector<workerInfo_t>;
 
@@ -73,10 +80,10 @@ namespace bb
     static workerPool_t& Instance();
 
     int Register(std::unique_ptr<actor_t> actor);
-    void Unregister(int id);
     int FindFirstByName(const std::string name);
 
     void PostMessage(int actorID, msg_t message);
+    void Unregister(int actorID);
 
   };
 
