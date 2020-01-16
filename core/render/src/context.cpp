@@ -306,6 +306,8 @@ namespace bb
 
   void context_t::UnregisterActorCallbacks(int actorID)
   {
+    assert(actorID >= 0);
+
     this->actorCallbackList.remove_if(
       [actorID](const pairOfFlags& pof) -> bool
       {
