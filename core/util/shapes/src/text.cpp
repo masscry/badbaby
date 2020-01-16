@@ -59,9 +59,12 @@ namespace
 
   using range_t = std::tuple<bb::utf8Symbols::iterator, bb::utf8Symbols::iterator>;
 
-  bool ExtractLine(bb::utf8Symbols::iterator cursor, bb::utf8Symbols::iterator end, size_t maxWidth, range_t* result)
+  bool ExtractLine(range_t input, size_t maxWidth, range_t* result)
   {
     assert(result != nullptr);
+
+    auto cursor = std::get<0>(input);
+    auto end = std::get<1>(input);
 
     auto start = cursor;
 
@@ -127,7 +130,7 @@ namespace
     bool newLine = true;
 
     range_t line = std::make_tuple(symbols.begin(), symbols.end());
-    while(ExtractLine(std::get<0>(line), std::get<1>(line), maxWidth - (newLine*2), &line))
+    while(ExtractLine(line, maxWidth - (newLine*2), &line))
     {
       if (newLine)
       {
@@ -174,6 +177,11 @@ namespace
       if (*std::get<1>(line) == '\n')
       {
         newLine = true;
+      }
+
+      if (std::get<1>(line) == symbols.end())
+      { // this happen when line has no spaces and whole line is processed
+        break;
       }
 
       cursor.x = 0.0f;
