@@ -51,7 +51,7 @@ class menuModel_t: public bb::actor_t
 {
   int selected;
 
-  void ProcessMessage(bb::msg_t msg) override
+  void OnProcessMessage(bb::msg_t msg) override
   {
     int nextMenuLine = this->selected;
 

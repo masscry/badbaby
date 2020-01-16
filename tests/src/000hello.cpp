@@ -7,7 +7,7 @@ enum simpleMessage_t {
 
 class hello_t: public bb::actor_t
 {
-  void ProcessMessage(bb::msg_t msg) override
+  void OnProcessMessage(bb::msg_t msg) override
   {
     switch (msg.type)
     {
@@ -36,5 +36,7 @@ int main(int argc, char* argv[])
     bb::workerPool_t::Instance().PostMessage(actorID, bb::MakeMsg(-1, simpleMessage_t::hello, 0));
     std::this_thread::sleep_for(std::chrono::seconds(2));
   }
+
+  bb::workerPool_t::Instance().Unregister(actorID);
   return 0;
 }
