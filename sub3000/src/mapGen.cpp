@@ -40,7 +40,7 @@ namespace sub3000
         }
         bb::workerPool_t::Instance().PostMessage(
           msg.src,
-          bb::MakeMsgPtr(actor.ID(), static_cast<int>(mapGenMsg_t::done), heightMap.release())
+          bb::MakeMsgPtr(actor.ID(), mapGenMsg_t::done, heightMap.release())
         );
       }
       break;

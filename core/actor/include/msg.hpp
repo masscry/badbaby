@@ -67,14 +67,15 @@ namespace bb
     return result;
   }
 
-  template<typename data_t>
-  msg_t MakeMsgPtr(int src, int type, data_t* pData)
+  template<typename data_t, typename msgXID_t>
+  msg_t MakeMsgPtr(int src, msgXID_t type, data_t* pData)
   {
     msg_t result;
     static_assert(sizeof(data_t*) <= sizeof(msg_t::data));
+    static_assert(sizeof(msgXID_t) == sizeof(msgID_t));
 
     result.src = src;
-    result.type = type;
+    result.type = static_cast<uint16_t>(type);
     memcpy(result.data, &pData, sizeof(data_t*));
     return result;
   }
