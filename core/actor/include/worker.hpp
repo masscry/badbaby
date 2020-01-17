@@ -64,7 +64,7 @@ namespace bb
     actorStorage_t     actors;
     deletedActorList_t deletedActors;
 
-    std::atomic_int   totalMessages;
+    std::atomic_int   globalTotalMessages;
 
     workerPool_t();
     ~workerPool_t();

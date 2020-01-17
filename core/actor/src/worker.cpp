@@ -41,14 +41,24 @@ namespace bb
     {
       std::unique_lock<std::mutex> lock(info.guard);
       if (info.stop)
-      {
+      { // when stop requested, and all messages processed
         Info("%s", "Stop Requested");
-        break;
+        if (this->globalTotalMessages != 0)
+        {
+          Info("Wait for %d messages to finish", static_cast<int>(this->globalTotalMessages));
+        }
+        else
+        {
+          break;
+        }
       }
       {
         auto lock = this->actorsGuard.GetReadLock();
-        for(auto actorIt = this->actors.begin(), actorEnd = this->actors.end(); actorIt != actorEnd; ++actorIt)
+        size_t totalKnownActors = this->actors.size();
+        for (size_t curActorID = 0; curActorID < totalKnownActors; ++curActorID)
         {
+          auto actorIt = this->actors.begin() + curActorID;
+
           if (*actorIt)
           {
             auto& curActor = *actorIt;
@@ -56,9 +66,12 @@ namespace bb
             uint16_t expected = SOI_FREE;
             if (std::atomic_compare_exchange_strong(&curActor->ownerID, &expected, id))
             { // actor captured
+              lock.reset(); // release lock to give others to do changes in other places
 
-              size_t totalMsg = curActor->mailbox->Has();
-              while (totalMsg-->0)
+              size_t actorTotalMessages = curActor->mailbox->Has();
+              this->globalTotalMessages -= actorTotalMessages;
+              bb::Info("Process %lu messages for %s", actorTotalMessages, curActor->actor->Name().c_str());
+              while (actorTotalMessages-->0)
               {
                 auto msg = curActor->mailbox->Wait();
                 switch (msg.type)
@@ -68,7 +81,6 @@ namespace bb
                     break;
                   case POISON:
                     {
-                      lock.reset();
                       auto writeLock = this->actorsGuard.GetWriteLock();
                       auto& context = bb::context_t::Instance();
 
@@ -77,32 +89,31 @@ namespace bb
                       curActor->actor->SetPoolID(nullptr, -1);
                       curActor.reset();
                       writeLock.reset();
-                      lock = this->actorsGuard.GetReadLock();
-                      totalMsg = 0; // this stop loop
+                      actorTotalMessages = 0; // this stop loop
                       continue;     // this goes to loop condition check
                     }
                   default:
                     assert(curActor->actor->ID() >= 0);
                     curActor->actor->ProcessMessage(msg);
                 }
-                --this->totalMessages;
               }
 
               if (curActor)
               { // When actor poisoned, no owner to remove
                 curActor->ownerID = -1; // actor released
               }
+              lock = this->actorsGuard.GetReadLock();
             }
           }
         }
       }
-      info.notify.wait(lock, [&info, this](){ return (info.stop) || (this->totalMessages != 0); });
+      info.notify.wait(lock, [&info, this](){ return (info.stop) || (this->globalTotalMessages > 0); });
     }
     Info("%s", "Worker Stopped");
   }
 
   workerPool_t::workerPool_t()
-  :totalMessages(0)
+  :globalTotalMessages(0)
   {
 
     config_t config;
@@ -216,7 +227,7 @@ namespace bb
       {
         auto& actor = *actIt;
         actor->mailbox->Put(std::move(message));
-        this->totalMessages++;
+        this->globalTotalMessages++;
       }
     }
     for (auto& info: this->infos)
