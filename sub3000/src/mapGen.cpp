@@ -11,7 +11,7 @@
 namespace sub3000
 {
 
-  void mapGen_t::OnProcessMessage(bb::msg_t msg)
+  bb::msgResult_t mapGen_t::OnProcessMessage(const bb::actor_t& actor, bb::msg_t msg)
   {
     switch (static_cast<mapGenMsg_t>(msg.type))
     {
@@ -38,12 +38,16 @@ namespace sub3000
             heightMap->data[row*heightMap->width + col] = 1.0f - simplex(glm::dvec3(cos(angle)*params.radius, sin(angle)*params.radius, rowZ));
           }
         }
-        this->PostMessageAsMe(msg.src, bb::MakeMsgPtr(0, static_cast<int>(mapGenMsg_t::done), heightMap.release()));
+        bb::workerPool_t::Instance().PostMessage(
+          msg.src,
+          bb::MakeMsgPtr(actor.ID(), static_cast<int>(mapGenMsg_t::done), heightMap.release())
+        );
       }
       break;
     default:
       assert(0);
     }
+    return bb::msgResult_t::complete;
   }
 
   mapGen_t::mapGen_t()
@@ -51,7 +55,7 @@ namespace sub3000
     mt(rd()),
     dist()
   {
-    this->SetName("MapGenerator");
+    ;
   }
 
   mapGen_t::~mapGen_t()

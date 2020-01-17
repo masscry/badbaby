@@ -8,66 +8,69 @@
 #ifndef __BB_CORE_ACTOR_HEADER__
 #define __BB_CORE_ACTOR_HEADER__
 
-#include <string>
-#include <atomic>
-
 #include <msg.hpp>
+#include <mailbox.hpp>
 
 namespace bb
 {
 
-  class workerPool_t;
+  class role_t;
 
-  class actor_t
+  class actor_t final
   {
-    friend class workerPool_t;
+    mailbox_t               mailbox;
+    std::unique_ptr<role_t> role;
+    std::mutex              inProcess;
+    std::string             name;
+    int                     id;
+    bool                    sick;
 
-    std::string name;
-    int id;
-    workerPool_t* pool;
+    // role can't be copied
+    actor_t(const actor_t&) = delete;
+    actor_t& operator=(const actor_t&) = delete;
 
-    virtual void OnProcessMessage(msg_t msg) = 0;
-
-    void Unregister();
-
-    void SetPoolID(workerPool_t* pool, int id)
-    {
-      this->pool = pool;
-      this->id = id;
-    }
-
-  protected:
-
-    // assume, than only actor descendents can post messages to pool as actor
-    void PostMessageAsMe(int actorID, msg_t msg);
+    // role can't be moved
+    actor_t(actor_t&&) = delete;
+    actor_t& operator=(actor_t&&) = delete;
 
   public:
 
-    void ProcessMessage(msg_t msg);
+    bool Sick() const;
 
-    int ID() const
-    {
-      return this->id;
-    }
+    const std::string& Name() const;
 
-    const std::string& Name() const
-    {
-      return this->name;
-    }
+    int ID() const;
 
-    void SetName(const std::string& name)
-    {
-      this->name = name;
-    }
+    msgResult_t ProcessMessages();
 
-    actor_t();
-    actor_t(const actor_t& src);
-    actor_t(actor_t&& src);
-    actor_t& operator =(const actor_t& src);
-    actor_t& operator =(actor_t&& src);
-    virtual ~actor_t();
+    void PostMessage(msg_t msg);
+
+    bool NeedProcessing();
+
+    actor_t(std::unique_ptr<role_t>&& role);
+    ~actor_t();
 
   };
+
+  inline bool actor_t::Sick() const
+  {
+    return this->sick;
+  }
+
+  inline const std::string& actor_t::Name() const
+  {
+    return this->name;
+  }
+
+  inline int actor_t::ID() const
+  {
+    return this->id;
+  }
+
+  inline void actor_t::PostMessage(msg_t msg)
+  {
+    this->mailbox.Put(msg);
+  }
 
 }
 

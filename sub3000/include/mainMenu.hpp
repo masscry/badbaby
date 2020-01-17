@@ -18,6 +18,7 @@
 #include <text.hpp>
 #include <camera.hpp>
 #include <actor.hpp>
+#include <role.hpp>
 #include <mailbox.hpp>
 
 #include <sub3000.hpp>
@@ -41,16 +42,21 @@ namespace sub3000
 
   using textList_t = std::deque<textNode_t>;
 
-  class mainMenuModel_t final: public bb::actor_t
+  class mainMenuModel_t final: public bb::role_t
   {
     textList_t& textList;
     bb::mailbox_t& view;
 
     uint32_t selectedLine;
 
-    void OnProcessMessage(bb::msg_t msg) override;
+    bb::msgResult_t OnProcessMessage(const bb::actor_t&, bb::msg_t msg) override;
 
   public:
+
+    const char* DefaultName() const override
+    {
+      return "mainMenu";
+    }
 
     uint32_t SelectedLine() const
     {

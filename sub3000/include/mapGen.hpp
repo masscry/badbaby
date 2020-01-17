@@ -8,6 +8,7 @@
 #define __SUB3000_MAP_GEN_HEADER__
 
 #include <actor.hpp>
+#include <role.hpp>
 
 #include <memory>
 #include <random>
@@ -15,9 +16,9 @@
 namespace sub3000
 {
 
-  enum class mapGenMsg_t
+  enum class mapGenMsg_t: uint16_t
   {
-    firstItem = 0,
+    firstItem = bb::msgID_t::USR00,
     generate = firstItem,
     done,
     totalItems
@@ -37,14 +38,19 @@ namespace sub3000
     float radius;
   };
 
-  class mapGen_t final: public bb::actor_t
+  class mapGen_t final: public bb::role_t
   {
     std::random_device rd;
     std::mt19937 mt;
     std::uniform_int_distribution<long> dist;
 
-    void OnProcessMessage(bb::msg_t msg) override;
+    bb::msgResult_t OnProcessMessage(const bb::actor_t&, bb::msg_t msg) override;
   public:
+
+    const char* DefaultName() const override
+    {
+      return "mapGenSV";
+    }
 
     mapGen_t();
     ~mapGen_t() override;

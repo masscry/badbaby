@@ -87,8 +87,6 @@ namespace bb
         continue;
       }
 
-      bb::Debug("%08x: %03d", output[0], input[0]);
-
       auto smbPos = bb::vec2_t(smb%this->width, smb/this->width);
 
       this->offsets[output[0]] = vec2_t { smbPos.x * (size.x + xstride), smbPos.y * (size.y + ystride) };

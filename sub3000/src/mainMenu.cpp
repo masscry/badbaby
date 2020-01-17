@@ -30,16 +30,16 @@ namespace
 namespace sub3000
 {
 
-  enum mainMenuSceneMsg_t
+  enum mainMenuSceneMsg_t: uint16_t
   {
-    MMS_SELECT_LINE = 0
+    MMS_SELECT_LINE = bb::msgID_t::USR00
   };
 
-  void mainMenuModel_t::OnProcessMessage(bb::msg_t msg)
+  bb::msgResult_t mainMenuModel_t::OnProcessMessage(const bb::actor_t& actor, bb::msg_t msg)
   {
     switch (msg.type)
     {
-      case -bb::cmfKeyboard:
+      case bb::msgID_t::KEYBOARD:
       {
         auto keyEvent = bb::GetMsgData<bb::keyEvent_t>(msg);
         if (keyEvent.press != GLFW_RELEASE)
@@ -61,7 +61,7 @@ namespace sub3000
               }
               break;
             case GLFW_KEY_ENTER:
-              PostToMain(bb::MakeMsg(this->ID(), sub3000::mainMessage_t::action, this->textList[this->selectedLine].action));
+              PostToMain(bb::MakeMsg(actor.ID(), sub3000::mainMessage_t::action, this->textList[this->selectedLine].action));
               break;
           }
         }
@@ -76,6 +76,7 @@ namespace sub3000
       default:
         assert(0);
     }
+    return bb::msgResult_t::complete;
   }
 
   mainMenuModel_t::mainMenuModel_t(textList_t& textList, bb::mailbox_t& view)
@@ -83,7 +84,6 @@ namespace sub3000
     view(view),
     selectedLine(0)    
   {
-    this->SetName("MainMenu");
     this->view.Put(bb::MakeMsg(0, MMS_SELECT_LINE, selectedLine));
   }
 
@@ -163,7 +163,7 @@ namespace sub3000
     this->gameInfoNode.Translate(bb::vec3_t(100.0f, -100.0f, 0.0f));
 
     auto& pool = bb::workerPool_t::Instance();
-    this->menuModelID = pool.Register(std::unique_ptr<bb::actor_t>(new sub3000::mainMenuModel_t(this->textList, this->mailbox)));
+    this->menuModelID = pool.Register(std::unique_ptr<bb::role_t>(new sub3000::mainMenuModel_t(this->textList, this->mailbox)));
     this->pContext->RegisterActorCallback(menuModelID, bb::cmfKeyboard);
   }
 

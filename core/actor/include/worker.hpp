@@ -27,12 +27,6 @@ namespace bb
   class workerPool_t final
   {
 
-    enum specialOwnerID_t: uint16_t
-    {
-      SOI_DELETED = 0xFFFE,
-      SOI_FREE    = 0xFFFF
-    };
-
     struct workerInfo_t final
     {
       std::mutex              guard;
@@ -40,19 +34,12 @@ namespace bb
       bool                    stop;
     };
 
-    struct actorInfo_t final
-    {
-      std::unique_ptr<mailbox_t> mailbox;
-      std::unique_ptr<actor_t>   actor;
-      std::atomic_uint16_t       ownerID;
-    };
-
     using workerID_t = uint16_t;
     using vectorOfWorkers_t = std::vector<std::thread>;
     using vectorOfInfo_t = std::vector<workerInfo_t>;
 
-    using actorStorage_t = std::vector<std::unique_ptr<actorInfo_t>>;
-    using deletedActorList_t = std::list<actorStorage_t::iterator>; 
+    using actorStorage_t = std::vector<std::unique_ptr<actor_t>>;
+    using deletedActorList_t = std::list<int>; 
 
     void PrepareInfo(workerID_t id);
     void WorkerThread(workerID_t id);
@@ -63,8 +50,6 @@ namespace bb
     rwMutex_t          actorsGuard;
     actorStorage_t     actors;
     deletedActorList_t deletedActors;
-
-    std::atomic_int   globalTotalMessages;
 
     workerPool_t();
     ~workerPool_t();
@@ -79,8 +64,10 @@ namespace bb
 
     static workerPool_t& Instance();
 
-    int Register(std::unique_ptr<actor_t> actor);
-    int FindFirstByName(const std::string name);
+    bool HasActorsInQueue();
+
+    int Register(std::unique_ptr<role_t>&& role);
+    int FindFirstByName(const std::string& name);
 
     void PostMessage(int actorID, msg_t message);
     void Unregister(int actorID);

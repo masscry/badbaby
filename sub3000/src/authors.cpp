@@ -28,11 +28,11 @@ namespace
 namespace sub3000
 {
 
-  void authorsModel_t::OnProcessMessage(bb::msg_t msg)
+  bb::msgResult_t authorsModel_t::OnProcessMessage(const bb::actor_t&, bb::msg_t msg)
   {
     switch (msg.type)
     {
-      case -bb::cmfKeyboard:
+      case bb::msgID_t::KEYBOARD:
       {
         auto keyEvent = bb::GetMsgData<bb::keyEvent_t>(msg);
         if (keyEvent.press != GLFW_RELEASE)
@@ -44,11 +44,12 @@ namespace sub3000
       default:
         assert(0);
     }
+    return bb::msgResult_t::complete;
   }
 
   authorsModel_t::authorsModel_t()
   {
-    this->SetName("Authors");
+    ;
   }
 
 
@@ -87,7 +88,7 @@ namespace sub3000
 
 
     auto& pool = bb::workerPool_t::Instance();
-    this->model = pool.Register(std::unique_ptr<bb::actor_t>(new sub3000::authorsModel_t()));
+    this->model = pool.Register(std::unique_ptr<bb::role_t>(new sub3000::authorsModel_t()));
     this->pContext->RegisterActorCallback(this->model, bb::cmfKeyboard);
   }
 

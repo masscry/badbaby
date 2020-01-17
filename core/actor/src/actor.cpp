@@ -1,97 +1,124 @@
 #include <actor.hpp>
 #include <worker.hpp>
+#include <role.hpp>
 
 #include <cassert>
 
 namespace bb
 {
 
-  actor_t::actor_t()
-  : name("actor_t"),
+  msg_t IssuePoison()
+  {
+    return MakeMsg(-1, msgID_t::POISON, 0);
+  }
+
+  msg_t IssueSetID(int id)
+  {
+    return MakeMsg(-1, msgID_t::SETID, id);
+  }
+
+  msg_t IssueSetName(const char* name)
+  {
+    size_t nameLen = strlen(name);
+    assert(nameLen <= msgDataByteLength);
+
+    msg_t result;
+
+    result.src = -1;
+    result.type = msgID_t::SETNAME;
+    memset(result.data, ' ', msgDataByteLength);
+    memcpy(result.data, name, nameLen);
+    return result;
+  }
+
+  msgResult_t actor_t::ProcessMessages()
+  {
+    std::unique_lock<std::mutex> inProcessLock(this->inProcess, std::try_to_lock);
+    if (!inProcessLock.owns_lock())
+    {
+      return msgResult_t::skipped;
+    }
+
+    if (this->sick)
+    {
+      return msgResult_t::skipped;
+    }
+
+    auto& curRole = *this->role;
+
+    size_t msgAlreadyInQueue = this->mailbox.Has();
+    if (msgAlreadyInQueue == 0)
+    {
+      return msgResult_t::skipped;
+    }
+
+    auto result = msgResult_t::complete;
+    while(msgAlreadyInQueue-->0)
+    {
+      auto msg = this->mailbox.Wait();
+      switch(msg.type)
+      {
+      case msgID_t::SETNAME:
+        {
+          char tmpBuf[msgDataByteLength+1];
+          memcpy(tmpBuf, msg.data, msgDataByteLength);
+          tmpBuf[msgDataByteLength] = 0;
+          this->name = tmpBuf;
+        }
+        break;
+      case msgID_t::SETID:
+        this->id = GetMsgData<int>(msg);
+        break;
+      case msgID_t::POISON:
+        {
+          bb::Debug("Actor \"%s\" (%d) is poisoned", this->Name().c_str(), this->ID());
+          this->sick = true;
+          this->id = -1;
+          return msgResult_t::poisoned;
+        }
+        break;
+      default:
+        {
+          auto tmpResult = curRole.ProcessMessage(*this, msg);
+          if (tmpResult == msgResult_t::poisoned)
+          {
+            bb::Debug("Actor \"%s\" (%d) poisoned himself", this->Name().c_str(), this->ID());
+            this->sick = true;
+            this->id = -1;
+            return msgResult_t::poisoned;
+          }
+          if (tmpResult != msgResult_t::complete)
+          {
+            result = tmpResult;
+          }
+        }
+      }
+    }
+    return result;
+  }
+
+  bool actor_t::NeedProcessing()
+  {
+    std::unique_lock<std::mutex> inProcessLock(this->inProcess, std::try_to_lock);
+    if (inProcessLock.owns_lock())
+    {
+      return (!this->mailbox.Empty()) && (this->sick == false);
+    }
+    return false;
+  }
+
+  actor_t::actor_t(std::unique_ptr<role_t>&& role)
+  : role(std::move(role)),
     id(-1),
-    pool(nullptr)
+    sick(false)
   {
-    ;
-  }
-
-  actor_t::actor_t(const actor_t& src)
-  : name(src.name),
-    id(-1), // copy of actor is not registered
-    pool(nullptr)
-  {
-    ;
-  }
-
-  actor_t::actor_t(actor_t&& src)
-  : name(std::move(src.name)),
-    id(src.id),
-    pool(src.pool)
-  {
-    src.id = -1;
-    src.pool = nullptr;
-  }
-
-  void actor_t::Unregister()
-  {
-    if (this->pool != nullptr)
-    {
-      this->pool->Unregister(this->id);
-      this->pool = nullptr;
-      this->id = -1;
-    }
-    assert(this->id == -1);
-  }
-
-  actor_t& actor_t::operator= (const actor_t& src)
-  {
-    if (this != &src)
-    {
-      this->Unregister();
-      this->name = src.name;
-      this->id = -1;
-    }
-    return *this;
-  }
-
-  actor_t& actor_t::operator =(actor_t&& src)
-  {
-    if (this != &src)
-    {
-      this->Unregister();
-
-      this->name = std::move(src.name);
-      this->id = src.id;
-      this->pool = src.pool;
-
-      src.id = -1;
-      src.pool = nullptr;
-    }
-    return *this;
+    this->name = this->role->DefaultName();
   }
 
   actor_t::~actor_t()
-  { 
-    // Expect actor to be deregistered before destruction
-    assert(this->id == -1);
-    if (this->pool != nullptr)
-    { // we can forgive such mistake in release, but better fix this!
-      this->pool->Unregister(this->id);
-    }
-  }
-
-  void actor_t::PostMessageAsMe(int actorID, msg_t msg)
   {
-    if ((this->pool == nullptr) || (this->id == -1))
-    {
-      throw std::runtime_error("Actor is not registered!");
-    }
-    msg.src = this->id;
-    this->pool->PostMessage(actorID, msg);
-  }
-
-  void actor_t::ProcessMessage(msg_t msg)
-  {
-    this->OnProcessMessage(msg);
+    assert(this->ID() == -1);
+    assert(this->mailbox.Empty());
   }
 
 } // namespace bb

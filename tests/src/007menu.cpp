@@ -10,6 +10,8 @@
 
 #include <actor.hpp>
 #include <worker.hpp>
+#include <role.hpp>
+#include <msg.hpp>
 
 #include <font.hpp>
 #include <text.hpp>
@@ -32,9 +34,9 @@ const char* menuTextLines[ML_TOTAL] = {
   "Выход"
 };
 
-enum menuMsg_t
+enum menuMsg_t: uint16_t
 {
-  MT_FIRST = 0,
+  MT_FIRST = bb::msgID_t::USR00,
   MT_PREV = MT_FIRST,
   MT_NEXT,
   MT_SELECT,
@@ -47,17 +49,17 @@ enum menuMsg_t
 
 bb::mailbox_t renderTasks;
 
-class menuModel_t: public bb::actor_t
+class menuModel_t: public bb::role_t
 {
   int selected;
 
-  void OnProcessMessage(bb::msg_t msg) override
+  bb::msgResult_t OnProcessMessage(const bb::actor_t&, bb::msg_t msg) override
   {
     int nextMenuLine = this->selected;
 
     switch (msg.type)
     {
-      case -bb::cmfKeyboard:
+      case bb::KEYBOARD:
         {
           auto keyEvent = bb::GetMsgData<bb::keyEvent_t>(msg);
           if (keyEvent.press != GLFW_RELEASE)
@@ -97,6 +99,7 @@ class menuModel_t: public bb::actor_t
       default:
         assert(0);
     }
+    return bb::msgResult_t::complete;
   }
 
 public:
@@ -118,7 +121,7 @@ int main(int argc, char* argv[])
 
   auto& context = bb::context_t::Instance();
   auto& pool = bb::workerPool_t::Instance();
-  int menuActor = pool.Register(std::unique_ptr<bb::actor_t>(new menuModel_t));
+  int menuActor = pool.Register(std::unique_ptr<bb::role_t>(new menuModel_t));
 
   context.RegisterActorCallback(menuActor, bb::cmfKeyboard);
 

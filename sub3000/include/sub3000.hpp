@@ -54,9 +54,9 @@ namespace sub3000
 
   void PostToMain(bb::msg_t msg);
 
-  enum mainMessage_t
+  enum mainMessage_t: uint16_t
   {
-    nop = 0,
+    nop = bb::msgID_t::USR00,
     change_scene,
     exit,
     action

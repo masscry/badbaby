@@ -16,6 +16,7 @@
 #include <text.hpp>
 #include <camera.hpp>
 #include <actor.hpp>
+#include <role.hpp>
 #include <mailbox.hpp>
 
 #include <sub3000.hpp>
@@ -23,10 +24,16 @@
 namespace sub3000
 {
 
-  class authorsModel_t final: public bb::actor_t
+  class authorsModel_t final: public bb::role_t
   {
-    void OnProcessMessage(bb::msg_t msg) override;
+    bb::msgResult_t OnProcessMessage(const bb::actor_t&, bb::msg_t msg) override;
   public:
+
+    const char* DefaultName() const override
+    {
+      return "authors";
+    }
+
     authorsModel_t();
   };
 
