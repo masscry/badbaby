@@ -48,7 +48,7 @@ namespace sub3000
 
     uint32_t selectedLine;
 
-    void ProcessMessage(bb::msg_t msg) override;
+    void OnProcessMessage(bb::msg_t msg) override;
 
   public:
 

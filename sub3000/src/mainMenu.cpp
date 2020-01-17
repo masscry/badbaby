@@ -9,6 +9,8 @@
 #include <worker.hpp>
 #include <sub3000.hpp>
 
+#include <mapGen.hpp>
+
 namespace
 {
 
@@ -33,7 +35,7 @@ namespace sub3000
     MMS_SELECT_LINE = 0
   };
 
-  void mainMenuModel_t::ProcessMessage(bb::msg_t msg)
+  void mainMenuModel_t::OnProcessMessage(bb::msg_t msg)
   {
     switch (msg.type)
     {
@@ -59,10 +61,16 @@ namespace sub3000
               }
               break;
             case GLFW_KEY_ENTER:
-              PostToMain(bb::MakeMsg(0, sub3000::mainMessage_t::action, this->textList[this->selectedLine].action));
+              PostToMain(bb::MakeMsg(this->ID(), sub3000::mainMessage_t::action, this->textList[this->selectedLine].action));
               break;
           }
         }
+      }
+      break;
+      case static_cast<int>(sub3000::mapGenMsg_t::done):
+      {
+        std::unique_ptr<sub3000::heightMap_t> heightMap(bb::GetMsgPtr<sub3000::heightMap_t>(msg));
+        bb::Debug("Map Generation Done: %d %d", heightMap->width, heightMap->height);
       }
       break;
       default:

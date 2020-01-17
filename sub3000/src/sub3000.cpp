@@ -5,11 +5,16 @@
 #include <scene.hpp>
 #include <mailbox.hpp>
 #include <msg.hpp>
+#include <mapGen.hpp>
+#include <worker.hpp>
 
 namespace 
 {
 
   bb::mailbox_t mail;
+
+  std::mutex g_mapGenLock;
+  int g_mapGenActorID = -1;
 
 }
 
@@ -21,9 +26,29 @@ namespace sub3000
     mail.Put(msg);
   }
 
+  bool RequestGenerateMap(uint16_t width, uint16_t height, float radius, int sendResultToID)
+  {
+    std::unique_lock<std::mutex> lock(g_mapGenLock);
+    if (g_mapGenActorID == -1)
+    {
+      return false;
+    }
+
+    auto& pool = bb::workerPool_t::Instance();
+    pool.PostMessage(
+      g_mapGenActorID,
+      bb::MakeMsg(sendResultToID, static_cast<int>(sub3000::mapGenMsg_t::generate), 
+        sub3000::mapGenerateParams_t {
+          width, height, radius
+        }
+      )
+    );
+    return true;
+  }
+
 }
 
-void ProcessGameAction(sub3000::gameAction_t action)
+void ProcessGameAction(int src, sub3000::gameAction_t action)
 {
   switch (action)
   {
@@ -31,6 +56,8 @@ void ProcessGameAction(sub3000::gameAction_t action)
     sub3000::PostChangeScene(sub3000::sceneID_t::splash);
     break;
   case sub3000::gameAction_t::loadGame:
+    bb::Debug("%s", "Map Generation Started");
+    sub3000::RequestGenerateMap(2048, 1024, 10.0f, src);
     break;
   case sub3000::gameAction_t::authors:
     sub3000::PostChangeScene(sub3000::sceneID_t::authors);
@@ -57,6 +84,12 @@ int main(int argc, char* argv[])
   sub3000::PushScene(sub3000::GetScene(sub3000::sceneID_t::splash));
   sub3000::deltaTime_t dt;
   bb::msg_t msgToMain;
+
+  auto& pool = bb::workerPool_t::Instance();
+  {
+    std::unique_lock<std::mutex> lock(g_mapGenLock);
+    g_mapGenActorID = pool.Register(std::unique_ptr<bb::actor_t>(new sub3000::mapGen_t()));
+  }
 
   bool loop = true;
   while(loop)
@@ -89,14 +122,19 @@ int main(int argc, char* argv[])
         case sub3000::action:
           {
             auto gameAction = bb::GetMsgData<sub3000::gameAction_t>(msgToMain);
-            bb::Debug("Action: %s", sub3000::GetTextForAction(gameAction));
-            ProcessGameAction(gameAction);
+            bb::Debug("Action: %s from %d", sub3000::GetTextForAction(gameAction), msgToMain.src);
+            ProcessGameAction(msgToMain.src, gameAction);
           }
           break;
         default:
           assert(0);
       }
     }
+  }
+
+  {
+    std::unique_lock<std::mutex> lock(g_mapGenLock);
+    pool.Unregister(g_mapGenActorID);
   }
 
   return 0;

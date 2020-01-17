@@ -25,7 +25,7 @@ namespace sub3000
 
   class authorsModel_t final: public bb::actor_t
   {
-    void ProcessMessage(bb::msg_t msg) override;
+    void OnProcessMessage(bb::msg_t msg) override;
   public:
     authorsModel_t();
   };

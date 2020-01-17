@@ -62,6 +62,8 @@ namespace sub3000
     action
   };
 
+  bool RequestGenerateMap(uint16_t width, uint16_t height, float radius, int sendResultToID);
+
 } // namespace sub3000
 
 #include "actionTable.hpp"

@@ -28,7 +28,7 @@ namespace
 namespace sub3000
 {
 
-  void authorsModel_t::ProcessMessage(bb::msg_t msg)
+  void authorsModel_t::OnProcessMessage(bb::msg_t msg)
   {
     switch (msg.type)
     {

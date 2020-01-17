@@ -8,6 +8,7 @@ add_executable(sub3000
   include/mainMenu.hpp
   include/actionTable.hpp
   include/authors.hpp
+  include/mapGen.hpp
 
 # Sources
   src/sub3000.cpp
@@ -16,6 +17,7 @@ add_executable(sub3000
   src/mainMenu.cpp
   src/actionTable.cpp
   src/authors.cpp
+  src/mapGen.cpp
 )
 
 target_include_directories(sub3000
