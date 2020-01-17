@@ -9,11 +9,11 @@ namespace sub3000
   using gameActionListItem_t = std::tuple<const char*, gameAction_t>;
 
   gameActionListItem_t gameActionList[] = {
-    { "action.game.new",  sub3000::gameAction_t::newGame  },
-    { "action.game.load", sub3000::gameAction_t::loadGame },
-    { "action.authors",   sub3000::gameAction_t::authors  },
-    { "action.exit",      sub3000::gameAction_t::exit     },
-    { "action.settings",  sub3000::gameAction_t::settings }
+    { "action.game.new", sub3000::gameAction_t::newGame  },
+    { "action.logo",     sub3000::gameAction_t::logo     },
+    { "action.authors",  sub3000::gameAction_t::authors  },
+    { "action.exit",     sub3000::gameAction_t::exit     },
+    { "action.settings", sub3000::gameAction_t::settings }
   };
 
   const char* GetTextForAction(gameAction_t action)

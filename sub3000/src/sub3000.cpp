@@ -53,11 +53,11 @@ void ProcessGameAction(int src, sub3000::gameAction_t action)
   switch (action)
   {
   case sub3000::gameAction_t::newGame:
-    sub3000::PostChangeScene(sub3000::sceneID_t::splash);
-    break;
-  case sub3000::gameAction_t::loadGame:
     bb::Debug("%s", "Map Generation Started");
     sub3000::RequestGenerateMap(2048, 1024, 10.0f, src);
+    break;
+  case sub3000::gameAction_t::logo:
+    sub3000::PostChangeScene(sub3000::sceneID_t::splash);
     break;
   case sub3000::gameAction_t::authors:
     sub3000::PostChangeScene(sub3000::sceneID_t::authors);

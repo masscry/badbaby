@@ -16,7 +16,7 @@ namespace sub3000
   {
     firstItem = 0,
     newGame = firstItem,
-    loadGame,
+    logo,
     authors,
     exit,
     settings,
