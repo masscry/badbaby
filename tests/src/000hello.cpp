@@ -23,8 +23,15 @@ class hello_t: public role_t
       Error("Unknown Message Type: %d", msg.type);
       break;
     }
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
     return msgResult_t::complete;
   }
+
+  const char* DefaultName() const
+  {
+    return "hello_t";
+  }
+
 };
 
 int main(int argc, char* argv[])
@@ -36,11 +43,11 @@ int main(int argc, char* argv[])
 
   int actorID = workerPool_t::Instance().Register(std::unique_ptr<role_t>(new hello_t));
 
-  for (int i = 0; i < 10; ++i)
+  for (int i = 0; i < 20; ++i)
   {
     Debug("Say Hello!");
     workerPool_t::Instance().PostMessage(actorID, MakeMsg(-1, simpleMessage_t::hello, 0));
-    std::this_thread::sleep_for(std::chrono::seconds(2));
+    std::this_thread::sleep_for(std::chrono::seconds(1));
   }
 
   workerPool_t::Instance().Unregister(actorID);

@@ -5,7 +5,6 @@
 #include <worker.hpp>
 #include <common.hpp>
 #include <config.hpp>
-#include <context.hpp>
 
 namespace
 {
@@ -13,10 +12,33 @@ namespace
   {
     pthread_setname_np(pthread_self(), name.c_str());
   }
+
+  int MakeNewActorID(uint16_t actorIndex)
+  {
+    //
+    // System requires some way to separate deleted actors from active,
+    // I decided to use unique IDs.
+    //
+    // 0xUUUUIIII
+    //
+    // I - 16-bit index in actors array
+    // U - 16-bit always increasing counter
+    //
+    static std::atomic_uint16_t uid(0);
+    return (((uid++) & 0x7FFF) << 16) | actorIndex;
+  }
+
+  uint16_t GetActorIndex(int actorID)
+  {
+    return (actorID & 0xFFFF);
+  }
+
 }
 
 namespace bb
 {
+
+  static const uint32_t maxActorsInWorkerPool = 0x10000;
 
   void workerPool_t::PrepareInfo(workerID_t id)
   {
@@ -63,10 +85,12 @@ namespace bb
       }
       {
         auto readLock = this->actorsGuard.GetReadLock();
+        assert(this->actors.size() <= maxActorsInWorkerPool);
+
         size_t totalKnownActors = this->actors.size();
-        for (size_t curActorID = 0; curActorID < totalKnownActors; ++curActorID)
+        for (size_t curActorIndex = 0; curActorIndex < totalKnownActors; ++curActorIndex)
         {
-          auto actorIt = this->actors.begin() + curActorID;
+          auto actorIt = this->actors.begin() + curActorIndex;
           auto actorProcessResult = msgResult_t::skipped;
           auto& actor = *actorIt;
           if (actor)
@@ -82,9 +106,7 @@ namespace bb
             {
               readLock.reset(); // must get stronger lock
               auto wlock = this->actorsGuard.GetWriteLock();
-
-              context_t::Instance().UnregisterActorCallbacks(curActorID);
-              this->deletedActors.push_back(curActorID);
+              this->deletedActors.push_back(curActorIndex);
               actorIt->reset();
 
               wlock.reset(); // return to normal read lock
@@ -162,67 +184,81 @@ namespace bb
     assert(role);
 
     auto lock = this->actorsGuard.GetWriteLock();
+    if (this->deletedActors.empty() && (this->actors.size() >= maxActorsInWorkerPool))
+    {
+      bb::Error("%s %u", "Too many actors! Must not be greater than ", maxActorsInWorkerPool);
+      return -1;
+    }
+
     std::unique_ptr<actor_t> newActor(new actor_t(std::move(role)));
 
+    int resultActorID = -1;
     if (this->deletedActors.empty())
     {
-      int result = this->actors.size();
-      newActor->PostMessage(IssueSetID(result));
+      uint16_t actorIndex = (this->actors.size() & 0xFFFF);
+
+      resultActorID = MakeNewActorID(actorIndex);
+      newActor->PostMessage(IssueSetID(resultActorID));
+      newActor->ProcessMessages();
       this->actors.emplace_back(std::move(newActor));
-      return result;
     }
     else
     {
-      int result = this->deletedActors.front();
+      uint16_t actorIndex = this->deletedActors.front();
       this->deletedActors.pop_front();
-      newActor->PostMessage(IssueSetID(result));
-      this->actors[result].swap(newActor);
-      return result;
+      
+      resultActorID = MakeNewActorID(actorIndex);
+      newActor->PostMessage(IssueSetID(resultActorID));
+      newActor->ProcessMessages();
+      this->actors[actorIndex].swap(newActor);
     }
+
+    bb::Info("Actor (%08x) registered", resultActorID);
+    return resultActorID;
   }
 
   int workerPool_t::FindFirstByName(const std::string& name)
   {
     auto lock = this->actorsGuard.GetReadLock();
-    int index = 0;
     for(auto& actIt: this->actors)
     {
       if ((actIt) && (actIt->Name() == name))
       {
-        return index;
+        return actIt->ID();
       }
-      ++index;
     }
     return -1;
   }
 
-  void workerPool_t::PostMessage(int actorID, msg_t message)
+  int workerPool_t::PostMessage(int actorID, msg_t message)
   {
-    size_t uid = static_cast<size_t>(actorID);
+    uint16_t actorIndex = GetActorIndex(actorID);
+    assert(actorIndex < this->actors.size());
+
     {
       auto lock = this->actorsGuard.GetReadLock();
-      if (uid > this->actors.size())
-      {
-        throw std::runtime_error("PostMessage: Invalid actor ID");
-      }
 
-      auto actIt = this->actors.begin() + uid;
-      if (*actIt)
+      auto actIt = this->actors.begin() + actorIndex;
+      if ((*actIt) && ((*actIt)->ID() == actorID))
       {
-        auto& actor = *actIt;
-        actor->PostMessage(message);
+        (*actIt)->PostMessage(message);
+      }
+      else
+      {
+        bb::Error("Actor (%08x) is no longer exists!", actorID);
+        return -1;
       }
     }
     for (auto& info: this->infos)
     {
       info.notify.notify_one();
     }
+    return 0;
   }
 
-  void workerPool_t::Unregister(int actorID)
+  int workerPool_t::Unregister(int actorID)
   {
-    this->PostMessage(actorID, bb::MakeMsg(-1, POISON, 0));
+    return this->PostMessage(actorID, bb::MakeMsg(-1, POISON, 0));
   }
-
 
 }

@@ -39,7 +39,7 @@ namespace bb
     using vectorOfInfo_t = std::vector<workerInfo_t>;
 
     using actorStorage_t = std::vector<std::unique_ptr<actor_t>>;
-    using deletedActorList_t = std::list<int>; 
+    using deletedActorList_t = std::deque<uint16_t>; 
 
     void PrepareInfo(workerID_t id);
     void WorkerThread(workerID_t id);
@@ -69,8 +69,8 @@ namespace bb
     int Register(std::unique_ptr<role_t>&& role);
     int FindFirstByName(const std::string& name);
 
-    void PostMessage(int actorID, msg_t message);
-    void Unregister(int actorID);
+    int PostMessage(int actorID, msg_t message);
+    int Unregister(int actorID);
 
   };
 

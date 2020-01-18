@@ -4,8 +4,19 @@
 
 #include <cassert>
 
+#include <context.hpp>
+
+/**
+ * TODO: This code needs to have better actor ID management!
+ * 
+ * When actor died and replaced with another, it may still have to 
+ * receive answers, when it does - need to manage them somehow
+ * 
+ */
+
 namespace bb
 {
+
 
   msg_t IssuePoison()
   {
@@ -72,6 +83,7 @@ namespace bb
       case msgID_t::POISON:
         {
           bb::Debug("Actor \"%s\" (%d) is poisoned", this->Name().c_str(), this->ID());
+          context_t::Instance().UnregisterActorCallbacks(this->ID());
           this->sick = true;
           this->id = -1;
           return msgResult_t::poisoned;
