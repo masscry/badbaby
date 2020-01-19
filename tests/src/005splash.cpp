@@ -46,12 +46,12 @@ int main(int argc, char* argv[])
   vao.BindIndecies(vboInd);
 
   auto lastTick = glfwGetTime();
-  auto timePassed = 0.0;
+  auto timePassed = 0.0f;
 
   for(;;)
   {
     auto nowTick = glfwGetTime();
-    auto delta = nowTick - lastTick;
+    auto delta = static_cast<float>(nowTick - lastTick);
     timePassed += delta/20.0f;
     lastTick = nowTick;
 

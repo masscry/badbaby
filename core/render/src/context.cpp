@@ -151,8 +151,8 @@ namespace bb
 
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
 
-    this->width  = config.Value("window.width",  800);
-    this->height = config.Value("window.height", 600);
+    this->width  = static_cast<int>(config.Value("window.width",  800.0));
+    this->height = static_cast<int>(config.Value("window.height", 600.0));
     std::string winTitle = config.Value("window.title", "BadBaby");
     bool winFullscreen = (config.Value("window.fullscreen", 0.0) != 0.0);
 

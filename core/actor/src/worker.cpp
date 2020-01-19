@@ -5,6 +5,7 @@
 #include <worker.hpp>
 #include <common.hpp>
 #include <config.hpp>
+#include <role.hpp>
 
 namespace
 {
@@ -30,7 +31,7 @@ namespace
 
   uint16_t GetActorIndex(int actorID)
   {
-    return (actorID & 0xFFFF);
+    return static_cast<uint16_t>(actorID & 0xFFFF);
   }
 
 }
@@ -95,7 +96,17 @@ namespace bb
           auto& actor = *actorIt;
           if (actor)
           {
-            actorProcessResult = actor->ProcessMessages();
+            //
+            // Actor can use PostMessage from inside, so we need somehow
+            // release actorsGuard#readLock, but forbid others to mess with 
+            // this actor while it processes data.
+            //
+            // We do this inside ProcessMessagesReadReleaseAquire, after 
+            // actor's own lock is captured, actorsGuard#readLock can be 
+            // temporaly released, until actor processing completes
+            //
+            Debug("Process \"%s\" (%08x)", actor->Name().c_str(), actor->ID());
+            actorProcessResult = actor->ProcessMessagesReadReleaseAquire(this->actorsGuard);
           }
           switch (actorProcessResult)
           {
@@ -104,13 +115,17 @@ namespace bb
             break;
           case msgResult_t::poisoned:
             {
-              readLock.reset(); // must get stronger lock
-              auto wlock = this->actorsGuard.GetWriteLock();
-              this->deletedActors.push_back(curActorIndex);
-              actorIt->reset();
+              // this is only way to delete actor, code works in a way that
+              // only actor itself says when it can be killed.
+              this->actorsGuard.UnlockRead(); // must get stronger lock temporaly
 
-              wlock.reset(); // return to normal read lock
-              readLock = this->actorsGuard.GetReadLock();
+              // read lock will be aquired, when wlock is dies
+              BB_DEFER(this->actorsGuard.LockRead());
+
+              // wlock dies before BB_DEFER executes
+              auto wlock = this->actorsGuard.GetWriteLock();
+              this->deletedActors.push_back(static_cast<uint16_t>(curActorIndex & 0xFFFF));
+              actorIt->reset();
             }
             break;
           case msgResult_t::error:
@@ -182,6 +197,7 @@ namespace bb
   int workerPool_t::Register(std::unique_ptr<role_t>&& role)
   {
     assert(role);
+    const char* roleName = role->DefaultName();
 
     auto lock = this->actorsGuard.GetWriteLock();
     if (this->deletedActors.empty() && (this->actors.size() >= maxActorsInWorkerPool))
@@ -213,7 +229,7 @@ namespace bb
       this->actors[actorIndex].swap(newActor);
     }
 
-    bb::Info("Actor (%08x) registered", resultActorID);
+    bb::Info("Actor \"%s\" (%08x) registered", roleName, resultActorID);
     return resultActorID;
   }
 

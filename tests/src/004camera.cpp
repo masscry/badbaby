@@ -40,8 +40,13 @@ int main(int argc, char* argv[])
 
   auto& context = bb::context_t::Instance();
   auto renderProgram = bb::shader_t::LoadProgramFromFiles("004camera_vp.glsl", "004camera_fp.glsl");
-  auto worldCamera = bb::camera_t::Perspective(45.0f, context.Width()/(float)context.Height(), 0.1f, 100.0f);
-  auto hudCamera = bb::camera_t::Orthogonal(0.0f, context.Width(), 0.0f, context.Height());
+  auto worldCamera = bb::camera_t::Perspective(
+    45.0f,
+    context.AspectRatio(),
+    0.1f,
+    100.0f
+  );
+  auto hudCamera = bb::camera_t::Orthogonal(0.0f, static_cast<float>(context.Width()), 0.0f, static_cast<float>(context.Height()));
   auto gridTexture = bb::texture_t::LoadConfig("grid.config");
 
   bb::font_t font;
@@ -66,12 +71,12 @@ int main(int argc, char* argv[])
   auto lastTick = glfwGetTime();
 
   context.RelativeCursor(true);
-  auto lastCursorPos = context.MousePos();
+  auto lastCursorPos = glm::vec2(context.MousePos());
 
   for(;;)
   {
     auto nowTick = glfwGetTime();
-    auto delta = nowTick - lastTick;
+    auto delta = static_cast<float>(nowTick - lastTick);
 
     bb::framebuffer_t::Bind(context.Canvas());
 
@@ -93,8 +98,8 @@ int main(int argc, char* argv[])
     hudCamera.Update();
     fontProgram.SetBlock(bindPointHUD, hudCamera.UniformBlock());
 
-    auto newCursorPos = context.MousePos();
-    auto deltaCursorPos = (newCursorPos - lastCursorPos)*delta*10.0;
+    auto newCursorPos = glm::vec2(context.MousePos());
+    auto deltaCursorPos = (newCursorPos - lastCursorPos)*delta*10.0f;
     lastCursorPos = newCursorPos;
 
     yaw   = std::fmod(yaw + deltaCursorPos.x, 360.0f);
@@ -125,10 +130,10 @@ int main(int argc, char* argv[])
       break;
     }
 
-    float dist = (context.IsKeyDown(GLFW_KEY_W)-context.IsKeyDown(GLFW_KEY_S))*delta;
+    float dist = static_cast<float>(context.IsKeyDown(GLFW_KEY_W)-context.IsKeyDown(GLFW_KEY_S))*delta;
     pos += glm::vec3(dir)*dist;
 
-    float side = (context.IsKeyDown(GLFW_KEY_D)-context.IsKeyDown(GLFW_KEY_A))*delta;
+    float side = static_cast<float>(context.IsKeyDown(GLFW_KEY_D)-context.IsKeyDown(GLFW_KEY_A))*delta;
     pos += glm::cross(dir, up)*side;
 
     worldCamera.View() = qRotMat * glm::translate(glm::mat4(1.0f), -pos);

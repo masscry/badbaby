@@ -35,7 +35,9 @@ namespace sub3000
           for (int col = 0; col < heightMap->width; ++col)
           {
             double angle = (col/static_cast<double>(heightMap->width))*glm::two_pi<double>();
-            heightMap->data[row*heightMap->width + col] = 1.0f - simplex(glm::dvec3(cos(angle)*params.radius, sin(angle)*params.radius, rowZ));
+            heightMap->data[row*heightMap->width + col] = static_cast<float>(
+              1.0 - simplex(glm::dvec3(cos(angle)*params.radius, sin(angle)*params.radius, rowZ))
+            );
           }
         }
         bb::workerPool_t::Instance().PostMessage(

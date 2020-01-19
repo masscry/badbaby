@@ -46,7 +46,7 @@ namespace
 namespace bb
 {
 
-  utf8Length_t utf8SymbolLength(char smb)
+  utf8Length_t utf8SymbolLength(int smb)
   {
     if ((smb & 0x80) == 0) 
     {

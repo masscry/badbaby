@@ -8,6 +8,7 @@
 #ifndef __BB_CORE_ACTOR_HEADER__
 #define __BB_CORE_ACTOR_HEADER__
 
+#include <common.hpp>
 #include <msg.hpp>
 #include <mailbox.hpp>
 
@@ -33,6 +34,8 @@ namespace bb
     actor_t(actor_t&&) = delete;
     actor_t& operator=(actor_t&&) = delete;
 
+    msgResult_t ProcessMessagesCore();
+
   public:
 
     bool Sick() const;
@@ -42,6 +45,8 @@ namespace bb
     int ID() const;
 
     msgResult_t ProcessMessages();
+
+    msgResult_t ProcessMessagesReadReleaseAquire(rwMutex_t& mutex);
 
     void PostMessage(msg_t msg);
 

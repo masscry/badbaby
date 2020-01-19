@@ -32,7 +32,7 @@ namespace bb
 
   utf8Symbols utf8extract(const char* str); 
 
-  utf8Length_t utf8SymbolLength(char smb);
+  utf8Length_t utf8SymbolLength(int smb);
 
   uint32_t utf8GetOctet(const char* str);
 

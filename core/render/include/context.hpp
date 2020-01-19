@@ -68,6 +68,7 @@ namespace bb
 
     int Width() const;
     int Height() const;
+    float AspectRatio() const;
 
     static context_t& Instance();
 
@@ -85,6 +86,11 @@ namespace bb
     void UnregisterActorCallbacks(int actorID);
 
   };
+
+  inline float context_t::AspectRatio() const
+  {
+    return static_cast<float>(this->Width())/static_cast<float>(this->Height());
+  }
 
   inline framebuffer_t& context_t::Canvas()
   {

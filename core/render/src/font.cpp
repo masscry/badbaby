@@ -45,8 +45,11 @@ namespace bb
       throw std::runtime_error("Unsupported font type");
     }
 
-    this->width = fontConfig.Value("font.width", 1.0);
-    this->height = fontConfig.Value("font.height", 1.0);
+    double fontWidth = fontConfig.Value("font.width", 1.0);
+    double fontHeight = fontConfig.Value("font.height", 1.0);
+
+    this->width = static_cast<int>(fontWidth);
+    this->height = static_cast<int>(fontHeight);
 
     // additional space between characters
     double xstride = fontConfig.Value("font.xstride", 0.0);
@@ -55,7 +58,7 @@ namespace bb
     this->texture = LoadTexture(fontConfig);
 
     // each character smaller on size of stride
-    const auto size = bb::vec2_t(1.0f/this->width - xstride, 1.0f/this->height - ystride);
+    const auto size = bb::vec2_t(1.0/fontWidth - xstride, 1.0/fontHeight - ystride);
 
     // class expect characters in WCHAR_T format, but they may be 
     // in some strange fasion arranged in texture.

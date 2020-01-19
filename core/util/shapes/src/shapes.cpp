@@ -35,7 +35,7 @@ namespace bb
 
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
-    glDrawElements(GL_TRIANGLES, this->totalVerts, GL_UNSIGNED_SHORT, 0);
+    glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(this->totalVerts), GL_UNSIGNED_SHORT, 0);
     glDisableVertexAttribArray(0);
     glDisableVertexAttribArray(1);
   }
@@ -85,32 +85,34 @@ namespace bb
     std::unique_ptr<glm::vec2[]> uvBuf(new glm::vec2[4*stackDepth]);
     std::unique_ptr<uint16_t[]> indBuf(new uint16_t[6*stackDepth]);
 
-    float deltaZ = (endZ - startZ)/(stackDepth-1);
+    float deltaZ = (endZ - startZ)/static_cast<float>(stackDepth-1);
 
-    uint16_t indOffset = 0;
+    uint32_t indOffset = 0;
     for (int i = 0; i < stackDepth; ++i)
     {
+      float zPos = static_cast<float>(i)*deltaZ + startZ;
+
       glm::vec3 xPos[4] = {
-        glm::vec3(vPos[0]*size, i*deltaZ + startZ),
-        glm::vec3(vPos[1]*size, i*deltaZ + startZ),
-        glm::vec3(vPos[2]*size, i*deltaZ + startZ),
-        glm::vec3(vPos[3]*size, i*deltaZ + startZ)
+        glm::vec3(vPos[0]*size, zPos),
+        glm::vec3(vPos[1]*size, zPos),
+        glm::vec3(vPos[2]*size, zPos),
+        glm::vec3(vPos[3]*size, zPos)
       };
 
       uint16_t indecies[6] = {
-        (uint16_t)(vInd[0] + indOffset),
-        (uint16_t)(vInd[1] + indOffset),
-        (uint16_t)(vInd[2] + indOffset),
-        (uint16_t)(vInd[3] + indOffset),
-        (uint16_t)(vInd[4] + indOffset),
-        (uint16_t)(vInd[5] + indOffset)
+        static_cast<uint16_t>(vInd[0] + indOffset),
+        static_cast<uint16_t>(vInd[1] + indOffset),
+        static_cast<uint16_t>(vInd[2] + indOffset),
+        static_cast<uint16_t>(vInd[3] + indOffset),
+        static_cast<uint16_t>(vInd[4] + indOffset),
+        static_cast<uint16_t>(vInd[5] + indOffset)
       };
 
       memcpy(posBuf.get() + i*4,     xPos, sizeof(glm::vec3)*4);
       memcpy(uvBuf.get()  + i*4,      vUV, sizeof(glm::vec2)*4);
       memcpy(indBuf.get() + i*6, indecies, sizeof(uint16_t)*6);
 
-      indOffset += 4;
+      indOffset += 4u;
     }
 
     auto vboPos = bb::vbo_t::CreateArrayBuffer(posBuf.get(),        sizeof(glm::vec3)*stackDepth*4, false);

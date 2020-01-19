@@ -36,7 +36,7 @@ namespace bb
     poisoned
   };
 
-  using actorPID_t = int16_t;
+  using actorPID_t = int;
 
   const size_t msgDataByteLength = 8;
 

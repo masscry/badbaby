@@ -2,9 +2,9 @@
 #include <worker.hpp>
 #include <role.hpp>
 
-#include <cassert>
-
 #include <context.hpp>
+
+#include <cassert>
 
 /**
  * TODO: This code needs to have better actor ID management!
@@ -16,7 +16,6 @@
 
 namespace bb
 {
-
 
   msg_t IssuePoison()
   {
@@ -42,14 +41,8 @@ namespace bb
     return result;
   }
 
-  msgResult_t actor_t::ProcessMessages()
+  msgResult_t actor_t::ProcessMessagesCore()
   {
-    std::unique_lock<std::mutex> inProcessLock(this->inProcess, std::try_to_lock);
-    if (!inProcessLock.owns_lock())
-    {
-      return msgResult_t::skipped;
-    }
-
     if (this->sick)
     {
       return msgResult_t::skipped;
@@ -82,7 +75,7 @@ namespace bb
         break;
       case msgID_t::POISON:
         {
-          bb::Debug("Actor \"%s\" (%d) is poisoned", this->Name().c_str(), this->ID());
+          bb::Debug("Actor \"%s\" (%08x) is poisoned", this->Name().c_str(), this->ID());
           context_t::Instance().UnregisterActorCallbacks(this->ID());
           this->sick = true;
           this->id = -1;
@@ -94,7 +87,7 @@ namespace bb
           auto tmpResult = curRole.ProcessMessage(*this, msg);
           if (tmpResult == msgResult_t::poisoned)
           {
-            bb::Debug("Actor \"%s\" (%d) poisoned himself", this->Name().c_str(), this->ID());
+            bb::Debug("Actor \"%s\" (%08x) poisoned himself", this->Name().c_str(), this->ID());
             this->sick = true;
             this->id = -1;
             return msgResult_t::poisoned;
@@ -107,6 +100,28 @@ namespace bb
       }
     }
     return result;
+  }
+
+  msgResult_t actor_t::ProcessMessages()
+  {
+    std::unique_lock<std::mutex> inProcessLock(this->inProcess, std::try_to_lock);
+    if (!inProcessLock.owns_lock())
+    {
+      return msgResult_t::skipped;
+    }
+    return this->ProcessMessagesCore();
+  }
+
+  msgResult_t actor_t::ProcessMessagesReadReleaseAquire(rwMutex_t& mutex)
+  {
+    std::unique_lock<std::mutex> inProcessLock(this->inProcess, std::try_to_lock);
+    if (!inProcessLock.owns_lock())
+    {
+      return msgResult_t::skipped;
+    }
+    mutex.UnlockRead();
+    BB_DEFER(mutex.LockRead());
+    return this->ProcessMessagesCore();
   }
 
   bool actor_t::NeedProcessing()

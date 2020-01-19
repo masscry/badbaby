@@ -31,16 +31,16 @@ int main(int argc, char* argv[])
 
   for (int j = 0; j < 1024; ++j)
   {
-    double z = j/10.24f;
+    double z = static_cast<float>(j)/10.24f;
 
     for (int i = 0; i < 2048; ++i)
     {
       double angle = (i/2048.0)*glm::two_pi<double>();
-      simplexMap[j*2048 + i] = 1.0f - simplex(glm::dvec3(cos(angle)*radius, sin(angle)*radius, z));
+      simplexMap[j*2048 + i] = static_cast<float>(1.0 - simplex(glm::dvec3(cos(angle)*radius, sin(angle)*radius, z)));
     }
   }
 
-  double maxVal = std::numeric_limits<double>::lowest();
+  float maxVal = std::numeric_limits<float>::lowest();
   for (int j = 0; j < 1024; ++j)
   {
     for (int i = 0; i < 2048; ++i)
@@ -72,10 +72,10 @@ int main(int argc, char* argv[])
     "006simplex_fp.glsl"
   );
 
-  zNearVal = 0.1;
+  zNearVal = 0.1f;
   zFarVal = 1000.0f;
 
-  auto worldCamera = bb::camera_t::Perspective(45.0f, context.Width()/(float)context.Height(), zNearVal, zFarVal);
+  auto worldCamera = bb::camera_t::Perspective(45.0f, context.AspectRatio(), zNearVal, zFarVal);
   auto bindCameraPoint = renderProgram.UniformBlockIndex("camera");
 
   worldCamera.View() = glm::lookAt(

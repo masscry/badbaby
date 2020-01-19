@@ -102,6 +102,11 @@ class menuModel_t: public bb::role_t
     return bb::msgResult_t::complete;
   }
 
+  const char* DefaultName() const override
+  {
+    return "menu_mdl";
+  }
+
 public:
 
   menuModel_t()

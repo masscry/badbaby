@@ -13,6 +13,14 @@ namespace
   {
     auto symbols = bb::utf8extract(text.c_str());
 
+    assert(symbols.size()*4 <= 0xFFFF); // in debug we assert this issue
+    if (symbols.size()*4 > 0xFFFF)
+    { // we are using uint16_t for vert indecies
+      // need to check if given text is to long for
+      // in release we truncate tail
+      symbols.resize(0x10000);
+    }
+
     if (output.vPos.size() < symbols.size()*4)
     {
       output.vPos.resize(symbols.size()*4);
@@ -22,7 +30,7 @@ namespace
 
     assert(symbols.size()*6 <= output.indecies.size());
 
-    uint16_t vID = 0;
+    uint32_t vID = 0;
     bb::vec3_t cursor = bb::vec3_t(0.0f);
 
     auto vPosIt = output.vPos.begin();
@@ -44,14 +52,14 @@ namespace
       *vUVIt++ = { smbOffset.x, smbOffset.y };
       *vUVIt++ = { smbOffset.x + smbSize.x, smbOffset.y };
 
-      *indIt++ = vID+0;
-      *indIt++ = vID+1;
-      *indIt++ = vID+2;
-      *indIt++ = vID+1;
-      *indIt++ = vID+3;
-      *indIt++ = vID+2;
+      *indIt++ = static_cast<uint16_t>(vID+0u);
+      *indIt++ = static_cast<uint16_t>(vID+1u);
+      *indIt++ = static_cast<uint16_t>(vID+2u);
+      *indIt++ = static_cast<uint16_t>(vID+1u);
+      *indIt++ = static_cast<uint16_t>(vID+3u);
+      *indIt++ = static_cast<uint16_t>(vID+2u);
 
-      vID += 4;
+      vID += 4u;
       cursor.x += chSize.x;
     }
     return symbols.size()*6;
@@ -111,6 +119,14 @@ namespace
   {
     auto symbols = bb::utf8extract(text.c_str());
 
+    assert(symbols.size()*4 <= 0xFFFF); // in debug we assert this issue
+    if (symbols.size()*4 > 0xFFFF)
+    { // we are using uint16_t for vert indecies
+      // need to check if given text is to long for
+      // in release we truncate tail
+      symbols.resize(0x10000);
+    }
+
     if (output.vPos.size() < symbols.size()*4)
     {
       output.vPos.resize(symbols.size()*4);
@@ -120,7 +136,7 @@ namespace
 
     assert(symbols.size()*6 <= output.indecies.size());
 
-    uint16_t vID = 0;
+    uint32_t vID = 0;
     bb::vec3_t cursor = bb::vec3_t(0.0f);
 
     auto vPosIt = output.vPos.begin();
@@ -161,14 +177,14 @@ namespace
             *vUVIt++ = { smbOffset.x, smbOffset.y };
             *vUVIt++ = { smbOffset.x + smbSize.x, smbOffset.y };
 
-            *indIt++ = vID+0;
-            *indIt++ = vID+1;
-            *indIt++ = vID+2;
-            *indIt++ = vID+1;
-            *indIt++ = vID+3;
-            *indIt++ = vID+2;
+            *indIt++ = static_cast<uint16_t>(vID+0u);
+            *indIt++ = static_cast<uint16_t>(vID+1u);
+            *indIt++ = static_cast<uint16_t>(vID+2u);
+            *indIt++ = static_cast<uint16_t>(vID+1u);
+            *indIt++ = static_cast<uint16_t>(vID+3u);
+            *indIt++ = static_cast<uint16_t>(vID+2u);
 
-            vID += 4;
+            vID += 4u;
             cursor.x += chSize.x;
           }
         }
@@ -234,7 +250,7 @@ namespace bb
     vao.BindVBO(vUVVBO, 1, 2, GL_FLOAT, GL_FALSE, 0, 0);
     vao.BindIndecies(indeciesVBO);
 
-    this->mesh = mesh_t(std::move(vao), textV.indecies.size());
+    this->mesh = mesh_t(std::move(vao), static_cast<GLsizei>(textV.indecies.size()));
   }
 
   void textDynamic_t::Update(const std::string& text)
@@ -292,7 +308,7 @@ namespace bb
 
       glEnableVertexAttribArray(0);
       glEnableVertexAttribArray(1);
-      glDrawElements(GL_TRIANGLES, this->renderI, GL_UNSIGNED_SHORT, 0);
+      glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(this->renderI), GL_UNSIGNED_SHORT, 0);
       glDisableVertexAttribArray(0);
       glDisableVertexAttribArray(1);
     }

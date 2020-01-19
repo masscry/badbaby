@@ -68,7 +68,10 @@ namespace sub3000
   void splashScene_t::OnRender()
   {
     bb::shader_t::Bind(this->shader);
-    this->shader.SetFloat(this->timePassedUniform, this->currentTimePassed);
+    this->shader.SetFloat(
+      this->timePassedUniform,
+      static_cast<float>(this->currentTimePassed)
+    );
 
     bb::framebuffer_t::Bind(this->pContext->Canvas());
     bb::vao_t::Bind(this->object);

@@ -137,9 +137,9 @@ namespace bb
    perm3D(new uint8_t[256])
   {
       std::unique_ptr<uint8_t[]> source(new uint8_t[256]);
-      for (int i = 0; i < 256; i++)
+      for (int i = 0; i < 0x100; ++i)
       {
-        source[i] = i;
+        source[i] = static_cast<uint8_t>(i);
       }
 
       seed = seed * 6364136223846793005L + 1442695040888963407L;

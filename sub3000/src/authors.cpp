@@ -63,8 +63,8 @@ namespace sub3000
 
     this->font = bb::font_t(this->fontConfig);
     this->camera = bb::camera_t::Orthogonal(
-      0.0f, this->pContext->Width(),
-      0.0f, this->pContext->Height()
+      0.0f, static_cast<float>(this->pContext->Width()),
+      0.0f, static_cast<float>(this->pContext->Height())
     );
     this->camera.Projection() = glm::scale(this->camera.Projection(), bb::vec3_t(1.0f, -1.0f, 1.0f));
     this->camera.Projection() = glm::translate(this->camera.Projection(), bb::vec3_t(0.0f, -this->pContext->Height(), 0.0f));
@@ -77,7 +77,7 @@ namespace sub3000
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
 
-    float textBias = (this->pContext->Width() - this->maxLineWidth*this->textSize.x)/2.0f;
+    float textBias = (static_cast<float>(this->pContext->Width()) - static_cast<float>(this->maxLineWidth)*this->textSize.x)/2.0f;
 
     std::string authorsText = LoadFileAsString(this->authorsFilename);
 
@@ -132,8 +132,8 @@ namespace sub3000
     this->shader_vp  = authorsConfig["shader.vp"].String();
     this->shader_fp  = authorsConfig["shader.fp"].String();
     this->fontConfig = authorsConfig["menu.font"].String();
-    this->textSize.x = authorsConfig["text.width"].Number();
-    this->textSize.y = authorsConfig["text.height"].Number();
+    this->textSize.x = static_cast<float>(authorsConfig["text.width"].Number());
+    this->textSize.y = static_cast<float>(authorsConfig["text.height"].Number());
 
     this->authorsFilename = authorsConfig["authors.info"].String();
     this->maxLineWidth = static_cast<size_t>(authorsConfig["text.maxline"].Number());

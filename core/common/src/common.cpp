@@ -4,11 +4,14 @@
 #include <cstdarg>
 
 #include <thread>
+#include <atomic>
 #include <string>
 
 #include <unistd.h>
 
 #include <common.hpp>
+
+#include <unordered_set>
 
 namespace
 {
@@ -26,6 +29,50 @@ namespace
 namespace bb
 {
 
+#ifdef BB_DOUBLE_LOCK_ASSERT
+  using lockMap_t = std::unordered_set<std::string>;
+
+  std::mutex guardLockMap;
+  lockMap_t lockMap;  
+
+  void AddLock(const std::string& thread, const std::string& mutex, const char* mode)
+  {
+    std::string key = thread+":"+mutex;
+    std::unique_lock<std::mutex> lock(guardLockMap);
+
+    Debug("LOCK: %s %s", mode, key.c_str());
+    for (const auto& item: lockMap)
+    {
+      Debug("\t%s", item.c_str());
+    }
+
+    if (lockMap.find(key) != lockMap.end())
+    {
+      assert(0);
+    }
+    lockMap.insert(key);
+  }
+
+  void RemoveLock(const std::string& thread, const std::string& mutex, const char* mode)
+  {
+    std::string key = thread+":"+mutex;
+    std::unique_lock<std::mutex> lock(guardLockMap);
+
+    auto item = lockMap.find(key);
+    if (item == lockMap.end())
+    {
+      assert(0);
+    }
+    lockMap.erase(item);
+
+    Debug("UNLK: %s %s", mode,key.c_str());
+    for (const auto& item: lockMap)
+    {
+      Debug("\t%s", item.c_str());
+    }
+  }
+#endif /* BB_DOUBLE_LOCK_ASSERT */
+
   std::string CurrentTime()
   {
     time_t now = time(nullptr);
@@ -37,6 +84,12 @@ namespace bb
     strftime(buffer.data(), buffer.size(), "%c", &nowtm);
 
     return std::string(buffer.data());
+  }
+
+  std::string GenerateUniqueName()
+  {
+    static std::atomic_int uidCounter(0);
+    return std::string("uid") + std::to_string(uidCounter++);
   }
 
   const std::string& GetThisThreadName()

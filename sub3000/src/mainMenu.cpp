@@ -112,8 +112,8 @@ namespace sub3000
 
     this->font = bb::font_t(this->fontConfig);
     this->camera = bb::camera_t::Orthogonal(
-      0.0f, this->pContext->Width(),
-      0.0f, this->pContext->Height()
+      0.0f, static_cast<float>(this->pContext->Width()),
+      0.0f, static_cast<float>(this->pContext->Height())
     );
     this->camera.Projection() = glm::scale(this->camera.Projection(), bb::vec3_t(1.0f, -1.0f, 1.0f));
     this->camera.Projection() = glm::translate(this->camera.Projection(), bb::vec3_t(0.0f, -this->pContext->Height(), 0.0f));
@@ -126,9 +126,15 @@ namespace sub3000
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
 
-    int line = 0;
+    float line = 0.0f;
 
-    size_t maxCharacters = MaxStringLengthInArray(this->textLines);
+    float maxCharacters = static_cast<float>(MaxStringLengthInArray(this->textLines));
+
+    auto textOffset = bb::vec3_t(
+      static_cast<float>(this->pContext->Width())/2.0f - maxCharacters*this->textSize.x/4.0f,
+      static_cast<float>(-this->pContext->Height())/2.0f + static_cast<float>(this->textLines.size())*this->textSize.y/2.0f,
+      0.0f
+    );
 
     for(size_t i = 0, e = this->textLines.size(); i < e; ++i)
     {
@@ -144,16 +150,16 @@ namespace sub3000
       textListBack.node.Reset();
       textListBack.node.Translate(bb::vec3_t(0.0f, this->textSize.y/2.0f, 0.0f));
       textListBack.node.Scale(bb::vec3_t(1.0f, -1.0f, 1.0f));
-      textListBack.node.Translate(bb::vec3_t(0.0f, -line*this->textSize.y - this->textSize.y/2.0f, 0.0f));
       textListBack.node.Translate(
         bb::vec3_t(
-          this->pContext->Width()/2.0f - maxCharacters*this->textSize.x/4.0,
-          -this->pContext->Height()/2.0f + e*this->textSize.y/2.0f,
+          0.0f,
+          -line*this->textSize.y - this->textSize.y/2.0f,
           0.0f
         )
       );
+      textListBack.node.Translate(textOffset);
 
-      ++line;
+      line += 1.0f;
     }
 
     this->gameInfoText = bb::textStatic_t(this->font, this->gameInfo, this->textSize*1.6f, 0);
@@ -246,8 +252,8 @@ namespace sub3000
     this->shader_vp  = menuConfig["shader.vp"].String();
     this->shader_fp  = menuConfig["shader.fp"].String();
     this->fontConfig = menuConfig["menu.font"].String();
-    this->textSize.x = menuConfig["text.width"].Number();
-    this->textSize.y = menuConfig["text.height"].Number();
+    this->textSize.x = static_cast<float>(menuConfig["text.width"].Number());
+    this->textSize.y = static_cast<float>(menuConfig["text.height"].Number());
 
     this->textLines = this->LoadMenuLines(menuConfig, "menu.text");
     this->msgLines  = this->LoadMenuLines(menuConfig, "menu.msg");

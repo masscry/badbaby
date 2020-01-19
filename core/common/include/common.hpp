@@ -15,6 +15,8 @@
 #include <mutex>
 #include <condition_variable>
 
+//#define BB_DOUBLE_LOCK_ASSERT
+
 namespace bb
 {
 
@@ -36,7 +38,20 @@ namespace bb
 
   const std::string& GetThisThreadName();
 
+  std::string GenerateUniqueName();
+
   std::string CurrentTime();
+
+  #ifdef BB_DOUBLE_LOCK_ASSERT
+    #define READ_MODE ("R")
+    #define WRITE_MODE ("W")
+
+    void AddLock(const std::string& thread, const std::string& mutex, const char* mode);
+    void RemoveLock(const std::string& thread, const std::string& mutex, const char* mode);
+  #else
+    #define AddLock(THREAD, MUTEX, MODE)
+    #define RemoveLock(THREAD, MUTEX, MODE)
+  #endif /* BB_DOUBLE_LOCK_ASSERT */
 
   class rwMutex_t final
   {
@@ -47,61 +62,15 @@ namespace bb
     bool                    hasWriter;
     unsigned int            totalReaders;
 
+    #ifdef BB_DOUBLE_LOCK_ASSERT
+    std::string uid;
+    #endif /* BB_DOUBLE_LOCK_ASSERT */
+
     rwMutex_t(const rwMutex_t&) = delete;
     rwMutex_t(rwMutex_t&&) = delete;
 
     rwMutex_t& operator=(const rwMutex_t&) = delete;
     rwMutex_t& operator=(rwMutex_t&&) = delete;
-
-    void LockWrite()
-    {
-      std::unique_lock<std::mutex> lock(this->mutex);
-      this->gate1.wait(lock, [this](){ return !this->hasWriter; });
-      this->hasWriter = true;
-      this->gate2.wait(lock, [this](){ return this->totalReaders == 0; });
-    }
-
-    void UnlockWrite()
-    {
-      {
-        std::lock_guard<std::mutex> lock(this->mutex);
-        this->hasWriter = false;
-        this->totalReaders = 0;
-      }
-      this->gate1.notify_all();
-    }
-
-    void LockRead()
-    {
-      std::unique_lock<std::mutex> lock(this->mutex);
-      this->gate1.wait(lock,
-        [this]()
-        { // when already writer in queue, or too many readers
-          return (!this->hasWriter) && (this->totalReaders != std::numeric_limits<decltype(this->totalReaders)>::max()); 
-        }
-      );
-      ++this->totalReaders;
-    }
-
-    void UnlockRead()
-    {
-      std::lock_guard<std::mutex> lock(this->mutex);
-      --this->totalReaders;
-      if (this->hasWriter)
-      {
-        if (this->totalReaders == 0)
-        {
-          this->gate2.notify_one();
-        }
-      }
-      else
-      {
-        if (this->totalReaders == std::numeric_limits<decltype(this->totalReaders)>::max()-1)
-        {
-          this->gate1.notify_one();
-        }
-      }
-    }
 
     struct releaseReadLock_t final {
       void operator()(rwMutex_t* mut){
@@ -117,8 +86,18 @@ namespace bb
 
   public:
 
+    void LockWrite();
+    void UnlockWrite();
+
+    void LockRead();
+
+    void UnlockRead();
+
     rwMutex_t()
     :hasWriter(false), totalReaders(0)
+    #ifdef BB_DOUBLE_LOCK_ASSERT
+    ,uid(GenerateUniqueName())
+    #endif /* BB_DOUBLE_LOCK_ASSERT */
     {
       ;
     }
@@ -190,6 +169,63 @@ namespace bb
     }
 
   };
+
+  inline void rwMutex_t::LockWrite()
+  {
+    std::unique_lock<std::mutex> lock(this->mutex);
+
+    AddLock(GetThisThreadName(), this->uid, WRITE_MODE);
+
+    this->gate1.wait(lock, [this](){ return !this->hasWriter; });
+    this->hasWriter = true;
+    this->gate2.wait(lock, [this](){ return this->totalReaders == 0; });
+  }
+
+  inline void rwMutex_t::UnlockWrite()
+  {
+    {
+      std::lock_guard<std::mutex> lock(this->mutex);
+      this->hasWriter = false;
+      this->totalReaders = 0;
+      RemoveLock(GetThisThreadName(), this->uid, WRITE_MODE);
+    }
+    this->gate1.notify_all();
+  }
+
+  inline void rwMutex_t::LockRead()
+  {
+    std::unique_lock<std::mutex> lock(this->mutex);
+    AddLock(GetThisThreadName(), this->uid, READ_MODE);
+    this->gate1.wait(lock,
+      [this]()
+      { // when already writer in queue, or too many readers
+        return (!this->hasWriter) && (this->totalReaders != std::numeric_limits<decltype(this->totalReaders)>::max()); 
+      }
+    );
+    ++this->totalReaders;
+  }
+
+  inline void rwMutex_t::UnlockRead()
+  {
+    std::lock_guard<std::mutex> lock(this->mutex);
+    --this->totalReaders;
+    RemoveLock(GetThisThreadName(), this->uid, READ_MODE);
+    if (this->hasWriter)
+    {
+      if (this->totalReaders == 0)
+      {
+        this->gate2.notify_one();
+      }
+    }
+    else
+    {
+      if (this->totalReaders == std::numeric_limits<decltype(this->totalReaders)>::max()-1)
+      {
+        this->gate1.notify_one();
+      }
+    }
+  }
+
 
 }
 
