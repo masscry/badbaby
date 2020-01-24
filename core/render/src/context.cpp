@@ -214,6 +214,8 @@ namespace bb
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    context_t::isAlreadyExists = true;
   }
 
   context_t::~context_t()
@@ -227,12 +229,20 @@ namespace bb
       glfwDestroyWindow(this->wnd);
     }
     glfwTerminate();
+    context_t::isAlreadyExists = false;
   }
 
   context_t& context_t::Instance()
   {
     static context_t self;
     return self;
+  }
+
+  bool context_t::isAlreadyExists = false;
+
+  bool context_t::IsAlreadyExists()
+  {
+    return context_t::isAlreadyExists;
   }
 
   bool context_t::Update()

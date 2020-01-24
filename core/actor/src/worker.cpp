@@ -105,7 +105,6 @@ namespace bb
             // actor's own lock is captured, actorsGuard#readLock can be 
             // temporaly released, until actor processing completes
             //
-            Debug("Process \"%s\" (%08x)", actor->Name().c_str(), actor->ID());
             actorProcessResult = actor->ProcessMessagesReadReleaseAquire(this->actorsGuard);
           }
           switch (actorProcessResult)

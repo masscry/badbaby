@@ -56,6 +56,8 @@ namespace bb
       return msgResult_t::skipped;
     }
 
+    Debug("Process \"%s\" (%08x)", this->Name().c_str(), this->ID());
+
     auto result = msgResult_t::complete;
     while(msgAlreadyInQueue-->0)
     {
@@ -76,7 +78,7 @@ namespace bb
       case msgID_t::POISON:
         {
           bb::Debug("Actor \"%s\" (%08x) is poisoned", this->Name().c_str(), this->ID());
-          context_t::Instance().UnregisterActorCallbacks(this->ID());
+          context_t::UnregisterActorCallbacksIfContextExists(this->ID());
           this->sick = true;
           this->id = -1;
           return msgResult_t::poisoned;

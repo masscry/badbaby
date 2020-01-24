@@ -37,6 +37,8 @@ namespace bb
 
   class context_t final
   {
+    static bool isAlreadyExists;
+
     using pairOfFlags = std::pair<int, contextMsgFlag_t>;
     using actorCallbackList_t = std::list<pairOfFlags>;
 
@@ -71,6 +73,7 @@ namespace bb
     float AspectRatio() const;
 
     static context_t& Instance();
+    static bool IsAlreadyExists();
 
     bool Update();
 
@@ -84,6 +87,14 @@ namespace bb
 
     void RegisterActorCallback(int actorID, contextMsgFlag_t flags);
     void UnregisterActorCallbacks(int actorID);
+
+    static void UnregisterActorCallbacksIfContextExists(int actorID)
+    {
+      if (context_t::IsAlreadyExists())
+      {
+        context_t::Instance().UnregisterActorCallbacks(actorID);
+      }
+    }
 
   };
 
