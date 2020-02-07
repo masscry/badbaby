@@ -12,7 +12,7 @@
 namespace sub3000
 {
 
-  enum class gameAction_t
+  enum class gameAction_t: uint32_t
   {
     firstItem = 0,
     newGame = firstItem,

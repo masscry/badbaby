@@ -1,6 +1,6 @@
 /**
  * @file mainMenu.h
- * @author main menu scene
+ * main menu scene
  */
 
 #pragma once

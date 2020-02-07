@@ -2,6 +2,7 @@
 #include <splash.hpp>
 #include <mainMenu.hpp>
 #include <authors.hpp>
+#include <arena.hpp>
 
 #include <msg.hpp>
 #include <sub3000.hpp>
@@ -54,6 +55,11 @@ namespace sub3000
       {
         static authorsScene_t authors;
         return &authors;
+      }
+    case sceneID_t::arena:
+      {
+        static arenaScene_t arena;
+        return &arena;
       }
     default:
       throw std::runtime_error("Unknown Scene Requested");

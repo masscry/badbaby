@@ -12,7 +12,8 @@ namespace sub3000
   {
     splash = 0,
     mainMenu,
-    authors
+    authors,
+    arena
   };
 
   class scene_t

@@ -50,11 +50,11 @@ namespace sub3000
 
 void ProcessGameAction(int src, sub3000::gameAction_t action)
 {
+  bb::Debug("GameAction: %u from %d", static_cast<uint32_t>(action), src);
   switch (action)
   {
   case sub3000::gameAction_t::newGame:
-    bb::Debug("%s", "Map Generation Started");
-    sub3000::RequestGenerateMap(2048, 1024, 10.0f, src);
+    sub3000::PostChangeScene(sub3000::sceneID_t::arena);
     break;
   case sub3000::gameAction_t::logo:
     sub3000::PostChangeScene(sub3000::sceneID_t::splash);
