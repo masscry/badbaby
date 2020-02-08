@@ -10,6 +10,7 @@
 #define __BB_CORE_RENDER_VAO_HEADER__
 
 #include <cstddef>
+#include <vector>
 
 #include <glad/glad.h>
 
@@ -42,6 +43,18 @@ namespace bb
     static vbo_t CreateArrayBuffer(const void* data, size_t dataSize, bool dynamic);
 
     static vbo_t CreateElementArrayBuffer(const void* data, size_t dataSize, bool dynamic);
+
+    template<typename data_t>
+    static vbo_t CreateArrayBuffer(const std::vector<data_t>& data, bool dynamic)
+    {
+      return vbo_t::CreateArrayBuffer(data.data(), sizeof(data_t)*data.size(), dynamic);
+    }
+
+    template<typename data_t>
+    static vbo_t CreateElementArrayBuffer(const std::vector<data_t>& data, bool dynamic)
+    {
+      return vbo_t::CreateElementArrayBuffer(data.data(), sizeof(data_t)*data.size(), dynamic);
+    }
 
   };
 
