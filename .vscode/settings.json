@@ -56,7 +56,8 @@
     "unordered_set": "cpp",
     "iomanip": "cpp",
     "set": "cpp",
-    "regex": "cpp"
+    "regex": "cpp",
+    "cerrno": "cpp"
   },
   "files.exclude": {
     "**/.classpath": true,
