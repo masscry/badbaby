@@ -141,50 +141,76 @@ namespace bb
   bb::mesh_t GenerateCircle(int sides, float radius, float width)
   {
     std::vector<glm::vec2> points;
+    std::vector<float> distance;
     std::vector<uint16_t> indecies;
 
-    sides = bb::CheckValueBounds(sides, 3, std::numeric_limits<uint16_t>::max()/2);
+    sides = bb::CheckValueBounds(sides, 3, std::numeric_limits<uint16_t>::max()/4);
     radius = bb::CheckValueBounds(radius, 0.0f, 1000.0f);
     width = bb::CheckValueBounds(width, 0.01f, radius/2.0f);
 
-    if (sides*2 > std::numeric_limits<uint16_t>::max())
+    if (sides*4 > std::numeric_limits<uint16_t>::max())
     { // can't be so many sides!
       assert(0);
-      sides = std::numeric_limits<uint16_t>::max()/2;
+      sides = std::numeric_limits<uint16_t>::max()/4;
     }
 
-    points.reserve(sides*2);
-    indecies.reserve(sides*2+2);
+    distance.reserve(sides*3);
+    points.reserve(sides*3);
+    indecies.reserve(sides*4+4);
 
     float angle = 0.0f;
     const float angleStep = static_cast<float>(M_PI*2.0/sides);
     const float outerRing = radius + width/2.0f;
-    const float innerRing = radius - width/2.0f;
-
     uint16_t index = 0;
-    while(sides-->0)
+    for(int i = 0; i < sides; ++i)
     {
       glm::vec2 point;
       sincosf(angle, &point.x, &point.y);
       points.push_back(point * outerRing);
-      points.push_back(point * innerRing);
+      points.push_back(point * radius);
+
+      distance.push_back(0.0f);
+      distance.push_back(1.0f);
 
       indecies.push_back(index++);
       indecies.push_back(index++);
       angle += angleStep;
     }
-
     indecies.push_back(0);
     indecies.push_back(1);
+    indecies.push_back(0xFFFF); // break strip
+
+    const float innerRing = radius - width/2.0f;
+    angle = 0.0f;
+
+    uint16_t startInnerRing = index;
+    uint16_t radiusVertex = 1;
+    for(int i = 0; i < sides; ++i)
+    {
+      glm::vec2 point;
+      sincosf(angle, &point.x, &point.y);
+      points.push_back(point * innerRing);
+      distance.push_back(0.0f);
+
+      indecies.push_back(radiusVertex);
+      indecies.push_back(index++);
+      angle += angleStep;
+      radiusVertex = static_cast<uint16_t>(radiusVertex + 2);
+    }
+
+    indecies.push_back(1);
+    indecies.push_back(startInnerRing);
 
     auto arrayBuffer = bb::vbo_t::CreateArrayBuffer(points, false);
+    auto distBuffer = bb::vbo_t::CreateArrayBuffer(distance, false);
     auto elementsBuffer = bb::vbo_t::CreateElementArrayBuffer(indecies, false);
     auto circle = bb::vao_t::CreateVertexAttribObject();
 
     circle.BindVBO(arrayBuffer, 0, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    circle.BindVBO(distBuffer, 1, 1, GL_FLOAT, GL_FALSE, 0, 0);
     circle.BindIndecies(elementsBuffer);
 
-    return bb::mesh_t(std::move(circle), indecies.size(), GL_TRIANGLE_STRIP, 1);
+    return bb::mesh_t(std::move(circle), indecies.size(), GL_TRIANGLE_STRIP, 2);
   }
 
 }

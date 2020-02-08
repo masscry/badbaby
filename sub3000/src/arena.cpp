@@ -24,8 +24,6 @@ namespace sub3000
       static_cast<float>(menuConfig.Value("circle.radius", 0.5)),
       static_cast<float>(menuConfig.Value("circle.width", 0.1))
     );
-    this->radarFrame = bb::framebuffer_t(1024, 1024);
-    this->blur = bb::blur_t(&this->radarFrame, &this->pContext->Canvas(), 1024);
   }
 
   void arenaScene_t::OnUpdate(double)
@@ -35,13 +33,11 @@ namespace sub3000
   
   void arenaScene_t::OnRender()
   {
-    bb::framebuffer_t::Bind(this->radarFrame);
+    bb::framebuffer_t::Bind(this->pContext->Canvas());
     bb::shader_t::Bind(this->shader);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     this->radar.Render();
-
-    this->blur.Render();
   }
 
   void arenaScene_t::OnCleanup()

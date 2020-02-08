@@ -22,10 +22,8 @@ namespace sub3000
   class arenaScene_t final: public scene_t
   {
     bb::context_t* pContext;
-    bb::framebuffer_t radarFrame;
     bb::shader_t shader;
     bb::mesh_t radar;
-    bb::blur_t blur;
 
     void OnPrepare() override;
     void OnUpdate(double delta) override;
