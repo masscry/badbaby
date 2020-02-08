@@ -10,6 +10,8 @@
 #define __BB_COMMON_CONFIG_HEADER__
 
 #include <value.hpp>
+#include <common.hpp>
+
 #include <unordered_map>
 
 namespace bb
@@ -52,10 +54,12 @@ namespace bb
       auto it = this->dict.find(key);
       if (it == this->dict.end())
       {
+        bb::Debug("\"%s\" is not found in config (defaults to %f)", key.c_str(), defaultVal);
         return defaultVal;
       }
       if (it->second.Type() != type_t::number)
       {
+        bb::Debug("\"%s\" has invalid type (defaults to %f)", key.c_str(), defaultVal);
         return defaultVal;
       }
       return it->second.Number();
@@ -66,10 +70,12 @@ namespace bb
       auto it = this->dict.find(key);
       if (it == this->dict.end())
       {
+        bb::Debug("\"%s\" is not found in config (defaults to %s)", key.c_str(), defaultVal.c_str());
         return defaultVal;
       }
       if (it->second.Type() != type_t::string)
       {
+        bb::Debug("\"%s\" has invalid type (defaults to %s)", key.c_str(), defaultVal.c_str());
         return defaultVal;
       }
       return it->second.String();
