@@ -21,6 +21,8 @@ namespace bb
   {
     vao_t vao;
     size_t totalVerts;
+    GLenum drawMode;
+    GLuint activeBuffers;
 
     mesh_t(const mesh_t&) = delete; 
     mesh_t& operator=(const mesh_t&) = delete; 
@@ -31,7 +33,7 @@ namespace bb
 
     mesh_t();
 
-    mesh_t(vao_t&& vao, size_t totalVerts);
+    mesh_t(vao_t&& vao, size_t totalVerts, GLenum drawMode, GLuint activeBuffers);
 
     mesh_t(mesh_t&&) = default; 
     mesh_t& operator=(mesh_t&&) = default; 
@@ -42,7 +44,7 @@ namespace bb
 
   mesh_t GeneratePlaneStack(glm::vec2 size, int stackDepth, float startZ, float endZ);
 
-
+  mesh_t GenerateCircle(int sides, float radius, float width);
 
 } // namespace bb
 

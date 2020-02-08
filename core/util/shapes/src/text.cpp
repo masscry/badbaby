@@ -250,7 +250,7 @@ namespace bb
     vao.BindVBO(vUVVBO, 1, 2, GL_FLOAT, GL_FALSE, 0, 0);
     vao.BindIndecies(indeciesVBO);
 
-    this->mesh = mesh_t(std::move(vao), static_cast<GLsizei>(textV.indecies.size()));
+    this->mesh = mesh_t(std::move(vao), static_cast<GLsizei>(textV.indecies.size()), GL_TRIANGLES, 2);
   }
 
   void textDynamic_t::Update(const std::string& text)
