@@ -20,11 +20,23 @@ namespace bb
   {
     texture_t tex;
     GLuint self;
+    int width;
+    int height;
 
     framebuffer_t(const framebuffer_t&) = delete;
     framebuffer_t& operator=(const framebuffer_t&) = delete;
 
   public:
+
+    int Width() const
+    {
+      return this->width;
+    }
+
+    int Height() const
+    {
+      return this->height;
+    }
 
     const texture_t& Texture()
     {

@@ -1,13 +1,16 @@
 #include <stdexcept>
 
 #include <framebuffer.hpp>
+#include <context.hpp>
 
 namespace bb
 {
   framebuffer_t::framebuffer_t(framebuffer_t&& move)
-  :tex(std::move(move.tex)),self(move.self)
+  :tex(std::move(move.tex)),self(move.self),width(move.width),height(move.height)
   {
     move.self = 0;
+    move.width = 0;
+    move.height = 0;
   }
 
   framebuffer_t& framebuffer_t::operator=(framebuffer_t&& move)
@@ -25,8 +28,13 @@ namespace bb
 
     this->tex  = std::move(move.tex);
     this->self = move.self;
+    this->width = move.width;
+    this->height = move.height;
+    
     move.self = 0;
-
+    move.width = 0;
+    move.height = 0;
+    
     return *this;
   }
 
@@ -37,7 +45,7 @@ namespace bb
   }
 
   framebuffer_t::framebuffer_t(int width, int height)
-  :tex(width, height),self(0)
+  :tex(width, height),self(0),width(width),height(height)
   {
     GLuint rbo;
 
@@ -72,11 +80,13 @@ namespace bb
   void framebuffer_t::Bind(const framebuffer_t& fb)
   {
     glBindFramebuffer(GL_FRAMEBUFFER, fb.self);
+    glViewport(0, 0, fb.Width(), fb.Height());
   }
 
   void framebuffer_t::RenderToScreen()
   {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glViewport(0, 0, context_t::Instance().Width(), context_t::Instance().Height());
   }
 
 
