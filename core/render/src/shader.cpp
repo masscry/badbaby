@@ -145,6 +145,21 @@ namespace bb
     glUniform1i(loc, texUnit);
   }
 
+  void shader_t::SetVector2f(GLint loc, const glm::vec2& value) const
+  {
+    glUniform2f(loc, value.x, value.y);
+  }
+
+  void shader_t::SetVector3f(GLint loc, const glm::vec3& value) const
+  {
+    glUniform3f(loc, value.x, value.y, value.z);
+  }
+
+  void shader_t::SetVector4f(GLint loc, const glm::vec4& value) const
+  {
+    glUniform4f(loc, value.x, value.y, value.z, value.w);
+  }
+
   void shader_t::Bind(const shader_t& shader)
   {
     glUseProgram(shader.handle);
