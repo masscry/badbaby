@@ -36,6 +36,22 @@ namespace bb
   void Warning(const char* format, ...) __attribute__ ((format (printf, 1, 2)));
   void Error(const char* format, ...) __attribute__ ((format (printf, 1, 2)));
 
+  template<typename data_t>
+  data_t CheckValueBounds(data_t value, data_t lowerBound, data_t upperBound)
+  {
+    if (value < lowerBound)
+    {
+      bb::Warning("%s", "Lower bound check failed");
+      return lowerBound;
+    }
+    if (value > upperBound)
+    {
+      bb::Warning("%s", "Upper bound check failed");
+      return upperBound;
+    }
+    return value;
+  }
+
   const std::string& GetThisThreadName();
 
   std::string GenerateUniqueName();
