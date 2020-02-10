@@ -1,8 +1,8 @@
 #include <blur.hpp>
 
-namespace 
+namespace
 {
-  const char* blurVShader = 
+  const char* blurVShader =
   R"raw(
     #version 330 core
 
@@ -18,14 +18,14 @@ namespace
     }
   )raw";
 
-  const char* blurFShader = 
+  const char* blurFShader =
   R"raw(
     #version 330 core
 
     layout(location = 0) out vec4 pixColor;
 
     in vec2 fragUV;
-    
+
     uniform sampler2D tex;
     uniform float resolution;
     uniform float radius;
@@ -58,7 +58,7 @@ namespace
     }
   )raw";
 
-} // namespace 
+} // namespace
 
 namespace bb
 {
@@ -91,7 +91,7 @@ namespace bb
     ;
   }
 
-  blur_t::blur_t(bb::framebuffer_t* src, bb::framebuffer_t* dst, uint32_t fboSize)
+  blur_t::blur_t(bb::framebuffer_t* src, bb::framebuffer_t* dst, int fboSize)
   : plane(bb::GeneratePlane(bb::vec2_t(2.0f, 2.0f), bb::vec3_t(0.0f))),
     shader(blurVShader, blurFShader),
     temp(fboSize, fboSize),

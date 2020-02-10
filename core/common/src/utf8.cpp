@@ -6,7 +6,7 @@
 namespace
 {
 
-  const uint32_t utf8Mask[bb::UTF8_TOTAL] = 
+  const uint32_t utf8Mask[bb::UTF8_TOTAL] =
   {
     0x3F, // tail has 6 bits to use   10XXXXXX
     0x7F, // 1-byte has 7 bits to use 0XXXXXXX
@@ -20,15 +20,15 @@ namespace
     uint32_t result = 0;
 
     // read first octet
-    int cursor = *str++;
+    uint32_t cursor = static_cast<uint32_t>(*str++);
     result |= cursor & utf8Mask[octets];
 
     // read left octets
     --octets;
-    while(octets-->0) 
+    while(octets-->0)
     {
-        cursor = *str++;
-        if (bb::utf8SymbolLength(cursor) != bb::UTF8_TAIL)
+        cursor = static_cast<uint32_t>(*str++);
+        if (bb::utf8SymbolLength(static_cast<int>(cursor)) != bb::UTF8_TAIL)
         { // Bad UTF8 symbol
           assert(0);
           return 0xFFFFFFFF;
@@ -48,7 +48,7 @@ namespace bb
 
   utf8Length_t utf8SymbolLength(int smb)
   {
-    if ((smb & 0x80) == 0) 
+    if ((smb & 0x80) == 0)
     {
         // 0XXXXXXX
         return UTF8_ONE;

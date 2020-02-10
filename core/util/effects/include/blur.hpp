@@ -1,8 +1,8 @@
 /**
  * @file blur.hpp
- * 
+ *
  * Simple gaussian blur effect
- * 
+ *
  */
 
 #pragma once
@@ -25,7 +25,7 @@ namespace bb
     bb::framebuffer_t temp;
     bb::framebuffer_t* src;
     bb::framebuffer_t* dst;
-    uint32_t fboSize;
+    int fboSize;
 
     blur_t(const blur_t&) = delete;
     blur_t& operator=(const blur_t&) = delete;
@@ -35,7 +35,7 @@ namespace bb
     void Render();
 
     blur_t();
-    blur_t(bb::framebuffer_t* src, bb::framebuffer_t* dst, uint32_t fboSize);
+    blur_t(bb::framebuffer_t* src, bb::framebuffer_t* dst, int fboSize);
     ~blur_t();
 
     blur_t(blur_t&&) = default;

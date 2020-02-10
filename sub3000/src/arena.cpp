@@ -20,7 +20,7 @@ namespace sub3000
     );
 
     this->radar = bb::GenerateCircle(
-      static_cast<int>(menuConfig.Value("circle.sides", 16.0)),
+      static_cast<uint32_t>(menuConfig.Value("circle.sides", 16.0)),
       static_cast<float>(menuConfig.Value("circle.radius", 0.5)),
       static_cast<float>(menuConfig.Value("circle.width", 0.1))
     );

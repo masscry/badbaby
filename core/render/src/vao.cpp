@@ -11,7 +11,7 @@ namespace bb
     move.self = 0;
     move.type = 0;
   }
-  
+
   vbo_t& vbo_t::operator =(vbo_t&& move)
   {
     if (this == &move)
@@ -36,7 +36,7 @@ namespace bb
   {
     ;
   }
-  
+
   vbo_t::~vbo_t()
   {
     if (this->self != 0)
@@ -54,7 +54,7 @@ namespace bb
   void vbo_t::Update(int offset, size_t size, const void* data)
   {
     glBindBuffer(this->type, this->self);
-    glBufferSubData(this->type, offset, size, data);
+    glBufferSubData(this->type, offset, static_cast<GLsizeiptr>(size), data);
     glBindBuffer(this->type, 0);
   }
 
@@ -64,7 +64,7 @@ namespace bb
 
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, dataSize, data, (dynamic)?GL_DYNAMIC_DRAW:GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(dataSize), data, (dynamic)?GL_DYNAMIC_DRAW:GL_STATIC_DRAW);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     return vbo_t(vbo, GL_ARRAY_BUFFER);
@@ -76,7 +76,7 @@ namespace bb
 
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, dataSize, data, (dynamic)?GL_DYNAMIC_DRAW:GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLsizeiptr>(dataSize), data, (dynamic)?GL_DYNAMIC_DRAW:GL_STATIC_DRAW);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
     return vbo_t(vbo, GL_ELEMENT_ARRAY_BUFFER);

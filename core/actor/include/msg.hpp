@@ -1,8 +1,8 @@
 /**
  * @file msg.hpp
- * 
+ *
  * Simple message struct
- * 
+ *
  */
 #pragma once
 #ifndef __BB_CORE_MSG_HEADER__
@@ -57,9 +57,9 @@ namespace bb
   msg_t MakeMsg(int src, msgXID_t type, data_t data)
   {
     msg_t result;
-    static_assert(sizeof(data_t) <= sizeof(msg_t::data));
-    static_assert(std::is_pod<data_t>::value);
-    static_assert(sizeof(msgXID_t) == sizeof(msgID_t));
+    static_assert(sizeof(data_t) <= sizeof(msg_t::data), "Data must fit in 8 bytes");
+    static_assert(std::is_pod<data_t>::value, "Data must be POD");
+    static_assert(sizeof(msgXID_t) == sizeof(msgID_t), "Message type must be 2 bytes");
 
     result.src = src;
     result.type = static_cast<uint16_t>(type);
@@ -71,8 +71,8 @@ namespace bb
   msg_t MakeMsgPtr(int src, msgXID_t type, data_t* pData)
   {
     msg_t result;
-    static_assert(sizeof(data_t*) <= sizeof(msg_t::data));
-    static_assert(sizeof(msgXID_t) == sizeof(msgID_t));
+    static_assert(sizeof(data_t*) <= sizeof(msg_t::data), "Pointer must fit in 8 bytes");
+    static_assert(sizeof(msgXID_t) == sizeof(msgID_t), "Message type must be 2 bytes");
 
     result.src = src;
     result.type = static_cast<uint16_t>(type);
@@ -91,8 +91,8 @@ namespace bb
   template<typename data_t>
   data_t GetMsgData(const msg_t& msg)
   {
-    static_assert(sizeof(data_t) <= sizeof(msg_t::data));
-    static_assert(std::is_pod<data_t>::value);
+    static_assert(sizeof(data_t) <= sizeof(msg_t::data), "Data must fit in 8 bytes");
+    static_assert(std::is_pod<data_t>::value, "Data must be POD");
 
     data_t result;
     memcpy(&result, msg.data, sizeof(data_t));

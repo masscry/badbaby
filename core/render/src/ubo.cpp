@@ -26,7 +26,7 @@ namespace bb
     {
       glDeleteBuffers(1, &this->self);
     }
-    
+
     this->self = mv.self;
     mv.self = 0;
 
@@ -38,7 +38,7 @@ namespace bb
   {
     ;
   }
-  
+
   uniformBlock_t::~uniformBlock_t()
   {
     if (this->self != 0)
@@ -52,15 +52,15 @@ namespace bb
     GLuint result;
     glGenBuffers(1, &result);
     glBindBuffer(GL_UNIFORM_BUFFER, result);
-    glBufferData(GL_UNIFORM_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
+    glBufferData(GL_UNIFORM_BUFFER, static_cast<GLsizeiptr>(size), nullptr, GL_DYNAMIC_DRAW);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
     return uniformBlock_t(result);
   }
-  
+
   void uniformBlock_t::UpdateData(void* data, int offset, size_t size)
   {
     glBindBuffer(GL_UNIFORM_BUFFER, this->self);
-    glBufferSubData(GL_UNIFORM_BUFFER, offset, size, data);
+    glBufferSubData(GL_UNIFORM_BUFFER, offset, static_cast<GLsizeiptr>(size), data);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
   }
 

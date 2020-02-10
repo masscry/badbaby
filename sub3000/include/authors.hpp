@@ -51,8 +51,8 @@ namespace sub3000
     bb::font_t        font;
 
     uint32_t          camBindBlock;
-    uint32_t          modelBindPoint;
-    uint32_t          glyphColorBindPoint;
+    int               modelBindPoint;
+    int               glyphColorBindPoint;
 
     std::string      authorsFilename;
     bb::textStatic_t authorsText;

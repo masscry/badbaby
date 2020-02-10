@@ -28,14 +28,14 @@ namespace sub3000
         heightMap->width = params.width;
         heightMap->height = params.height;
         heightMap->data.reset(new float[heightMap->width*heightMap->height]);
-        
+
         for (int row = 0; row < heightMap->height; ++row)
         {
           double rowZ = row/static_cast<double>(heightMap->height)*10.0;
           for (int col = 0; col < heightMap->width; ++col)
           {
             double angle = (col/static_cast<double>(heightMap->width))*glm::two_pi<double>();
-            heightMap->data[row*heightMap->width + col] = static_cast<float>(
+            heightMap->data[static_cast<size_t>(row*heightMap->width + col)] = static_cast<float>(
               1.0 - simplex(glm::dvec3(cos(angle)*params.radius, sin(angle)*params.radius, rowZ))
             );
           }

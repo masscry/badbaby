@@ -6,11 +6,11 @@
 #include <common.hpp>
 #include <shader.hpp>
 
-namespace 
+namespace
 {
 
   GLuint LoadShader(GLenum shaderType, const char* shaderText) {
-    GLuint result = glCreateShader(shaderType);
+    auto result = glCreateShader(shaderType);
     glShaderSource(result, 1, &shaderText, nullptr);
     glCompileShader(result);
 
@@ -21,7 +21,7 @@ namespace
     glGetShaderiv(result, GL_INFO_LOG_LENGTH, &compileInfoLen);
     if ( compileInfoLen > 1 ){
       compileInfoLen += 1;
-      std::string text(compileInfoLen, '\0');
+      std::string text(static_cast<size_t>(compileInfoLen), '\0');
       glGetShaderInfoLog(result, compileInfoLen, nullptr, &text[0]);
       throw std::runtime_error(std::string("Shader compilation failed: type ") + std::to_string(shaderType) + ": " + text);
     }
@@ -32,7 +32,7 @@ namespace
     GLuint VertexShader = LoadShader(GL_VERTEX_SHADER, vshader);
     GLuint FragmentShader = LoadShader(GL_FRAGMENT_SHADER, fshader);
 
-    int result = glCreateProgram();
+    auto result = glCreateProgram();
     glAttachShader(result, VertexShader);
     glAttachShader(result, FragmentShader);
     glLinkProgram(result);
@@ -44,7 +44,7 @@ namespace
     glGetProgramiv(result, GL_INFO_LOG_LENGTH, &linkInfoLen);
     if ( linkInfoLen > 1 ){
       linkInfoLen += 1;
-      std::string text(linkInfoLen, '\0');
+      std::string text(static_cast<size_t>(linkInfoLen), '\0');
       glGetProgramInfoLog(result, linkInfoLen, nullptr, &text[0]);
       throw std::runtime_error(std::string("Program link failed: ") + text);
     }
@@ -53,7 +53,7 @@ namespace
     return result;
   }
 
-} // namespace 
+} // namespace
 
 namespace bb
 {

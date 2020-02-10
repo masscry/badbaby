@@ -1,6 +1,6 @@
 /**
  * @file common.hpp
- * 
+ *
  * Common Engine Routines
  */
 
@@ -22,9 +22,9 @@ namespace bb
 
   /**
    * @brief Process common startup arguments.
-   * 
+   *
    * Function can exit process, when invalid argument or -h flag received
-   * 
+   *
    * @param argc total argument count
    * @param argv arguments array
    * @return int non-zero on errors, zero otherwise
@@ -120,19 +120,19 @@ namespace bb
 
     ~rwMutex_t() = default;
 
-    using readLock_t = std::unique_ptr<rwMutex_t, releaseReadLock_t>; 
-    using writeLock_t = std::unique_ptr<rwMutex_t, releaseWriteLock_t>; 
+    using readLock_t = std::unique_ptr<rwMutex_t, releaseReadLock_t>;
+    using writeLock_t = std::unique_ptr<rwMutex_t, releaseWriteLock_t>;
 
-    readLock_t GetReadLock() 
+    readLock_t GetReadLock()
     {
       this->LockRead();
-      return std::move(readLock_t(this));
+      return readLock_t(this);
     }
 
     writeLock_t GetWriteLock()
     {
       this->LockWrite();
-      return std::move(writeLock_t(this));
+      return writeLock_t(this);
     }
 
   };

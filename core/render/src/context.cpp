@@ -80,7 +80,7 @@ namespace
         return "?????";
     }
   }
-  
+
   const char* ErrorSeverity(GLenum severity)
   {
     switch(severity)
@@ -202,8 +202,8 @@ namespace bb
       glGetString(GL_SHADING_LANGUAGE_VERSION)
     );
 
-    this->canvas = std::move(framebuffer_t(this->width, this->height));
-    this->shader = std::move(shader_t(vShader, fShader));
+    this->canvas = framebuffer_t(this->width, this->height);
+    this->shader = shader_t(vShader, fShader);
 
     vbo_t vPosBuffer = vbo_t::CreateArrayBuffer(vPos, sizeof(vPos), false);
     vbo_t vTexBuffer = vbo_t::CreateArrayBuffer(vTex, sizeof(vTex), false);
@@ -223,9 +223,9 @@ namespace bb
 
   context_t::~context_t()
   {
-    this->shader = std::move(shader_t());
-    this->canvas = std::move(framebuffer_t());
-    this->vao    = std::move(vao_t());
+    this->shader = shader_t();
+    this->canvas = framebuffer_t();
+    this->vao    = vao_t();
 
     if (this->wnd != nullptr)
     {

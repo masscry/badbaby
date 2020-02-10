@@ -82,7 +82,7 @@ namespace sub3000
   mainMenuModel_t::mainMenuModel_t(textList_t& textList, bb::mailbox_t& view)
   : textList(textList),
     view(view),
-    selectedLine(0)    
+    selectedLine(0)
   {
     this->view.Put(bb::MakeMsg(0, MMS_SELECT_LINE, selectedLine));
   }
@@ -91,10 +91,10 @@ namespace sub3000
   {
     mainMenuScene_t::menuLines_t result;
 
-    int totalLines = static_cast<int>(config["menu.lines"].Number());
+    size_t totalLines = static_cast<size_t>(config["menu.lines"].Number());
 
     result.reserve(totalLines);
-    for (int i = 0; i < totalLines; ++i)
+    for (size_t i = 0; i < totalLines; ++i)
     {
       std::string menu_text = prefix + std::string("[") + std::to_string(i) + "]";
       result.push_back(config[menu_text].String());
@@ -106,7 +106,7 @@ namespace sub3000
   {
     this->pContext = &bb::context_t::Instance();
     this->shader = bb::shader_t::LoadProgramFromFiles(
-      this->shader_vp.c_str(), 
+      this->shader_vp.c_str(),
       this->shader_fp.c_str()
     );
 

@@ -91,18 +91,18 @@ namespace bb
         size_t totalKnownActors = this->actors.size();
         for (size_t curActorIndex = 0; curActorIndex < totalKnownActors; ++curActorIndex)
         {
-          auto actorIt = this->actors.begin() + curActorIndex;
+          auto actorIt = this->actors.begin() + static_cast<long>(curActorIndex);
           auto actorProcessResult = msgResult_t::skipped;
           auto& actor = *actorIt;
           if (actor)
           {
             //
             // Actor can use PostMessage from inside, so we need somehow
-            // release actorsGuard#readLock, but forbid others to mess with 
+            // release actorsGuard#readLock, but forbid others to mess with
             // this actor while it processes data.
             //
-            // We do this inside ProcessMessagesReadReleaseAquire, after 
-            // actor's own lock is captured, actorsGuard#readLock can be 
+            // We do this inside ProcessMessagesReadReleaseAquire, after
+            // actor's own lock is captured, actorsGuard#readLock can be
             // temporaly released, until actor processing completes
             //
             actorProcessResult = actor->ProcessMessagesReadReleaseAquire(this->actorsGuard);
@@ -161,7 +161,7 @@ namespace bb
 
     Info("Total Worker Count: %u", totalWorkers);
 
-    this->infos = std::move(vectorOfInfo_t(totalWorkers));
+    this->infos = vectorOfInfo_t(totalWorkers);
     for (decltype(totalWorkers) i = 0; i < totalWorkers; ++i)
     {
       this->workers.emplace_back(

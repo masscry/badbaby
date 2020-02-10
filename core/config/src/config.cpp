@@ -19,7 +19,7 @@ namespace bb
   {
     ;
   }
-  
+
   config_t& config_t::operator=(config_t&& move)
   {
     if (this == &move)
@@ -76,7 +76,7 @@ namespace bb
     yyset_extra(&tokenData, scanner);
 
     // this can lead to YY_FATAL_ERROR, and exit
-    auto tmpBuf = yy_scan_string(line.c_str(), scanner); 
+    auto tmpBuf = yy_scan_string(line.c_str(), scanner);
     BB_DEFER(yy_delete_buffer(tmpBuf, scanner));
 
     // Only this variants expected

@@ -56,7 +56,7 @@ E    ([Ee][+-]?{D}+)
                         return BB_STRING;
                       }
 
-.|\n                  { /* DO NOTHING */ assert("This can't happen"); }
+.|\n                  { /* DO NOTHING */ assert(0); }
 
 %%
 

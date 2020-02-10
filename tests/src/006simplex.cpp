@@ -36,7 +36,7 @@ int main(int argc, char* argv[])
     for (int i = 0; i < 2048; ++i)
     {
       double angle = (i/2048.0)*glm::two_pi<double>();
-      simplexMap[j*2048 + i] = static_cast<float>(1.0 - simplex(glm::dvec3(cos(angle)*radius, sin(angle)*radius, z)));
+      simplexMap[static_cast<size_t>(j*2048 + i)] = static_cast<float>(1.0 - simplex(glm::dvec3(cos(angle)*radius, sin(angle)*radius, z)));
     }
   }
 
@@ -45,7 +45,7 @@ int main(int argc, char* argv[])
   {
     for (int i = 0; i < 2048; ++i)
     {
-      maxVal = (simplexMap[j*2048 + i] > maxVal)?(simplexMap[j*2048 + i]):(maxVal);
+      maxVal = (simplexMap[static_cast<size_t>(j*2048 + i)] > maxVal)?(simplexMap[static_cast<size_t>(j*2048 + i)]):(maxVal);
     }
   }
 
@@ -53,7 +53,7 @@ int main(int argc, char* argv[])
   {
     for (int i = 0; i < 2048; ++i)
     {
-      simplexMap[j*2048 + i] /= maxVal;
+      simplexMap[static_cast<size_t>(j*2048 + i)] /= maxVal;
     }
   }
 
@@ -63,7 +63,7 @@ int main(int argc, char* argv[])
 
   float zNearVal = 0.0f;
   float zFarVal = 20.0f;
-  int stackDepth = 30;
+  uint32_t stackDepth = 30;
 
   auto plane = bb::GeneratePlaneStack(glm::vec2(800.0f, 400.0f), stackDepth, zNearVal, zFarVal);
 

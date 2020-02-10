@@ -47,7 +47,13 @@ add_executable(007menu
 
 target_link_libraries(007menu PRIVATE config render actor shapes)
 
-install(TARGETS 
+add_executable(008script
+  src/008script.cpp
+)
+
+target_link_libraries(008script PRIVATE script)
+
+install(TARGETS
     000hello
     001render
     002config
@@ -56,6 +62,7 @@ install(TARGETS
     005splash
     006simplex
     007menu
+    008script
   RUNTIME DESTINATION bin
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib

@@ -69,7 +69,7 @@ namespace sub3000
   scene_t* TopScene(size_t depth)
   {
     assert(depth < sceneStack.size());
-    return *(sceneStack.rbegin() + depth);
+    return *(sceneStack.rbegin() + static_cast<long>(depth));
   }
 
   void PushScene(scene_t* scene)

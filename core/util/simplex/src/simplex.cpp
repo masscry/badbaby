@@ -5,12 +5,12 @@
 #include <cassert>
 
 template <typename T, std::size_t N>
-constexpr std::size_t countof(T const (&)[N]) noexcept 
+constexpr std::size_t countof(T const (&)[N]) noexcept
 {
     return N;
 }
 
-namespace 
+namespace
 {
 
     const double STRETCH_3D = -1.0 / 6.0;            //(1/Math.sqrt(3+1)-1)/3;
@@ -123,7 +123,7 @@ namespace
             lookup3D.reset(new ptrContrib_t[2048]);
             for (size_t i = 0; i < countof(lookupPairs3D); i += 2)
             {
-                lookup3D[lookupPairs3D[i]] = contributions3D[lookupPairs3D[i + 1]];
+                lookup3D[static_cast<const size_t>(lookupPairs3D[i])] = contributions3D[lookupPairs3D[i + 1]];
             }
         }
     } initOpenSimplexNoise;
@@ -132,12 +132,12 @@ namespace
 namespace bb
 {
 
-  simplex_t::simplex_t(long seed) 
+  simplex_t::simplex_t(long seed)
   :perm(new uint8_t[256]),
    perm3D(new uint8_t[256])
   {
       std::unique_ptr<uint8_t[]> source(new uint8_t[256]);
-      for (int i = 0; i < 0x100; ++i)
+      for (size_t i = 0; i < 0x100; ++i)
       {
         source[i] = static_cast<uint8_t>(i);
       }
@@ -146,7 +146,7 @@ namespace bb
       seed = seed * 6364136223846793005L + 1442695040888963407L;
       seed = seed * 6364136223846793005L + 1442695040888963407L;
 
-      for (int i = 255; i >= 0; i--)
+      for (int i = 255; i >= 0; --i)
       {
           seed = seed * 6364136223846793005L + 1442695040888963407L;
           int r = (int)((seed + 31) % (i + 1));
@@ -154,9 +154,9 @@ namespace bb
           {
               r += (i + 1);
           }
-          perm[i] = source[r];
-          perm3D[i] = (uint8_t)((perm[i] % 24) * 3);
-          source[r] = source[i];
+          perm[static_cast<size_t>(i)] = source[static_cast<size_t>(r)];
+          perm3D[static_cast<size_t>(i)] = (uint8_t)((perm[static_cast<size_t>(i)] % 24) * 3);
+          source[static_cast<size_t>(r)] = source[static_cast<size_t>(i)];
       }
   }
 
@@ -191,7 +191,7 @@ namespace bb
           (int)(inSum + yins) << 7 |
           (int)(inSum + xins) << 9;
 
-      auto c = lookup3D[hash];
+      auto c = lookup3D[static_cast<size_t>(hash)];
 
       auto value = 0.0;
       while (c != nullptr)

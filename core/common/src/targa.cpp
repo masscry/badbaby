@@ -18,13 +18,13 @@ namespace
 
 #pragma pack(push, 1)
 
-  struct tgaColorMapSpec 
+  struct tgaColorMapSpec
   {
     uint16_t first;
     uint16_t len;
     uint8_t  size;
   };
-  
+
   struct tgaImageSpec
   {
     uint16_t xorig;
@@ -32,12 +32,12 @@ namespace
     uint16_t width;
     uint16_t height;
     uint8_t  depth;
-    uint8_t  alpha:4; // 3-0 
+    uint8_t  alpha:4; // 3-0
     uint8_t  _zero:1; // 4
     uint8_t  orig:1;  // 5
     uint8_t  _res:2;
   };
-  
+
   struct tgaHeader
   {
     uint8_t         idlen;
@@ -46,7 +46,7 @@ namespace
     tgaColorMapSpec cms;
     tgaImageSpec    is;
   };
-  
+
   struct tgaFooter
   {
     uint32_t extoff;
@@ -94,9 +94,9 @@ const char TGA_SIGNATURE[] = "TRUEVISION-XFILE.";
       {
         throw std::runtime_error("TGA: unexpected EOF (RGBA)");
       }
-  
+
       size_t pixCount = (rc & 0x7F) + 1;
-  
+
       if ((rc & 0x80) != 0) // RLE-packet
       {
         uint32_t copyPixel;
@@ -132,9 +132,9 @@ const char TGA_SIGNATURE[] = "TRUEVISION-XFILE.";
       {
         throw std::runtime_error("TGA: unexpected EOF (BW)");
       }
-  
+
       size_t pixCount = (rc & 0x7F) + 1;
-  
+
       if ((rc & 0x80) != 0) // RLE-packet
       {
         uint8_t copyPixel[2];
@@ -183,20 +183,20 @@ namespace bb
       throw std::runtime_error(std::string("TGA: image not found") + filename);
     }
     BB_DEFER(fclose(input));
-    
-    if (fseek(input, -sizeof(tgaFooter), SEEK_END) != 0) 
+
+    if (fseek(input, -static_cast<long>(sizeof(tgaFooter)), SEEK_END) != 0)
     {
       throw std::runtime_error("TGA: fseek failed");
     }
 
     tgaFooter foot;
 
-    if (fread(&foot, sizeof(tgaFooter), 1, input) != 1) 
+    if (fread(&foot, sizeof(tgaFooter), 1, input) != 1)
     {
       throw std::runtime_error("TGA: fread failed");
     }
 
-    if (strcmp(foot.sig, TGA_SIGNATURE) != 0) 
+    if (strcmp(foot.sig, TGA_SIGNATURE) != 0)
     {
       throw std::runtime_error("TGA: invalid signature");
     }
@@ -212,7 +212,7 @@ namespace bb
       throw std::runtime_error("TGA: fread failed");
     }
 
-    if (head.idlen != 0) 
+    if (head.idlen != 0)
     {
       throw std::runtime_error("TGA: invalid idlen");
     }
@@ -328,7 +328,7 @@ namespace bb
 
       size_t byteWidth = head.is.width*4;
 
-      for (int line = 0; line < head.is.height/2; ++line) {
+      for (uint32_t line = 0; line < head.is.height/2; ++line) {
         memcpy(tempLine.get(), pixels.get() + line*byteWidth, byteWidth);
         memcpy(pixels.get() + line*byteWidth, pixels.get() + (head.is.height - line - 1)*byteWidth, byteWidth);
         memcpy(pixels.get() + (head.is.height - line - 1)*byteWidth, tempLine.get(), byteWidth);

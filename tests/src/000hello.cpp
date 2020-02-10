@@ -27,7 +27,7 @@ class hello_t: public role_t
     return msgResult_t::complete;
   }
 
-  const char* DefaultName() const
+  const char* DefaultName() const override
   {
     return "hello_t";
   }

@@ -90,7 +90,7 @@ namespace bb
     return mesh_t(std::move(vao), 6, GL_TRIANGLES, 2);
   }
 
-  mesh_t GeneratePlaneStack(glm::vec2 size, int stackDepth, float startZ, float endZ)
+  mesh_t GeneratePlaneStack(glm::vec2 size, uint32_t stackDepth, float startZ, float endZ)
   {
     std::unique_ptr<glm::vec3[]> posBuf(new glm::vec3[4*stackDepth]);
     std::unique_ptr<glm::vec2[]> uvBuf(new glm::vec2[4*stackDepth]);
@@ -99,7 +99,7 @@ namespace bb
     float deltaZ = (endZ - startZ)/static_cast<float>(stackDepth-1);
 
     uint32_t indOffset = 0;
-    for (int i = 0; i < stackDepth; ++i)
+    for (uint32_t i = 0; i < stackDepth; ++i)
     {
       float zPos = static_cast<float>(i)*deltaZ + startZ;
 
@@ -126,9 +126,9 @@ namespace bb
       indOffset += 4u;
     }
 
-    auto vboPos = bb::vbo_t::CreateArrayBuffer(posBuf.get(),        sizeof(glm::vec3)*stackDepth*4, false);
-    auto vboUV  = bb::vbo_t::CreateArrayBuffer(uvBuf.get(),         sizeof(glm::vec2)*stackDepth*4, false);
-    auto vboInd = bb::vbo_t::CreateElementArrayBuffer(indBuf.get(), sizeof(uint16_t)*stackDepth*6, false);
+    auto vboPos = bb::vbo_t::CreateArrayBuffer(posBuf.get(),        sizeof(glm::vec3)*stackDepth*4u, false);
+    auto vboUV  = bb::vbo_t::CreateArrayBuffer(uvBuf.get(),         sizeof(glm::vec2)*stackDepth*4u, false);
+    auto vboInd = bb::vbo_t::CreateElementArrayBuffer(indBuf.get(), sizeof(uint16_t)*stackDepth*6u, false);
     auto vao    = bb::vao_t::CreateVertexAttribObject();
 
     vao.BindVBO(vboPos, 0, 3, GL_FLOAT, GL_FALSE, 0, 0);
@@ -138,13 +138,13 @@ namespace bb
     return mesh_t(std::move(vao), stackDepth*6, GL_TRIANGLES, 2);
   }
 
-  bb::mesh_t GenerateCircle(int sides, float radius, float width)
+  bb::mesh_t GenerateCircle(uint32_t sides, float radius, float width)
   {
     std::vector<glm::vec2> points;
     std::vector<float> distance;
     std::vector<uint16_t> indecies;
 
-    sides = bb::CheckValueBounds(sides, 3, std::numeric_limits<uint16_t>::max()/2);
+    sides = bb::CheckValueBounds(sides, static_cast<uint32_t>(3), static_cast<uint32_t>(std::numeric_limits<uint16_t>::max()/2));
     radius = bb::CheckValueBounds(radius, 0.0f, 1000.0f);
     width = bb::CheckValueBounds(width, 0.01f, radius/2.0f);
 

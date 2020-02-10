@@ -1,6 +1,6 @@
 /**
  * @file font.hpp
- * 
+ *
  * Simple font rendering.
  */
 
@@ -51,19 +51,19 @@ namespace bb
 
     void Load(const std::string& filename);
 
-    const sharedTexture_t& Texture() const 
+    const sharedTexture_t& Texture() const
     {
       return this->texture;
     }
 
-    int Width() const 
+    int Width() const
     {
-      return this->Width(); 
+      return this->width;
     }
 
-    int Height() const 
+    int Height() const
     {
-      return this->Height(); 
+      return this->height;
     }
 
     vec2_t SymbolOffset(uint32_t smb) const

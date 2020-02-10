@@ -1,6 +1,6 @@
 /**
  * @file token.h
- * 
+ *
  * Parsing config tokens
  */
 
@@ -25,7 +25,7 @@ extern "C" {
   struct bbCoreConfigTokenData_t
   {
     enum bbCoreConfigToken_t type;
-    union 
+    union
     {
       char*  str;
       double num;
@@ -34,7 +34,10 @@ extern "C" {
 
   void bbCoreConfigTokenReset(struct bbCoreConfigTokenData_t* tokenData);
 
+#ifndef YY_TYPEDEF_YY_SCANNER_T
+#define YY_TYPEDEF_YY_SCANNER_T
   typedef void* yyscan_t;
+#endif /* YY_TYPEDEF_YY_SCANNER_T */
 
   extern int yylex (yyscan_t yyscanner, locale_t locale);
 

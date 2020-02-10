@@ -86,9 +86,9 @@ namespace sub3000
     bb::shader_t      shader;
     bb::font_t        font;
 
-    uint32_t          camBindBlock;
-    uint32_t          modelBindPoint;
-    uint32_t          glyphColorBindPoint;
+    uint32_t     camBindBlock;
+    int          modelBindPoint;
+    int          glyphColorBindPoint;
 
     int menuModelID;
     bb::mailbox_t mailbox;

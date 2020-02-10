@@ -23,18 +23,18 @@ namespace bb
     if (this->self != 0)
     {
       glDeleteFramebuffers(1, &this->self);
-      this->tex = std::move(texture_t());
+      this->tex = texture_t();
     }
 
     this->tex  = std::move(move.tex);
     this->self = move.self;
     this->width = move.width;
     this->height = move.height;
-    
+
     move.self = 0;
     move.width = 0;
     move.height = 0;
-    
+
     return *this;
   }
 
