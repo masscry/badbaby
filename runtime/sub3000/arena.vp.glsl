@@ -4,10 +4,10 @@
 layout(location = 0) in vec2 pos;
 layout(location = 1) in float dist;
 
-out float color;
+out float fragPos;
 
 void main()
 {
-  color = dist;
+  fragPos = dist;
   gl_Position = vec4(pos, 0.0f, 1.0f);
 }

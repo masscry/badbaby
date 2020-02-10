@@ -144,7 +144,7 @@ namespace bb
     std::vector<float> distance;
     std::vector<uint16_t> indecies;
 
-    sides = bb::CheckValueBounds(sides, 3, std::numeric_limits<uint16_t>::max()/4);
+    sides = bb::CheckValueBounds(sides, 3, std::numeric_limits<uint16_t>::max()/2);
     radius = bb::CheckValueBounds(radius, 0.0f, 1000.0f);
     width = bb::CheckValueBounds(width, 0.01f, radius/2.0f);
 
@@ -154,20 +154,21 @@ namespace bb
       sides = std::numeric_limits<uint16_t>::max()/4;
     }
 
-    distance.reserve(sides*3);
-    points.reserve(sides*3);
-    indecies.reserve(sides*4+4);
+    distance.reserve(sides*2);
+    points.reserve(sides*2);
+    indecies.reserve(sides*2+2);
 
     float angle = 0.0f;
     const float angleStep = static_cast<float>(M_PI*2.0/sides);
     const float outerRing = radius + width/2.0f;
+    const float innerRing = radius - width/2.0f;
     uint16_t index = 0;
-    for(int i = 0; i < sides; ++i)
+    while(sides-->0)
     {
       glm::vec2 point;
       sincosf(angle, &point.x, &point.y);
       points.push_back(point * outerRing);
-      points.push_back(point * radius);
+      points.push_back(point * innerRing);
 
       distance.push_back(0.0f);
       distance.push_back(1.0f);
@@ -178,28 +179,6 @@ namespace bb
     }
     indecies.push_back(0);
     indecies.push_back(1);
-    indecies.push_back(0xFFFF); // break strip
-
-    const float innerRing = radius - width/2.0f;
-    angle = 0.0f;
-
-    uint16_t startInnerRing = index;
-    uint16_t radiusVertex = 1;
-    for(int i = 0; i < sides; ++i)
-    {
-      glm::vec2 point;
-      sincosf(angle, &point.x, &point.y);
-      points.push_back(point * innerRing);
-      distance.push_back(0.0f);
-
-      indecies.push_back(radiusVertex);
-      indecies.push_back(index++);
-      angle += angleStep;
-      radiusVertex = static_cast<uint16_t>(radiusVertex + 2);
-    }
-
-    indecies.push_back(1);
-    indecies.push_back(startInnerRing);
 
     auto arrayBuffer = bb::vbo_t::CreateArrayBuffer(points, false);
     auto distBuffer = bb::vbo_t::CreateArrayBuffer(distance, false);
