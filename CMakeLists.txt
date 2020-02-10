@@ -26,6 +26,7 @@ target_link_libraries(badbaby INTERFACE
 add_subdirectory(core)
 add_subdirectory(tests)
 add_subdirectory(sub3000)
+add_subdirectory(painter)
 
 install(DIRECTORY runtime
   DESTINATION share
