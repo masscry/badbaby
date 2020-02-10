@@ -8,3 +8,4 @@ runtime/sample.config
 runtime/test.bson
 runtime/sub3000/*.log
 runtime/tests/*.log
+*.swp
