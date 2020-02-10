@@ -56,7 +56,9 @@ E    ([Ee][+-]?{D}+)
                         return BB_STRING;
                       }
 
-.|\n                  { /* DO NOTHING */ assert(0); }
+[[:space:]]+          { /* SKIP SPACES */ }
+
+.                     { /* DO NOTHING */ fprintf(stderr, "GOT %c (%d)\n", *yytext, *yytext); assert(0); }
 
 %%
 
