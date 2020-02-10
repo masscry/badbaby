@@ -118,7 +118,6 @@ namespace bb
             scriptMode = SM_COMMAND;
             break;
           default:
-            assert(0);
             return -1;
         }
         break;
