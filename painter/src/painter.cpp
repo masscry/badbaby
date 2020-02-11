@@ -10,6 +10,7 @@
 #include <actor.hpp>
 #include <worker.hpp>
 #include <role.hpp>
+#include <monfs.hpp>
 
 namespace
 {
@@ -30,6 +31,8 @@ namespace paint
     {
       case bb::msgID_t::KEYBOARD:
         return "key";
+      case mainMessage_t::update:
+        return "update";
       case mainMessage_t::nop:
         return "nop";
       case mainMessage_t::exit:
@@ -41,34 +44,15 @@ namespace paint
 
 }
 
-class passToMainLoop_t final: public bb::role_t
+class monitorOpenedFile_t final: public bb::fs::processor_t
 {
-
-  bb::msgResult_t OnProcessMessage(const bb::actor_t&, bb::msg_t msg) override
-  {
-    paint::PostToMain(msg);
-    return bb::msgResult_t::complete;
-  }
-
 public:
-
-  const char* DefaultName() const override
+  int OnChange(const char*, bb::fs::event_t)
   {
-    return "passToMainLoop";
+    paint::PostToMain(bb::MakeMsg(-1, paint::mainMessage_t::update, 0));
+    return 0;
   }
-
-  passToMainLoop_t()
-  {
-    ;
-  }
-
-  ~passToMainLoop_t() override
-  {
-    ;
-  }
-
 };
-
 
 const char* vpShader = R"shader(
   // Vertex Shader
@@ -265,11 +249,11 @@ int main(int argc, char* argv[])
     return -1;
   }
 
-  auto& pool = bb::workerPool_t::Instance();
-  auto passToMainLoopActor = pool.Register(
-    std::unique_ptr<bb::role_t>(new passToMainLoop_t())
+  bb::fs::monitor_t monitor = bb::fs::monitor_t::Create(
+    std::unique_ptr<bb::fs::processor_t>(new monitorOpenedFile_t())
   );
-  context.RegisterActorCallback(passToMainLoopActor, bb::cmfKeyboard);
+
+  monitor.Watch(argv[1]);
 
   bool loop = true;
   while(loop)
@@ -280,6 +264,8 @@ int main(int argc, char* argv[])
     {
       break;
     }
+
+    monitor.Check();
 
     bb::msg_t msgToMain;
 
@@ -303,6 +289,9 @@ int main(int argc, char* argv[])
           break;
         case paint::nop:
           break;
+        case paint::update:
+          UpdateScene(argv[1]);
+          break;
         case paint::exit:
           loop = false;
           break;
@@ -312,11 +301,9 @@ int main(int argc, char* argv[])
     }
   }
 
-  pool.Unregister(passToMainLoopActor);
-
-  lineShader = bb::shader_t();
   meshes.clear();
   camera = bb::camera_t();
+  lineShader = bb::shader_t();
 
   return 0;
 }

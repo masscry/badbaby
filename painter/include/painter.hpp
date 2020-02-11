@@ -14,6 +14,7 @@ namespace paint
   enum mainMessage_t: uint16_t
   {
     nop = bb::msgID_t::USR00,
+    update,
     exit
   };
 
