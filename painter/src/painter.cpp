@@ -28,6 +28,8 @@ namespace paint
   {
     switch(msg.type)
     {
+      case bb::msgID_t::KEYBOARD:
+        return "key";
       case mainMessage_t::nop:
         return "nop";
       case mainMessage_t::exit:
