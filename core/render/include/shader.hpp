@@ -1,8 +1,8 @@
 /**
  * @file shader.hpp
- * 
+ *
  * GLSL shader class
- * 
+ *
  */
 #pragma once
 #ifndef __BB_CORE_RENDER_SHADER_HEADER__
@@ -12,11 +12,12 @@
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
+#include <glm/mat4x4.hpp>
 #include <ubo.hpp>
 
 namespace bb
 {
-  
+
   class shader_t final
   {
     GLuint handle;
@@ -52,6 +53,7 @@ namespace bb
     void SetVector2f(const char* name, const glm::vec2& value) const;
     void SetVector3f(const char* name, const glm::vec3& values) const;
     void SetVector4f(const char* name, const glm::vec4& values) const;
+    void SetMatrix(const char* name, const glm::mat4& matrix) const;
 
     GLuint UniformBlockIndex(const char* name) const;
     void SetBlock(GLuint blockIndex, const uniformBlock_t& block);
@@ -109,6 +111,14 @@ namespace bb
   inline void shader_t::SetVector4f(const char* name, const glm::vec4& value) const
   {
     this->SetVector4f(this->UniformLocation(name), value);
+  }
+
+  inline void shader_t::SetMatrix(const char* name, const glm::mat4& matrix) const
+  {
+    this->SetMatrix(
+      this->UniformLocation(name),
+      &matrix[0][0]
+    );
   }
 
 } // namespace bb

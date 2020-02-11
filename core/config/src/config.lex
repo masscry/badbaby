@@ -55,10 +55,16 @@ E    ([Ee][+-]?{D}+)
                         yyextra->type = BB_STRING;
                         return BB_STRING;
                       }
+                      
+[[:space:]]+          { /* IGNORE SPACES */ }
 
+<<<<<<< HEAD
 [[:space:]]+          { /* SKIP SPACES */ }
 
 .                     { /* DO NOTHING */ fprintf(stderr, "GOT %c (%d)\n", *yytext, *yytext); assert(0); }
+=======
+.                     { /* SOME INVALID CHARACTER */  assert(0); }
+>>>>>>> 96ce22f48b377f65755167e71a4d8fa7f78e5dfd
 
 %%
 

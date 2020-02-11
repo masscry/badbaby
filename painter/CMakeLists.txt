@@ -18,7 +18,6 @@ target_link_libraries(painter
     config
     render
     actor
-    simplex
     shapes
-    effects
+    script
 )
