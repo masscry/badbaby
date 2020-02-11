@@ -17,39 +17,13 @@ class printVM_t final: public bb::vm_t
   }
 };
 
-char* ReadWholeFile(const char* filename)
-{
-  FILE* input = fopen(filename, "rb");
-  if (input == nullptr)
-  {
-    return nullptr;
-  }
-
-  fseek(input, 0, SEEK_END);
-  auto inputFileSize = static_cast<size_t>(ftell(input));
-  fseek(input, 0, SEEK_SET);
-
-  char* result = reinterpret_cast<char*>(malloc(inputFileSize + 1));
-  if (result == nullptr)
-  {
-    fclose(input);
-    return nullptr;
-  }
-
-  fread(result, 1, inputFileSize, input);
-  fclose(input);
-
-  result[inputFileSize] = 0;
-  return result;
-}
-
 int main(int argc, char* argv[])
 {
   printVM_t printVM;
   for (int i = 1; i < argc; ++i)
   {
     printf("PROCESS \"%s\"\n", argv[i]);
-    auto inputData = ReadWholeFile(argv[i]);
+    auto inputData = bb::ReadWholeFile(argv[i], nullptr);
     if (inputData == nullptr)
     {
       continue;
