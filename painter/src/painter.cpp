@@ -102,12 +102,12 @@ const char* fpShader = R"shader(
 
   in float fragPos;
 
-  const vec4 lineColor = vec4(0.1f, 1.0f, 0.1f, 1.0f);
+  const vec4 lineColor = vec4(0.1f, 1.3f, 0.1f, 1.0f);
 
   void main()
   {
     float fragDist = 1.0-2.0*abs(fragPos - 0.5);
-    pixColor = lineColor*fragDist;
+    pixColor = mix(vec4(0.0f), lineColor, fragDist);
   }
 )shader";
 
@@ -199,7 +199,11 @@ void Render()
 {
   auto& context = bb::context_t::Instance();
   bb::framebuffer_t::Bind(context.Canvas());
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+
+  glBlendFunc(
+    GL_ONE, GL_ONE_MINUS_SRC_ALPHA
+  );
+
   glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
   bb::shader_t::Bind(lineShader);
   camera.Update();
