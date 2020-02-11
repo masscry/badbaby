@@ -6,7 +6,7 @@
     {
       "label": "Build All (Debug)",
       "type": "shell",
-      "command": "cmake --build ./.debug",
+      "command": "cmake --build ./.debug -- -j",
       "group": {
         "kind": "build",
         "isDefault": true
