@@ -43,3 +43,5 @@ after dot.
    Y - y-coordinate of new position
  * c:{R}; - draw circle with center at current position
    R - radius of new circle
+ * s:{S}; - circle total side count
+   S - circle total side count

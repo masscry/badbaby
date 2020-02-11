@@ -81,12 +81,14 @@ const char* vpShader = R"shader(
     mat4 view;
   };
 
+  uniform mat4 model;
+
   out float fragPos;
 
   void main()
   {
     fragPos = dist;
-    gl_Position = proj * view * vec4(pos, 0.0f, 1.0f);
+    gl_Position = proj * view * model * vec4(pos, 0.0f, 1.0f);
   }
 )shader";
 
@@ -107,13 +109,15 @@ const char* fpShader = R"shader(
   }
 )shader";
 
-bb::mesh_t circle;
+std::list<std::pair<bb::mesh_t,bb::node_t>> meshes;
 bb::shader_t lineShader;
 bb::camera_t camera;
 
 class painterVM_t: public bb::vm_t
 {
   float brushWidth;
+  bb::node_t cursor;
+  uint32_t sides;
 
   int OnCommand(int cmd, const bb::listOfRefs_t& refs) override
   {
@@ -129,15 +133,39 @@ class painterVM_t: public bb::vm_t
       );
       break;
     }
+    case 'm':
+      this->cursor.Reset();
+      /* FALLTHROUGH */
+    case 'r':
+      this->cursor.Translate(
+        bb::vec3_t(
+          static_cast<float>(bb::Argument(refs, 0)),
+          static_cast<float>(bb::Argument(refs, 1)),
+          0.0f
+        )
+      );
+      break;
     case 'b':
       this->brushWidth = static_cast<float>(bb::Argument(refs, 0));
       break;
     case 'c':
-      circle = bb::GenerateCircle(
-        32,
-        static_cast<float>(bb::Argument(refs, 0)),
-        this->brushWidth
+      meshes.push_back(
+        std::make_pair(
+	  bb::GenerateCircle(
+            this->sides,
+            static_cast<float>(bb::Argument(refs, 0)),
+            this->brushWidth
+          ),
+          this->cursor
+        )
       );
+      break;
+    case 's':
+      this->sides = static_cast<uint32_t>(bb::Argument(refs, 0));
+      if (this->sides == 0)
+      {
+        this->sides = 32;
+      }
       break;
     default:
       bb::Debug("Command %c (%d)\n", cmd, cmd);
@@ -152,7 +180,8 @@ class painterVM_t: public bb::vm_t
 public:
 
   painterVM_t()
-  :brushWidth(0.0f)
+  : brushWidth(0.0f),
+    sides(32)
   {
     ;
   }
@@ -168,6 +197,7 @@ void Render()
 {
   auto& context = bb::context_t::Instance();
   bb::framebuffer_t::Bind(context.Canvas());
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE);
   glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
   bb::shader_t::Bind(lineShader);
   camera.Update();
@@ -177,7 +207,15 @@ void Render()
     camera.UniformBlock()
   );
 
-  circle.Render();
+  for (auto& item: meshes)
+  {
+    lineShader.SetMatrix(
+      "model",
+      item.second.Model()
+    );
+    item.first.Render();
+  }
+
 }
 
 int UpdateScene(const char* scriptName)
@@ -188,6 +226,8 @@ int UpdateScene(const char* scriptName)
     return -1;
   }
   BB_DEFER(free(script));
+
+  meshes.clear();
 
   painterVM_t painterVM;
   if (bb::ExecuteScript(painterVM, script) != 0)
@@ -269,7 +309,7 @@ int main(int argc, char* argv[])
   pool.Unregister(passToMainLoopActor);
 
   lineShader = bb::shader_t();
-  circle = bb::mesh_t();
+  meshes.clear();
   camera = bb::camera_t();
 
   return 0;

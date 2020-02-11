@@ -31,7 +31,7 @@ namespace bb
     } data;
 
     uniformBlock_t ubo;
-    
+
     camera_t(const camera_t&) = delete;
     camera_t& operator =(const camera_t&) = delete;
 
@@ -39,7 +39,7 @@ namespace bb
 
   public:
 
-    const uniformBlock_t& UniformBlock() const 
+    const uniformBlock_t& UniformBlock() const
     {
       return this->ubo;
     }
@@ -54,7 +54,7 @@ namespace bb
       return this->data.view;
     }
 
-    mat4_t& Projection() 
+    mat4_t& Projection()
     {
       return this->data.proj;
     }
@@ -108,8 +108,8 @@ namespace bb
       this->model = glm::rotate(this->model, a, v);
     }
 
-    node_t(node_t&&) = default;
-    node_t& operator =(node_t&&) = default;
+    node_t(const node_t&) = default;
+    node_t& operator = (const node_t&) = default;
 
     node_t()
     : model(1.0f)
@@ -120,7 +120,6 @@ namespace bb
 
   };
 
-  
 } // namespace bb
 
 
