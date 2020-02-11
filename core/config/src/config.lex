@@ -55,8 +55,10 @@ E    ([Ee][+-]?{D}+)
                         yyextra->type = BB_STRING;
                         return BB_STRING;
                       }
+                      
+[[:space:]]+          { /* IGNORE SPACES */ }
 
-.|\n                  { /* DO NOTHING */ assert(0); }
+.                     { /* SOME INVALID CHARACTER */  assert(0); }
 
 %%
 
