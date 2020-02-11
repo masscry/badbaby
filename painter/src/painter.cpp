@@ -5,6 +5,10 @@
 #include <context.hpp>
 #include <shapes.hpp>
 #include <shader.hpp>
+#include <script.hpp>
+#include <actor.hpp>
+#include <worker.hpp>
+#include <role.hpp>
 
 namespace
 {
@@ -33,6 +37,35 @@ namespace paint
   }
 
 }
+
+class passToMainLoop_t final: public bb::role_t
+{
+
+  bb::msgResult_t OnProcessMessage(const bb::actor_t&, bb::msg_t msg) override
+  {
+    paint::PostToMain(msg);
+    return bb::msgResult_t::complete;
+  }
+
+public:
+
+  const char* DefaultName() const override
+  {
+    return "passToMainLoop";
+  }
+
+  passToMainLoop_t()
+  {
+    ;
+  }
+
+  ~passToMainLoop_t() override
+  {
+    ;
+  }
+
+};
+
 
 const char* vpShader = R"shader(
   // Vertex Shader
@@ -70,13 +103,78 @@ const char* fpShader = R"shader(
 bb::mesh_t circle;
 bb::shader_t lineShader;
 
+class painterVM_t: public bb::vm_t
+{
+  float brushWidth;
+
+  int OnCommand(int cmd, const bb::listOfRefs_t& refs) override
+  {
+    switch(cmd)
+    {
+    case 'b':
+      this->brushWidth = static_cast<float>(bb::Argument(refs, 0));
+      break;
+    case 'c':
+      circle = bb::GenerateCircle(
+        32,
+        static_cast<float>(bb::Argument(refs, 0)),
+        this->brushWidth
+      );
+      break;
+    default:
+      bb::Debug("Command %c (%d)\n", cmd, cmd);
+      for (auto& item: refs)
+      {
+        bb::Debug("\t%f\n", item.Number());
+      }
+    }
+    return 0;
+  }
+
+public:
+
+  painterVM_t()
+  :brushWidth(0.0f)
+  {
+    ;
+  }
+
+  painterVM_t(const painterVM_t&) = delete;
+  painterVM_t& operator=(const painterVM_t&) = delete;
+  painterVM_t(painterVM_t&&) = delete;
+  painterVM_t& operator=(painterVM_t&&) = delete;
+
+};
+
 void Render()
 {
   auto& context = bb::context_t::Instance();
   bb::framebuffer_t::Bind(context.Canvas());
+  glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
   bb::shader_t::Bind(lineShader);
   circle.Render();
 }
+
+int UpdateScene(const char* scriptName)
+{
+  auto script = bb::ReadWholeFile(scriptName, nullptr);
+  if (script == nullptr)
+  {
+    return -1;
+  }
+  BB_DEFER(free(script));
+
+  painterVM_t painterVM;
+  if (bb::ExecuteScript(painterVM, script) != 0)
+  {
+    return -1;
+  }
+  return 0;
+}
+
+
+
+
 
 int main(int argc, char* argv[])
 {
@@ -85,15 +183,30 @@ int main(int argc, char* argv[])
     return -1;
   }
 
-  auto& context = bb::context_t::Instance();
+  if (argc != 2)
+  {
+    fprintf(stderr, "Error: No script provided!\n");
+    fprintf(stderr, "Usage: painter SCRIPT\n");
+    return -1;
+  }
 
-  circle = bb::GenerateCircle(3, 0.5f, 0.1f);
+  auto& context = bb::context_t::Instance();
   lineShader = bb::shader_t(vpShader, fpShader);
+
+  if (UpdateScene(argv[1]) != 0)
+  {
+    return -1;
+  }
+
+  auto& pool = bb::workerPool_t::Instance();
+  auto passToMainLoopActor = pool.Register(
+    std::unique_ptr<bb::role_t>(new passToMainLoop_t())
+  );
+  context.RegisterActorCallback(passToMainLoopActor, bb::cmfKeyboard);
 
   bool loop = true;
   while(loop)
   {
-
     Render();
 
     if (!context.Update())
@@ -112,6 +225,15 @@ int main(int argc, char* argv[])
       );
       switch(msgToMain.type)
       {
+        case bb::msgID_t::KEYBOARD:
+          {
+            auto keyEvent = bb::GetMsgData<bb::keyEvent_t>(msgToMain);
+            if ((keyEvent.press != GLFW_PRESS) && (keyEvent.key == GLFW_KEY_F5))
+            {
+              UpdateScene(argv[1]);
+            }
+          }
+          break;
         case paint::nop:
           break;
         case paint::exit:
@@ -122,6 +244,8 @@ int main(int argc, char* argv[])
       }
     }
   }
+
+  pool.Unregister(passToMainLoopActor);
 
   lineShader = bb::shader_t();
   circle = bb::mesh_t();
