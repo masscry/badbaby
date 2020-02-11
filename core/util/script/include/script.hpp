@@ -17,6 +17,8 @@ namespace bb
 
   using listOfRefs_t = std::list<ref_t>;
 
+  double Argument(const listOfRefs_t& refs, uint32_t id);
+
   class vm_t
   {
     listOfRefs_t listOfRefs;
@@ -39,6 +41,16 @@ namespace bb
   };
 
   int ExecuteScript(vm_t& vm, const char* script);
+
+  /**
+   * Read whole content of file to memory.
+   *
+   * @param[in] filename input filename to read
+   * @param[out] pSize if != nullptr, fill with size of allocated memory
+   *
+   * @return content of read file or nullptr on errors
+   */
+  char* ReadWholeFile(const char* filename, size_t* pSize);
 
 } // namespace bb
 

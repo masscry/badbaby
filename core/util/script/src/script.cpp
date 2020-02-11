@@ -1,7 +1,10 @@
 #include <script.hpp>
+#include <common.hpp>
 
 #include <cctype>
 #include <cassert>
+#include <cstdio>
+#include <memory>
 
 namespace bb
 {
@@ -127,6 +130,62 @@ namespace bb
       }
     }
     return 0;
+  }
+
+  double Argument(const listOfRefs_t& refs, uint32_t id)
+  {
+    if (id < refs.size())
+    {
+      auto item = refs.begin();
+      std::advance(item, id);
+      return item->Number();
+    }
+    return 0.0;
+  }
+
+  char* ReadWholeFile(const char* filename, size_t* pSize)
+  {
+    FILE* input = fopen(filename, "rb");
+    if (input == nullptr)
+    {
+      return nullptr;
+    }
+    BB_DEFER(fclose(input));
+
+    if (fseek(input, 0, SEEK_END) != 0)
+    {
+      return nullptr;
+    }
+
+    auto inputFileSize = ftell(input);
+    if (inputFileSize < 0)
+    {
+      return nullptr;
+    }
+
+    if (fseek(input, 0, SEEK_SET) != 0)
+    {
+      return nullptr;
+    }
+
+    char* result = reinterpret_cast<char*>(malloc(inputFileSize+1));
+    if (result == nullptr)
+    {
+      return nullptr;
+    }
+
+    if (fread(result, 1, inputFileSize, input) != static_cast<size_t>(inputFileSize))
+    {
+      free(result);
+      return nullptr;
+    }
+
+    result[inputFileSize] = 0;
+    if (pSize != nullptr)
+    {
+      *pSize = inputFileSize + 1;
+    }
+    return result;
   }
 
 } // namespace bb
