@@ -1,5 +1,6 @@
 #include <painter.hpp>
 
+#include <camera.hpp>
 #include <common.hpp>
 #include <mailbox.hpp>
 #include <context.hpp>
@@ -74,12 +75,18 @@ const char* vpShader = R"shader(
   layout(location = 0) in vec2 pos;
   layout(location = 1) in float dist;
 
+  uniform camera
+  {
+    mat4 proj;
+    mat4 view;
+  };
+
   out float fragPos;
 
   void main()
   {
     fragPos = dist;
-    gl_Position = vec4(pos, 0.0f, 1.0f);
+    gl_Position = proj * view * vec4(pos, 0.0f, 1.0f);
   }
 )shader";
 
@@ -102,6 +109,7 @@ const char* fpShader = R"shader(
 
 bb::mesh_t circle;
 bb::shader_t lineShader;
+bb::camera_t camera;
 
 class painterVM_t: public bb::vm_t
 {
@@ -111,6 +119,16 @@ class painterVM_t: public bb::vm_t
   {
     switch(cmd)
     {
+    case 'f':
+    {
+      camera = bb::camera_t::Orthogonal(
+        static_cast<float>(bb::Argument(refs, 2)),
+        static_cast<float>(bb::Argument(refs, 0)),
+        static_cast<float>(bb::Argument(refs, 1)),
+        static_cast<float>(bb::Argument(refs, 3))
+      );
+      break;
+    }
     case 'b':
       this->brushWidth = static_cast<float>(bb::Argument(refs, 0));
       break;
@@ -152,6 +170,13 @@ void Render()
   bb::framebuffer_t::Bind(context.Canvas());
   glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
   bb::shader_t::Bind(lineShader);
+  camera.Update();
+
+  lineShader.SetBlock(
+    lineShader.UniformBlockIndex("camera"),
+    camera.UniformBlock()
+  );
+
   circle.Render();
 }
 
@@ -171,10 +196,6 @@ int UpdateScene(const char* scriptName)
   }
   return 0;
 }
-
-
-
-
 
 int main(int argc, char* argv[])
 {
@@ -249,6 +270,7 @@ int main(int argc, char* argv[])
 
   lineShader = bb::shader_t();
   circle = bb::mesh_t();
+  camera = bb::camera_t();
 
   return 0;
 }
