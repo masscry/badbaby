@@ -131,6 +131,27 @@ class painterVM_t: public bb::vm_t
         )
       );
       break;
+    case 'l':
+      {
+        bb::linePoints_t linePoints;
+
+        linePoints.emplace_back(0.0f, 0.0f);
+        linePoints.emplace_back(
+          static_cast<float>(bb::Argument(refs, 0)),
+          static_cast<float>(bb::Argument(refs, 1))
+        );
+
+        meshes.push_back(
+          std::make_pair(
+            bb::GenerateLine(
+              this->brushWidth,
+              linePoints
+            ),
+            this->cursor
+          )
+        );
+      }
+      break;
     case 'b':
       this->brushWidth = static_cast<float>(bb::Argument(refs, 0));
       break;
