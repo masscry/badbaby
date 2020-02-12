@@ -14,6 +14,8 @@
 
 #include <vao.hpp>
 
+#include <deque>
+
 namespace bb
 {
 
@@ -45,6 +47,10 @@ namespace bb
   mesh_t GeneratePlaneStack(glm::vec2 size, uint32_t stackDepth, float startZ, float endZ);
 
   mesh_t GenerateCircle(uint32_t sides, float radius, float width);
+
+  using linePoints_t = std::deque<glm::vec2>;
+
+  mesh_t GenerateLine(float width, const linePoints_t& linePoints);
 
 } // namespace bb
 
