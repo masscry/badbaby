@@ -241,11 +241,25 @@ int main(int argc, char* argv[])
     return -1;
   }
 
+  //
+  // These objects are global, must be explicitly deleted
+  // before context_t expires.
+  //
+  // context_t expires some time after main exits, so
+  // can safely delete on main scope exit.
+  //
+  BB_DEFER(
+    meshes.clear();
+    camera = bb::camera_t();
+    lineShader = bb::shader_t();
+  );
+
   auto& context = bb::context_t::Instance();
   lineShader = bb::shader_t(vpShader, fpShader);
 
   if (UpdateScene(argv[1]) != 0)
   {
+    fprintf(stderr, "%s\n", "Invalid PVF. Abort.");
     return -1;
   }
 
@@ -278,19 +292,14 @@ int main(int argc, char* argv[])
       );
       switch(msgToMain.type)
       {
-        case bb::msgID_t::KEYBOARD:
-          {
-            auto keyEvent = bb::GetMsgData<bb::keyEvent_t>(msgToMain);
-            if ((keyEvent.press != GLFW_PRESS) && (keyEvent.key == GLFW_KEY_F5))
-            {
-              UpdateScene(argv[1]);
-            }
-          }
-          break;
         case paint::nop:
           break;
         case paint::update:
-          UpdateScene(argv[1]);
+          if (UpdateScene(argv[1]) != 0)
+          {
+            bb::Error("%s", "Invalid PVF");
+            fprintf(stderr, "%s\n", "Invalid PVF");
+          }
           break;
         case paint::exit:
           loop = false;
@@ -301,9 +310,6 @@ int main(int argc, char* argv[])
     }
   }
 
-  meshes.clear();
-  camera = bb::camera_t();
-  lineShader = bb::shader_t();
-
+  fprintf(stdout, "%s\n", "Bye-bye!");
   return 0;
 }
