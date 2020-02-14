@@ -250,4 +250,20 @@ namespace bb
     return bb::mesh_t(std::move(line), indecies.size(), GL_TRIANGLE_STRIP, 2);
   }
 
+  mesh_t GenerateMesh(const meshDesc_t& meshDesc)
+  {
+    if (!meshDesc.IsGood())
+    {
+      bb::Error("%s", "GenerateMesh from bad description!");
+      assert(0);
+      return mesh_t();
+    }
+
+
+
+
+    return mesh_t();
+  }
+
+
 }

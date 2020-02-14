@@ -15,6 +15,9 @@
 #include <vao.hpp>
 
 #include <deque>
+#include <vector>
+
+#include <meshDesc.hpp>
 
 namespace bb
 {
@@ -48,9 +51,9 @@ namespace bb
 
   mesh_t GenerateCircle(uint32_t sides, float radius, float width);
 
-  using linePoints_t = std::deque<glm::vec2>;
-
   mesh_t GenerateLine(float width, const linePoints_t& linePoints);
+
+  mesh_t GenerateMesh(const meshDesc_t& meshDesc);
 
 } // namespace bb
 
