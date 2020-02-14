@@ -30,6 +30,36 @@ namespace bb
     virtual GLboolean Normalized() const = 0;
     virtual void* Data() const;
     virtual ~basicVertexBuffer_t() = 0;
+
+    size_t TypeSize() const
+    {
+      switch(this->Type())
+      {
+        case GL_BYTE:
+        case GL_UNSIGNED_BYTE:
+          return 1;
+        case GL_SHORT:
+        case GL_UNSIGNED_SHORT:
+        case GL_HALF_FLOAT:
+          return 2;
+        case GL_INT:
+        case GL_UNSIGNED_INT:
+        case GL_FIXED:
+        case GL_FLOAT:
+          return 4;
+        default:
+          // programmer's error
+          bb::Error("Unsupported type: (%d)", this->Type());
+          assert(0);
+          return 0;
+      }
+    }
+
+    size_t ByteSize() const
+    {
+      return this->Size()*this->Dimensions()*this->TypeSize();
+    }
+
   };
 
   template<typename data_t>
@@ -173,11 +203,11 @@ namespace bb
   public:
 
     arrayOfVertexBuffers_t& Buffers();
-   
+
     arrayOfIndecies_t& Indecies();
 
     const arrayOfVertexBuffers_t& Buffers() const;
-   
+
     const arrayOfIndecies_t& Indecies() const;
 
     GLenum DrawMode() const;
@@ -202,12 +232,12 @@ namespace bb
   {
     return this->buffers;
   }
-   
+
   inline const arrayOfVertexBuffers_t& meshDesc_t::Buffers() const
   {
     return this->buffers;
   }
-   
+
   inline arrayOfIndecies_t& meshDesc_t::Indecies()
   {
     return this->indecies;

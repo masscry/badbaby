@@ -256,14 +256,43 @@ namespace bb
     {
       bb::Error("%s", "GenerateMesh from bad description!");
       assert(0);
-      return mesh_t();
+      return bb::mesh_t();
     }
 
+    auto meshVAO = bb::vao_t::CreateVertexAttribObject();
 
+    GLuint arrayBufferIndex = 0;
+    for (auto& arrayBuffer: meshDesc.Buffers())
+    {
+      auto meshVBO = bb::vbo_t::CreateArrayBuffer(
+        arrayBuffer->Data(),
+        arrayBuffer->ByteSize(),
+        false
+      );
+      meshVAO.BindVBO(
+        meshVBO,
+        arrayBufferIndex,
+        arrayBuffer->Dimensions(),
+        arrayBuffer->Type(),
+        arrayBuffer->Normalized(),
+        0, 0
+      );
+    }
 
+    auto indexVBO = bb::vbo_t::CreateElementArrayBuffer(
+      meshDesc.Indecies().data(),
+      meshDesc.Indecies().size()*sizeof(uint16_t),
+      false
+    );
 
-    return mesh_t();
+    meshVAO.BindIndecies(indexVBO);
+
+    return bb::mesh_t(
+      std::move(meshVAO),
+      meshDesc.Indecies().size(),
+      meshDesc.DrawMode(),
+      static_cast<GLuint>(meshDesc.Buffers().size())
+    );
   }
-
 
 }
