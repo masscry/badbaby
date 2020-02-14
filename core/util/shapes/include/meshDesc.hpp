@@ -23,12 +23,13 @@ namespace bb
   class basicVertexBuffer_t
   {
   public:
-    virtual int Append(const basicVertexBuffer_t& src);
+
+    virtual int Append(const basicVertexBuffer_t& src) = 0;
     virtual size_t Size() const = 0;
     virtual GLint Dimensions() const = 0;
     virtual GLenum Type() const = 0;
     virtual GLboolean Normalized() const = 0;
-    virtual void* Data() const;
+    virtual const void* Data() const = 0;
     virtual ~basicVertexBuffer_t() = 0;
 
     size_t TypeSize() const
@@ -91,19 +92,19 @@ namespace bb
     GLint Dimensions() const override;
     GLenum Type() const override;
     GLboolean Normalized() const override;
-    void* Data() const override;
+    const void* Data() const override;
 
   };
 
   template<typename data_t>
-  inline vertexBuffer_t<data_t>::vertexBuffer_t()
+  vertexBuffer_t<data_t>::vertexBuffer_t()
   : isNormalized(GL_FALSE)
   {
     ;
   }
 
   template<typename data_t>
-  inline vertexBuffer_t<data_t>::~vertexBuffer_t()
+  vertexBuffer_t<data_t>::~vertexBuffer_t()
   {
     ;
   }
@@ -126,21 +127,28 @@ namespace bb
     return this->self.size();
   }
 
+  template<>
+  GLint vertexBuffer_t<float>::Dimensions() const;
+
   template<typename data_t>
-  inline GLint vertexBuffer_t<data_t>::Dimensions() const
+  GLint vertexBuffer_t<data_t>::Dimensions() const
   {
-    static_assert(std::is_same<typename data_t::value_type, float>::value, "data_t must contain floats");
+    static_assert(
+      std::is_same<typename data_t::value_type, float>::value,
+      "data_t must contain floats"
+    );
+
     return sizeof(data_t)/sizeof(float);
   }
 
   template<typename data_t>
-  inline GLenum vertexBuffer_t<data_t>::Type() const
+  GLenum vertexBuffer_t<data_t>::Type() const
   {
     return GL_FLOAT;
   }
 
   template<typename data_t>
-  inline GLboolean vertexBuffer_t<data_t>::Normalized() const
+  GLboolean vertexBuffer_t<data_t>::Normalized() const
   {
     return this->isNormalized;
   }
@@ -152,9 +160,9 @@ namespace bb
   }
 
   template<typename data_t>
-  inline void* vertexBuffer_t<data_t>::Data() const
+  const void* vertexBuffer_t<data_t>::Data() const
   {
-    return &this->self.data();
+    return this->self.data();
   }
 
   template<typename data_t>
@@ -180,7 +188,7 @@ namespace bb
       return -1;
     }
 
-    auto itemsToAppend = reinterpret_cast<data_t*>(src.Data());
+    auto itemsToAppend = reinterpret_cast<const data_t*>(src.Data());
     size_t itemsSize = src.Size();
 
     this->self.insert(this->self.end(), itemsToAppend, itemsToAppend + itemsSize);
