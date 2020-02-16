@@ -68,6 +68,19 @@ namespace bb
       return -1;
     }
 
+    if (this->buffers.empty())
+    { // destination is empty, just copy
+      this->drawMode = mesh.drawMode;
+      this->indecies = mesh.Indecies();
+      for (auto& buffer: mesh.Buffers())
+      {
+        this->buffers.emplace_back(buffer->Copy());
+      }
+      return 0;
+    }
+
+    // otherwise buffers expected to be merged
+
     if (
          (this->drawMode != mesh.drawMode)
       || (this->buffers.size() != mesh.buffers.size())
@@ -103,7 +116,7 @@ namespace bb
         this->indecies.reserve(this->indecies.size() + mesh.indecies.size());
     }
 
-    uint16_t thisMaxIndex = this->MaxIndex();
+    uint16_t thisMaxIndex = static_cast<uint16_t>(this->MaxIndex() + 1);
     for (auto index: mesh.indecies)
     { 
       //

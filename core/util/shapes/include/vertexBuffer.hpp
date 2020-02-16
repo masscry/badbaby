@@ -31,6 +31,7 @@ namespace bb
     virtual GLboolean Normalized() const = 0;
     virtual const void* Data() const = 0;
     virtual ~basicVertexBuffer_t() = 0;
+    virtual basicVertexBuffer_t* Copy() const = 0;
 
     size_t TypeSize() const;
     size_t ByteSize() const;
@@ -69,6 +70,8 @@ namespace bb
     GLenum Type() const override;
     GLboolean Normalized() const override;
     const void* Data() const override;
+    basicVertexBuffer_t* Copy() const override;
+
     ~vertexBuffer_t() override;
   };
 
@@ -162,6 +165,13 @@ namespace bb
   {
     return this->self.data();
   }
+
+  template<typename data_t>
+  basicVertexBuffer_t* vertexBuffer_t<data_t>::Copy() const
+  {
+    return new vertexBuffer_t<data_t>(*this);
+  }
+
 
   template<typename data_t>
   int vertexBuffer_t<data_t>::Append(const basicVertexBuffer_t& src)
