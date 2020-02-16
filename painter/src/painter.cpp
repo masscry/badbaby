@@ -93,7 +93,7 @@ const char* fpShader = R"shader(
   }
 )shader";
 
-std::list<bb::mesh_t> meshes;
+bb::mesh_t mesh;
 bb::shader_t lineShader;
 bb::camera_t camera;
 
@@ -102,6 +102,7 @@ class painterVM_t: public bb::vm_t
   float brushWidth;
   glm::vec3 cursor;
   uint32_t sides;
+  bb::meshDesc_t meshDesc;
 
   int OnCommand(int cmd, const bb::listOfRefs_t& refs) override
   {
@@ -134,8 +135,9 @@ class painterVM_t: public bb::vm_t
 
         linePoints.emplace_back(this->cursor);
 
-        meshes.push_back(
-          bb::GenerateLine(
+        this->meshDesc.Append(
+          bb::DefineLine(
+            glm::vec3(0.0f),
             this->brushWidth,
             linePoints
           )
@@ -146,8 +148,9 @@ class painterVM_t: public bb::vm_t
       this->brushWidth = static_cast<float>(bb::Argument(refs, 0));
       break;
     case 'c':
-      meshes.push_back(
-        bb::GenerateCircle(
+      this->meshDesc.Append(
+        bb::DefineCircle(
+          this->cursor,
           this->sides,
           static_cast<float>(bb::Argument(refs, 0)),
           this->brushWidth
@@ -173,11 +176,17 @@ class painterVM_t: public bb::vm_t
 
 public:
 
+  bb::mesh_t GetMesh() const
+  {
+    return bb::GenerateMesh(this->meshDesc);
+  }
+
   painterVM_t()
   : brushWidth(0.0f),
+    cursor(0.0f),
     sides(32)
   {
-    ;
+    this->meshDesc.SetDrawMode(GL_TRIANGLE_STRIP);
   }
 
   painterVM_t(const painterVM_t&) = delete;
@@ -205,11 +214,7 @@ void Render()
     camera.UniformBlock()
   );
 
-  for (auto& item: meshes)
-  {
-    item.Render();
-  }
-
+  mesh.Render();
 }
 
 int UpdateScene(const char* scriptName)
@@ -221,13 +226,12 @@ int UpdateScene(const char* scriptName)
   }
   BB_DEFER(free(script));
 
-  meshes.clear();
-
   painterVM_t painterVM;
   if (bb::ExecuteScript(painterVM, script) != 0)
   {
     return -1;
   }
+  mesh = painterVM.GetMesh();
   return 0;
 }
 
@@ -253,7 +257,7 @@ int main(int argc, char* argv[])
   // can safely delete on main scope exit.
   //
   BB_DEFER(
-    meshes.clear();
+    mesh = bb::mesh_t();
     camera = bb::camera_t();
     lineShader = bb::shader_t();
   );
