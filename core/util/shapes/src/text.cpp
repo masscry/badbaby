@@ -13,12 +13,12 @@ namespace
   {
     auto symbols = bb::utf8extract(text.c_str());
 
-    assert(symbols.size()*4 <= 0xFFFF); // in debug we assert this issue
-    if (symbols.size()*4 > 0xFFFF)
+    assert(symbols.size()*4 < bb::BREAKING_INDEX); // in debug we assert this issue
+    if (symbols.size()*4 >= bb::BREAKING_INDEX)
     { // we are using uint16_t for vert indecies
       // need to check if given text is to long for
       // in release we truncate tail
-      symbols.resize(0x10000);
+      symbols.resize(bb::BREAKING_INDEX);
     }
 
     if (output.vPos.size() < symbols.size()*4)
@@ -119,12 +119,12 @@ namespace
   {
     auto symbols = bb::utf8extract(text.c_str());
 
-    assert(symbols.size()*4 <= 0xFFFF); // in debug we assert this issue
-    if (symbols.size()*4 > 0xFFFF)
+    assert(symbols.size()*4 < bb::BREAKING_INDEX); // in debug we assert this issue
+    if (symbols.size()*4 >= bb::BREAKING_INDEX)
     { // we are using uint16_t for vert indecies
       // need to check if given text is to long for
       // in release we truncate tail
-      symbols.resize(0x10000);
+      symbols.resize(bb::BREAKING_INDEX);
     }
 
     if (output.vPos.size() < symbols.size()*4)

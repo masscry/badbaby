@@ -193,6 +193,18 @@ namespace bb
     return 0;
   }
 
+  template<typename array_t>
+  typename array_t::value_type MaximumIndex(const array_t& array)
+  {
+    auto result = std::numeric_limits<typename array_t::value_type>::lowest();
+    for (auto item: array)
+    { // BREAKING_INDEX - special index to break triangle strips,
+      // so ignore it
+      result = ((result < item) && (item != BREAKING_INDEX))?item:result;
+    }
+    return result;
+  }
+
 } // namespace bb
 
 #endif /* __BB_CORE_UTIL_VERTEX_BUFFER_HEADER__ */

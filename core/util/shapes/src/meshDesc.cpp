@@ -56,12 +56,7 @@ namespace bb
 
   uint16_t meshDesc_t::MaxIndex() const
   {
-    uint16_t maxIndex = 0;
-    for (auto index: this->indecies)
-    {
-      maxIndex = (maxIndex<index)?index:maxIndex;
-    }
-    return maxIndex;
+    return MaximumIndex(this->indecies);
   }
 
   int meshDesc_t::Append(const meshDesc_t& mesh)
@@ -97,11 +92,26 @@ namespace bb
     //
     // After new vertecies added at end of dst buffer, we need to fix indecies
     //
-    this->indecies.reserve(this->indecies.size() + mesh.indecies.size());
+    switch (this->DrawMode())
+    {
+      case GL_LINE_STRIP:
+      case GL_TRIANGLE_STRIP: // we adding breaking index for strips
+        this->indecies.reserve(this->indecies.size() + mesh.indecies.size() + 1);
+        this->indecies.push_back(BREAKING_INDEX);
+        break;
+      default:
+        this->indecies.reserve(this->indecies.size() + mesh.indecies.size());
+    }
+
     uint16_t thisMaxIndex = this->MaxIndex();
     for (auto index: mesh.indecies)
-    {
-      this->indecies.emplace_back(index + thisMaxIndex);
+    { 
+      //
+      // break-index must stay unchanged
+      //
+      this->indecies.emplace_back(
+        (index != BREAKING_INDEX)?(index + thisMaxIndex):(BREAKING_INDEX)
+      );
     }
     return 0;
   }

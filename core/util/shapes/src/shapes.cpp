@@ -49,17 +49,6 @@ namespace bb
     ;
   }
 
-  template<typename array_t>
-  typename array_t::value_type Maximum(const array_t& array)
-  {
-    auto result = std::numeric_limits<typename array_t::value_type>::lowest();
-    for (auto item: array)
-    {
-      result = (result < item)?item:result;
-    }
-    return result;
-  }
-
   mesh_t GenerateMesh(const meshDesc_t& meshDesc)
   {
     if (!meshDesc.IsGood())
@@ -69,7 +58,7 @@ namespace bb
       return bb::mesh_t();
     }
 
-    auto maxIndex = Maximum(meshDesc.Indecies());
+    auto maxIndex = MaximumIndex(meshDesc.Indecies());
 
     for (auto& dataBuffer: meshDesc.Buffers())
     {

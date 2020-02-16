@@ -20,6 +20,8 @@
 namespace bb
 {
 
+  const uint16_t BREAKING_INDEX = 0xFFFF;
+
   /**
    * @brief Process common startup arguments.
    *

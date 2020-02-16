@@ -216,7 +216,7 @@ namespace bb
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     glEnable(GL_PRIMITIVE_RESTART);
-    glPrimitiveRestartIndex(0xFFFF);
+    glPrimitiveRestartIndex(BREAKING_INDEX);
 
     context_t::isAlreadyExists = true;
   }
