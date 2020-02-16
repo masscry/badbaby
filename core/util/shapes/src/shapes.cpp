@@ -5,6 +5,7 @@
 #include <cmath>
 #include <utility>
 #include <memory>
+#include <limits>
 
 #include <glm/glm.hpp>
 
@@ -45,7 +46,8 @@ namespace bb
     glDrawElements(
       this->drawMode,
       static_cast<GLsizei>(this->totalVerts),
-      GL_UNSIGNED_SHORT, 0
+      GL_UNSIGNED_SHORT,
+      nullptr
     );
     for (auto i = 0u; i < this->activeBuffers; ++i)
     {
@@ -144,18 +146,15 @@ namespace bb
     return mesh_t(std::move(vao), stackDepth*6, GL_TRIANGLES, 2);
   }
 
-  bb::meshDesc_t DefineCircle(glm::vec3 center, uint32_t sides, float radius, float width)
+  bb::mesh_t GenerateCircle(uint32_t sides, float radius, float width)
   {
-    bb::vertexBuffer_t<glm::vec2> points;
-    bb::vertexBuffer_t<float> distance;
-    bb::arrayOfIndecies_t indecies;
-
-    points.SetNormalized(GL_FALSE);
-    distance.SetNormalized(GL_FALSE);
+    std::vector<glm::vec2> points;
+    std::vector<float> distance;
+    std::vector<uint16_t> indecies;
 
     sides = bb::CheckValueBounds(sides, static_cast<uint32_t>(3), static_cast<uint32_t>(std::numeric_limits<uint16_t>::max()/2));
     radius = bb::CheckValueBounds(radius, 0.0f, 1000.0f);
-    width = bb::CheckValueBounds(width, 0.001f, radius/2.0f);
+    width = bb::CheckValueBounds(width, 0.01f, radius/2.0f);
 
     if (sides*4 > std::numeric_limits<uint16_t>::max())
     { // can't be so many sides!
@@ -163,8 +162,8 @@ namespace bb
       sides = std::numeric_limits<uint16_t>::max()/4;
     }
 
-    distance.Self().reserve(sides*2);
-    points.Self().reserve(sides*2);
+    distance.reserve(sides*2);
+    points.reserve(sides*2);
     indecies.reserve(sides*2+2);
 
     float angle = 0.0f;
@@ -172,19 +171,15 @@ namespace bb
     const float outerRing = radius + width/2.0f;
     const float innerRing = radius - width/2.0f;
     uint16_t index = 0;
-
     while(sides-->0)
     {
       glm::vec2 point;
       sincosf(angle, &point.x, &point.y);
-      point.x += center.x;
-      point.y += center.y;
+      points.push_back(point * outerRing);
+      points.push_back(point * innerRing);
 
-      points.Self().emplace_back(point * outerRing);
-      points.Self().emplace_back(point * innerRing);
-
-      distance.Self().emplace_back(0.0f);
-      distance.Self().emplace_back(1.0f);
+      distance.push_back(0.0f);
+      distance.push_back(1.0f);
 
       indecies.push_back(index++);
       indecies.push_back(index++);
@@ -193,23 +188,16 @@ namespace bb
     indecies.push_back(0);
     indecies.push_back(1);
 
-    bb::meshDesc_t result;
+    auto arrayBuffer = bb::vbo_t::CreateArrayBuffer(points, false);
+    auto distBuffer = bb::vbo_t::CreateArrayBuffer(distance, false);
+    auto elementsBuffer = bb::vbo_t::CreateElementArrayBuffer(indecies, false);
+    auto circle = bb::vao_t::CreateVertexAttribObject();
 
-    result.Buffers().emplace_back(
-      new decltype(points)(std::move(points))
-    );
-    result.Buffers().emplace_back(
-      new decltype(distance)(std::move(distance))
-    );
-    result.Indecies() = std::move(indecies);
-    result.SetDrawMode(GL_TRIANGLE_STRIP);
+    circle.BindVBO(arrayBuffer, 0, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    circle.BindVBO(distBuffer, 1, 1, GL_FLOAT, GL_FALSE, 0, 0);
+    circle.BindIndecies(elementsBuffer);
 
-    return result;
-  }
-
-  bb::mesh_t GenerateCircle(uint32_t sides, float radius, float width)
-  {
-    return GenerateMesh(DefineCircle(glm::vec3(0.0f), sides, radius, width));
+    return bb::mesh_t(std::move(circle), indecies.size(), GL_TRIANGLE_STRIP, 2);
   }
 
   bb::mesh_t GenerateLine(float width, const linePoints_t& linePoints)
@@ -268,6 +256,17 @@ namespace bb
     return bb::mesh_t(std::move(line), indecies.size(), GL_TRIANGLE_STRIP, 2);
   }
 
+  template<typename array_t>
+  typename array_t::value_type Maximum(const array_t& array)
+  {
+    auto result = std::numeric_limits<typename array_t::value_type>::lowest();
+    for (auto item: array)
+    {
+      result = (result < item)?item:result;
+    }
+    return result;
+  }
+
   mesh_t GenerateMesh(const meshDesc_t& meshDesc)
   {
     if (!meshDesc.IsGood())
@@ -275,6 +274,18 @@ namespace bb
       bb::Error("%s", "GenerateMesh from bad description!");
       assert(0);
       return bb::mesh_t();
+    }
+
+    auto maxIndex = Maximum(meshDesc.Indecies());
+
+    for (auto& dataBuffer: meshDesc.Buffers())
+    {
+      if (dataBuffer->Size() < maxIndex)
+      {
+        bb::Error("Data buffer smaller than available indecies (%lu < %u)", dataBuffer->Size(), maxIndex);
+        assert(0);
+        return bb::mesh_t();
+      }
     }
 
     auto meshVAO = bb::vao_t::CreateVertexAttribObject();
@@ -298,8 +309,7 @@ namespace bb
     }
 
     auto indexVBO = bb::vbo_t::CreateElementArrayBuffer(
-      meshDesc.Indecies().data(),
-      meshDesc.Indecies().size()*sizeof(uint16_t),
+      meshDesc.Indecies(),
       false
     );
 
@@ -311,17 +321,6 @@ namespace bb
       meshDesc.DrawMode(),
       static_cast<GLuint>(meshDesc.Buffers().size())
     );
-  }
-
-  template<>
-  GLint vertexBuffer_t<float>::Dimensions() const
-  {
-    return 1;
-  }
-
-  basicVertexBuffer_t::~basicVertexBuffer_t()
-  {
-    ;
   }
 
 }

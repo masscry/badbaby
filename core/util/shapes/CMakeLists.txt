@@ -3,6 +3,7 @@ add_library(shapes
   include/shapes.hpp
   include/text.hpp
   include/meshDesc.hpp
+  include/vertexBuffer.hpp
 
 # SOURCES
   src/shapes.cpp

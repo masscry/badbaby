@@ -3,6 +3,46 @@
 namespace bb
 {
 
+  size_t basicVertexBuffer_t::TypeSize() const
+  {
+    switch(this->Type())
+    {
+      case GL_BYTE:
+      case GL_UNSIGNED_BYTE:
+        return 1;
+      case GL_SHORT:
+      case GL_UNSIGNED_SHORT:
+      case GL_HALF_FLOAT:
+        return 2;
+      case GL_INT:
+      case GL_UNSIGNED_INT:
+      case GL_FIXED:
+      case GL_FLOAT:
+        return 4;
+      default:
+        // programmer's error
+        bb::Error("Unsupported type: (%d)", this->Type());
+        assert(0);
+        return 0;
+    }
+  }
+
+  size_t basicVertexBuffer_t::ByteSize() const
+  {
+    return this->Size()*this->Dimensions()*this->TypeSize();
+  }
+
+  basicVertexBuffer_t::~basicVertexBuffer_t()
+  {
+    ;
+  }
+
+  template<>
+  GLint vertexBuffer_t<float>::Dimensions() const
+  {
+    return 1;
+  }
+
   meshDesc_t::meshDesc_t()
   : drawMode(GL_TRIANGLES)
   {
@@ -70,6 +110,5 @@ namespace bb
   {
     return (!this->buffers.empty()) && (!this->indecies.empty());
   }
-
 
 } // namespace bb
