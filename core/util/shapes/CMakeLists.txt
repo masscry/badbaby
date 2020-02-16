@@ -7,8 +7,11 @@ add_library(shapes
 
 # SOURCES
   src/shapes.cpp
+  src/planes.cpp
   src/text.cpp
   src/meshDesc.cpp
+  src/circle.cpp
+  src/lines.cpp
 )
 
 target_link_libraries(shapes PUBLIC render)

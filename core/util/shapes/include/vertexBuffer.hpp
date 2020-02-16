@@ -47,6 +47,9 @@ namespace bb
 
   public:
 
+    vertexBuffer_t(const array_t& copy);
+    vertexBuffer_t(array_t&& src);
+
     vertexBuffer_t(const vertexBuffer_t<data_t>&) = default;
     vertexBuffer_t& operator=(const vertexBuffer_t<data_t>&) = default;
 
@@ -67,12 +70,33 @@ namespace bb
     GLboolean Normalized() const override;
     const void* Data() const override;
     ~vertexBuffer_t() override;
-
   };
+
+  template<typename data_t>
+  std::unique_ptr<basicVertexBuffer_t> MakeVertexBuffer(std::vector<data_t>&& src)
+  {
+    return std::unique_ptr<basicVertexBuffer_t>(new vertexBuffer_t<data_t>(std::move(src)));
+  }
 
   template<typename data_t>
   vertexBuffer_t<data_t>::vertexBuffer_t()
   : isNormalized(GL_FALSE)
+  {
+    ;
+  }
+
+  template<typename data_t>
+  vertexBuffer_t<data_t>::vertexBuffer_t(const array_t& copy)
+  : self(copy),
+    isNormalized(GL_FALSE)
+  {
+    ;
+  }
+
+  template<typename data_t>
+  vertexBuffer_t<data_t>::vertexBuffer_t(array_t&& src)
+  : self(std::move(src)),
+    isNormalized(GL_FALSE)
   {
     ;
   }
