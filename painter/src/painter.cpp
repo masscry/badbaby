@@ -1,5 +1,6 @@
-#include <painter.hpp>
+#include <string>
 
+#include <painter.hpp>
 #include <camera.hpp>
 #include <common.hpp>
 #include <mailbox.hpp>
@@ -176,6 +177,11 @@ class painterVM_t: public bb::vm_t
 
 public:
 
+  const bb::meshDesc_t& GetMeshDescription() const
+  {
+    return this->meshDesc;
+  }
+
   bb::mesh_t GetMesh() const
   {
     return bb::GenerateMesh(this->meshDesc);
@@ -232,6 +238,17 @@ int UpdateScene(const char* scriptName)
     return -1;
   }
   mesh = painterVM.GetMesh();
+
+  FILE* output = fopen((std::string(scriptName) + ".msh").c_str(), "wb");
+  if (output != nullptr)
+  {
+    BB_DEFER(fclose(output));
+    bb::Info("Saving mesh description...");
+    bb::Info(
+      "Save mesh result: %d",
+      painterVM.GetMeshDescription().Save(output)
+    );
+  }
   return 0;
 }
 
