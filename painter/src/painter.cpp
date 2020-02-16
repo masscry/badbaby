@@ -67,14 +67,12 @@ const char* vpShader = R"shader(
     mat4 view;
   };
 
-  uniform mat4 model;
-
   out float fragPos;
 
   void main()
   {
     fragPos = dist;
-    gl_Position = proj * view * model * vec4(pos, 0.0f, 1.0f);
+    gl_Position = proj * view * vec4(pos, 0.0f, 1.0f);
   }
 )shader";
 
@@ -95,14 +93,14 @@ const char* fpShader = R"shader(
   }
 )shader";
 
-std::list<std::pair<bb::mesh_t,bb::node_t>> meshes;
+std::list<bb::mesh_t> meshes;
 bb::shader_t lineShader;
 bb::camera_t camera;
 
 class painterVM_t: public bb::vm_t
 {
   float brushWidth;
-  bb::node_t cursor;
+  glm::vec3 cursor;
   uint32_t sides;
 
   int OnCommand(int cmd, const bb::listOfRefs_t& refs) override
@@ -120,34 +118,26 @@ class painterVM_t: public bb::vm_t
       break;
     }
     case 'm':
-      this->cursor.Reset();
+      this->cursor = glm::vec3(0.0f);
       /* FALLTHROUGH */
     case 'r':
-      this->cursor.Translate(
-        bb::vec3_t(
-          static_cast<float>(bb::Argument(refs, 0)),
-          static_cast<float>(bb::Argument(refs, 1)),
-          0.0f
-        )
-      );
+      this->cursor.x += static_cast<float>(bb::Argument(refs, 0));
+      this->cursor.y += static_cast<float>(bb::Argument(refs, 1));
       break;
     case 'l':
       {
         bb::linePoints_t linePoints;
 
-        linePoints.emplace_back(0.0f, 0.0f);
-        linePoints.emplace_back(
-          static_cast<float>(bb::Argument(refs, 0)),
-          static_cast<float>(bb::Argument(refs, 1))
-        );
+        linePoints.emplace_back(this->cursor);
+        this->cursor.x = static_cast<float>(bb::Argument(refs, 0));
+        this->cursor.y = static_cast<float>(bb::Argument(refs, 1));
+
+        linePoints.emplace_back(this->cursor);
 
         meshes.push_back(
-          std::make_pair(
-            bb::GenerateLine(
-              this->brushWidth,
-              linePoints
-            ),
-            this->cursor
+          bb::GenerateLine(
+            this->brushWidth,
+            linePoints
           )
         );
       }
@@ -157,13 +147,10 @@ class painterVM_t: public bb::vm_t
       break;
     case 'c':
       meshes.push_back(
-        std::make_pair(
-	  bb::GenerateCircle(
-            this->sides,
-            static_cast<float>(bb::Argument(refs, 0)),
-            this->brushWidth
-          ),
-          this->cursor
+        bb::GenerateCircle(
+          this->sides,
+          static_cast<float>(bb::Argument(refs, 0)),
+          this->brushWidth
         )
       );
       break;
@@ -220,11 +207,7 @@ void Render()
 
   for (auto& item: meshes)
   {
-    lineShader.SetMatrix(
-      "model",
-      item.second.Model()
-    );
-    item.first.Render();
+    item.Render();
   }
 
 }
