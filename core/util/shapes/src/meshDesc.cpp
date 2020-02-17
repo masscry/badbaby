@@ -431,19 +431,52 @@ namespace bb
         assert(0);
         return meshDesc_t();
       }
-
-      if (arrHeader.magic != MESH_DESC_ARRAY_MAGIC)
+     
+      switch(arrHeader.magic)
       {
-        assert(0);
-        return meshDesc_t();
+        case MESH_DESC_ARRAY_MAGIC:
+          {
+            size_t arrayDataByteSize = arrHeader.byteSize - sizeof(meshDescArrayHeader_t);
+
+             std::unique_ptr<uint8_t[]> arrayData(new uint8_t[arrayDataByteSize]);
+             if (fread(arrayData.get(), 1, arrayDataByteSize, input) != arrayDataByteSize)
+             {
+               assert(0);
+               return meshDesc_t();
+             }
+
+             result.buffers.emplace_back(
+               new bb::defaultVertexBuffer_t(
+                 arrayData.get(),
+                 arrHeader.size,
+                 arrHeader.dim,
+                 arrHeader.type,
+                 static_cast<GLboolean>(arrHeader.normalized)
+               )
+             );          
+          }
+          break;
+        case MESH_DESC_ELEMENT_MAGIC:        
+          {
+            result.Indecies().resize(arrHeader.size);
+            if (fread(
+              result.Indecies().data(),
+              sizeof(uint16_t), result.Indecies().size(),
+              input) != result.Indecies().size()
+            )
+            {
+              assert(0);
+              return meshDesc_t();
+            }            
+          }
+          break;
+        default:
+          assert(0);
+          return meshDesc_t();        
       }
-
       
-
-
-
     }
-
+        
     return result;
   }
 
