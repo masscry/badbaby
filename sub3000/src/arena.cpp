@@ -18,12 +18,17 @@ namespace sub3000
       menuConfig.Value("shader.vp", "arena.vp.glsl").c_str(),
       menuConfig.Value("shader.fp", "arena.fp.glsl").c_str()
     );
+    
+    FILE* input = fopen(menuConfig.Value("radar.mesh", "radar.msh").c_str(), "rb");
+    if (input == nullptr)
+    { // resource not found!
+      assert(0);
+    }
+    BB_DEFER(fclose(input));
 
-    this->radar = bb::GenerateCircle(
-      static_cast<uint32_t>(menuConfig.Value("circle.sides", 16.0)),
-      static_cast<float>(menuConfig.Value("circle.radius", 0.5)),
-      static_cast<float>(menuConfig.Value("circle.width", 0.1))
-    );
+    this->radar = bb::GenerateMesh(
+      bb::meshDesc_t::Load(input)
+    );      
   }
 
   void arenaScene_t::OnUpdate(double)
