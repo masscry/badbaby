@@ -38,6 +38,35 @@ namespace bb
 
   };
 
+  class defaultVertexBuffer_t: public basicVertexBuffer_t
+  {
+    std::unique_ptr<uint8_t[]> data;
+    size_t                     size;
+    GLint                      dim;
+    GLenum                     type;
+    GLboolean                  normalized;
+
+    int Assign(const basicVertexBuffer_t& src);
+
+  public:
+
+    int Append(const basicVertexBuffer_t& src) override;
+    size_t Size() const override;
+    GLint Dimensions() const override;
+    GLenum Type() const override;
+    GLboolean Normalized() const override;
+    const void* Data() const override;
+    basicVertexBuffer_t* Copy() const override;
+
+    defaultVertexBuffer_t();
+    defaultVertexBuffer_t(const void* data, size_t size, GLint dim, GLenum type, GLboolean normalized);
+    defaultVertexBuffer_t(const defaultVertexBuffer_t&);
+    defaultVertexBuffer_t(defaultVertexBuffer_t&&);
+    defaultVertexBuffer_t& operator=(const defaultVertexBuffer_t&);
+    defaultVertexBuffer_t& operator=(defaultVertexBuffer_t&&);
+    ~defaultVertexBuffer_t() override;
+  };
+
   template<typename data_t>
   class vertexBuffer_t final: public basicVertexBuffer_t
   {
