@@ -48,7 +48,7 @@ namespace bb
       sincosf(angle, &point.x, &point.y);
       point.x += center.x;
       point.y += center.y;
-      
+
       points.push_back(point * outerRing);
       points.push_back(point * innerRing);
 

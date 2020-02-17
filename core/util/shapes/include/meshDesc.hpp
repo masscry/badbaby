@@ -32,7 +32,7 @@ namespace bb
     static meshDesc_t Load(FILE* input);
 
     int Save(FILE* output) const;
-    
+
     arrayOfVertexBuffers_t& Buffers();
     const arrayOfVertexBuffers_t& Buffers() const;
 
@@ -89,6 +89,7 @@ namespace bb
 
   meshDesc_t DefineCircle(glm::vec3 center, uint32_t sides, float radius, float width);
   meshDesc_t DefineLine(glm::vec3 offset, float width, const linePoints_t& linePoints);
+  meshDesc_t DefineNumber(glm::vec3 offset, float width, glm::vec2 scale, const char* number);
 
 } // namespace bb
 

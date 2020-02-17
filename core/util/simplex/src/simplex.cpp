@@ -1,17 +1,14 @@
 #include <simplex.hpp>
+#include <common.hpp>
 
 #include <cstdlib>
 #include <cstring>
 #include <cassert>
 
-template <typename T, std::size_t N>
-constexpr std::size_t countof(T const (&)[N]) noexcept
-{
-    return N;
-}
-
 namespace
 {
+
+    using namespace bb;
 
     const double STRETCH_3D = -1.0 / 6.0;            //(1/Math.sqrt(3+1)-1)/3;
     const double SQUISH_3D = 1.0 / 3.0;              //(Math.sqrt(3+1)-1)/3;

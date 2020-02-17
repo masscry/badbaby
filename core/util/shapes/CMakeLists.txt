@@ -12,6 +12,7 @@ add_library(shapes
   src/meshDesc.cpp
   src/circle.cpp
   src/lines.cpp
+  src/numbers.cpp
 )
 
 target_link_libraries(shapes PUBLIC render)

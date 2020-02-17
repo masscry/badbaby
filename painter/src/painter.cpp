@@ -104,6 +104,7 @@ class painterVM_t: public bb::vm_t
   glm::vec3 cursor;
   uint32_t sides;
   bb::meshDesc_t meshDesc;
+  glm::vec2 textScale;
 
   int OnCommand(int cmd, const bb::listOfRefs_t& refs) override
   {
@@ -165,6 +166,24 @@ class painterVM_t: public bb::vm_t
         this->sides = 32;
       }
       break;
+    case 't':
+      this->textScale.x = static_cast<float>(bb::Argument(refs, 0));
+      this->textScale.y = static_cast<float>(bb::Argument(refs, 1));
+      break;
+    case 'd':
+      this->meshDesc.Append(
+        bb::DefineNumber(
+          this->cursor,
+          this->brushWidth,
+          this->textScale,
+          std::to_string(
+            static_cast<uint32_t>(
+              bb::Argument(refs, 0)
+            )
+          ).c_str()
+        )
+      );
+      break;
     default:
       bb::Debug("Command %c (%d)\n", cmd, cmd);
       for (auto& item: refs)
@@ -190,7 +209,8 @@ public:
   painterVM_t()
   : brushWidth(0.0f),
     cursor(0.0f),
-    sides(32)
+    sides(32),
+    textScale(1.0f)
   {
     this->meshDesc.SetDrawMode(GL_TRIANGLE_STRIP);
   }
