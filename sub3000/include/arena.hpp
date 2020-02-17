@@ -15,6 +15,7 @@
 #include <sub3000.hpp>
 #include <shapes.hpp>
 #include <blur.hpp>
+#include <camera.hpp>
 
 namespace sub3000
 {
@@ -24,6 +25,7 @@ namespace sub3000
     bb::context_t* pContext;
     bb::shader_t shader;
     bb::mesh_t radar;
+    bb::camera_t camera;
 
     void OnPrepare() override;
     void OnUpdate(double delta) override;

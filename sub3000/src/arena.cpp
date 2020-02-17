@@ -18,7 +18,7 @@ namespace sub3000
       menuConfig.Value("shader.vp", "arena.vp.glsl").c_str(),
       menuConfig.Value("shader.fp", "arena.fp.glsl").c_str()
     );
-    
+
     FILE* input = fopen(menuConfig.Value("radar.mesh", "radar.msh").c_str(), "rb");
     if (input == nullptr)
     { // resource not found!
@@ -28,20 +28,35 @@ namespace sub3000
 
     this->radar = bb::GenerateMesh(
       bb::meshDesc_t::Load(input)
-    );      
+    );
+
+    this->camera = bb::camera_t::Orthogonal(
+      -1.0f, 1.0f, 1.0f, -1.0f
+    );
   }
 
   void arenaScene_t::OnUpdate(double)
   {
 
   }
-  
+
   void arenaScene_t::OnRender()
   {
     bb::framebuffer_t::Bind(this->pContext->Canvas());
     bb::shader_t::Bind(this->shader);
 
+    glBlendFunc(
+      GL_ONE,
+      GL_ONE_MINUS_SRC_ALPHA
+    );
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    this->shader.SetBlock(
+      this->shader.UniformBlockIndex("camera"),
+      this->camera.UniformBlock()
+    );
+
     this->radar.Render();
   }
 
