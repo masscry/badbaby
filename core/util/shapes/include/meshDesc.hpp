@@ -31,6 +31,8 @@ namespace bb
 
     static meshDesc_t Load(FILE* input);
 
+    static bool CheckFile(FILE* input);
+
     int Save(FILE* output) const;
 
     arrayOfVertexBuffers_t& Buffers();

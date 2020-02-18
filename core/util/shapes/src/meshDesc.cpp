@@ -397,6 +397,21 @@ namespace bb
     return 0;
   }
 
+  bool meshDesc_t::CheckFile(FILE* input)
+  {
+    meshDescHeader_t header;
+    auto fpos = ftell(input);
+    if (fread(&header, sizeof(meshDescHeader_t), 1, input) != 1)
+    {
+      return false;
+    }
+    fseek(input, fpos, SEEK_SET);
+    return (
+         (header.magic == MESH_DESC_MAGIC)
+      || (header.version == MESH_DESC_VERSION)
+    );
+  }
+
   meshDesc_t meshDesc_t::Load(FILE* input)
   {
     meshDesc_t result;
