@@ -143,15 +143,8 @@ namespace bb
     return 0.0;
   }
 
-  char* ReadWholeFile(const char* filename, size_t* pSize)
+  char* ReadWholeFile(FILE* input, size_t* pSize)
   {
-    FILE* input = fopen(filename, "rb");
-    if (input == nullptr)
-    {
-      return nullptr;
-    }
-    BB_DEFER(fclose(input));
-
     if (fseek(input, 0, SEEK_END) != 0)
     {
       return nullptr;
@@ -186,6 +179,17 @@ namespace bb
       *pSize = inputFileSize + 1;
     }
     return result;
+  }
+
+  char* ReadWholeFile(const char* filename, size_t* pSize)
+  {
+    FILE* input = fopen(filename, "rb");
+    if (input == nullptr)
+    {
+      return nullptr;
+    }
+    BB_DEFER(fclose(input));
+    return ReadWholeFile(input, pSize);
   }
 
 } // namespace bb

@@ -52,6 +52,8 @@ namespace bb
    */
   char* ReadWholeFile(const char* filename, size_t* pSize);
 
+  char* ReadWholeFile(FILE* input, size_t* pSize);
+
 } // namespace bb
 
 #endif /* __BB_UTILS_SCRIPT_HEADER__  */
