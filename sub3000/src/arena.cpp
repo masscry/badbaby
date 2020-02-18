@@ -13,7 +13,6 @@ namespace sub3000
     bb::config_t menuConfig;
     menuConfig.Load("./arena.config");
 
-    this->pContext = &bb::context_t::Instance();
     this->shader = bb::shader_t::LoadProgramFromFiles(
       menuConfig.Value("shader.vp", "arena.vp.glsl").c_str(),
       menuConfig.Value("shader.fp", "arena.fp.glsl").c_str()
@@ -33,6 +32,8 @@ namespace sub3000
     this->camera = bb::camera_t::Orthogonal(
       -1.0f, 1.0f, 1.0f, -1.0f
     );
+
+    glDisable(GL_DEPTH_TEST);
   }
 
   void arenaScene_t::OnUpdate(double)
@@ -42,15 +43,15 @@ namespace sub3000
 
   void arenaScene_t::OnRender()
   {
-    bb::framebuffer_t::Bind(this->pContext->Canvas());
-    bb::shader_t::Bind(this->shader);
+    bb::framebuffer_t::Bind(bb::context_t::Instance().Canvas());
 
     glBlendFunc(
-      GL_ONE,
-      GL_ONE_MINUS_SRC_ALPHA
+      GL_ONE, GL_ONE_MINUS_SRC_ALPHA
     );
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    bb::shader_t::Bind(this->shader);
+    camera.Update();
 
     this->shader.SetBlock(
       this->shader.UniformBlockIndex("camera"),
@@ -62,12 +63,11 @@ namespace sub3000
 
   void arenaScene_t::OnCleanup()
   {
-    this->pContext = nullptr;
+    ;
   }
 
   arenaScene_t::arenaScene_t()
-  : scene_t(sceneID_t::arena, "Arena"),
-    pContext(nullptr)
+  : scene_t(sceneID_t::arena, "Arena")
   {
     ;
   }

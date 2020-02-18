@@ -22,7 +22,6 @@ namespace sub3000
 
   class arenaScene_t final: public scene_t
   {
-    bb::context_t* pContext;
     bb::shader_t shader;
     bb::mesh_t radar;
     bb::camera_t camera;
