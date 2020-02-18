@@ -20,10 +20,51 @@
 namespace sub3000
 {
 
-  class arenaScene_t final: public scene_t
+  class radarScreen_t final: public scene_t
   {
+    bb::framebuffer_t fb;
     bb::shader_t shader;
     bb::mesh_t radar;
+    bb::camera_t camera;
+
+    radarScreen_t(const radarScreen_t&) = delete;
+    radarScreen_t& operator=(const radarScreen_t&) = delete;
+
+    void OnPrepare() override;
+    void OnUpdate(double delta) override;
+    void OnRender() override;
+    void OnCleanup() override;
+
+  public:
+
+    bb::framebuffer_t& Framebuffer();
+    const bb::framebuffer_t& Framebuffer() const;
+
+    radarScreen_t(radarScreen_t&&) = default;
+    radarScreen_t& operator=(radarScreen_t&&) = default;
+    radarScreen_t();
+    ~radarScreen_t() override = default;
+
+    static radarScreen_t Create();
+
+  };
+
+  inline bb::framebuffer_t& radarScreen_t::Framebuffer()
+  {
+    return this->fb;
+  }
+
+  inline const bb::framebuffer_t& radarScreen_t::Framebuffer() const
+  {
+    return this->fb;
+  }
+
+  class arenaScene_t final: public scene_t
+  {
+    radarScreen_t radarScreen;
+
+    bb::shader_t shader;
+    bb::mesh_t radarPlane;
     bb::camera_t camera;
 
     void OnPrepare() override;
@@ -34,7 +75,7 @@ namespace sub3000
   public:
 
     arenaScene_t();
-    ~arenaScene_t() override;
+    ~arenaScene_t() override = default;
 
   };
 

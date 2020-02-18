@@ -13,7 +13,8 @@ namespace sub3000
     splash = 0,
     mainMenu,
     authors,
-    arena
+    arena,
+    radarScreen
   };
 
   class scene_t

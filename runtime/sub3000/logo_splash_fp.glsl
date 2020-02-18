@@ -11,6 +11,14 @@ uniform float time;
 
 void main()
 {
-  vec3 texColor = clamp(mix(vec3(0.0f), texture(mainTex, fragUV).rgb, min(log(time), 1.0)), 0.0f, 1.0f);
+  vec3 texColor = clamp(
+    mix(
+      vec3(0.0f),
+      texture(mainTex, fragUV).rgb,
+      min(log(time), 1.0)
+    ),
+    0.0f,
+    1.0f
+  );
   pixColor = vec4(texColor, 1.0f);
 }

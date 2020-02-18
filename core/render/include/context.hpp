@@ -72,6 +72,8 @@ namespace bb
     int Height() const;
     float AspectRatio() const;
 
+    glm::vec2 Dimensions() const;
+
     static context_t& Instance();
     static bool IsAlreadyExists();
 
@@ -97,6 +99,14 @@ namespace bb
     }
 
   };
+
+  inline glm::vec2 context_t::Dimensions() const
+  {
+    return glm::vec2(
+      static_cast<float>(this->Width()),
+      static_cast<float>(this->Height())
+    );
+  }
 
   inline float context_t::AspectRatio() const
   {

@@ -4,7 +4,7 @@
 
 #include <config.hpp>
 
-namespace 
+namespace
 {
   glm::vec2 vPos[4] = {
     { -0.5f, -0.5f },
@@ -23,18 +23,18 @@ namespace
   uint16_t vInd[6] = {
     0, 1, 2, 0, 2, 3
   };
-  
-} // namespace 
+
+} // namespace
 
 
 namespace sub3000
 {
-  
+
   void splashScene_t::OnPrepare()
   {
     this->pContext = &bb::context_t::Instance();
     this->shader = bb::shader_t::LoadProgramFromFiles(
-      this->shader_vp.c_str(), 
+      this->shader_vp.c_str(),
       this->shader_fp.c_str()
     );
     this->timePassedUniform = this->shader.UniformLocation("time");
@@ -51,9 +51,6 @@ namespace sub3000
     this->object.BindIndecies(vboInd);
 
     this->currentTimePassed = 0.0;
-
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glDisable(GL_DEPTH_TEST);
   }
 
   void splashScene_t::OnUpdate(double delta)
@@ -67,6 +64,9 @@ namespace sub3000
 
   void splashScene_t::OnRender()
   {
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glDisable(GL_DEPTH_TEST);
+
     bb::shader_t::Bind(this->shader);
     this->shader.SetFloat(
       this->timePassedUniform,
@@ -112,5 +112,4 @@ namespace sub3000
 
   }
 
-  
 } // namespace sub3000
