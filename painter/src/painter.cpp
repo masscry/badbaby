@@ -245,29 +245,49 @@ void Render()
 
 int UpdateScene(const char* scriptName)
 {
-  auto script = bb::ReadWholeFile(scriptName, nullptr);
-  if (script == nullptr)
+  FILE* input = fopen(scriptName, "rb");
+  if (input == nullptr)
   {
     return -1;
   }
-  BB_DEFER(free(script));
+  BB_DEFER(fclose(input));
 
-  painterVM_t painterVM;
-  if (bb::ExecuteScript(painterVM, script) != 0)
+  if (bb::meshDesc_t::CheckFile(input))
   {
-    return -1;
-  }
-  mesh = painterVM.GetMesh();
+    auto meshDesc = bb::meshDesc_t::Load(input);
+    mesh = bb::GenerateMesh(meshDesc);
 
-  FILE* output = fopen((std::string(scriptName) + ".msh").c_str(), "wb");
-  if (output != nullptr)
-  {
-    BB_DEFER(fclose(output));
-    bb::Info("Saving mesh description...");
-    bb::Info(
-      "Save mesh result: %d",
-      painterVM.GetMeshDescription().Save(output)
+    camera = bb::camera_t::Orthogonal(
+      -1.0f, 1.0f, 1.0f, -1.0f
     );
+
+  }
+  else
+  {
+    auto script = bb::ReadWholeFile(input, nullptr);
+    if (script == nullptr)
+    {
+      return -1;
+    }
+    BB_DEFER(free(script));
+
+    painterVM_t painterVM;
+    if (bb::ExecuteScript(painterVM, script) != 0)
+    {
+      return -1;
+    }
+    mesh = painterVM.GetMesh();
+
+    FILE* output = fopen((std::string(scriptName) + ".msh").c_str(), "wb");
+    if (output != nullptr)
+    {
+      BB_DEFER(fclose(output));
+      bb::Info("Saving mesh description...");
+      bb::Info(
+        "Save mesh result: %d",
+        painterVM.GetMeshDescription().Save(output)
+      );
+    }
   }
   return 0;
 }
