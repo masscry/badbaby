@@ -26,6 +26,7 @@ namespace sub3000
     bb::shader_t shader;
     bb::mesh_t radar;
     bb::camera_t camera;
+    bb::mesh_t units;
 
     radarScreen_t(const radarScreen_t&) = delete;
     radarScreen_t& operator=(const radarScreen_t&) = delete;

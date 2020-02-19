@@ -84,4 +84,75 @@ namespace bb
     return result;
   }
 
+  namespace
+  {
+    //
+    // 1---2
+    // |\ /|
+    // | 0 |
+    // |/ \|
+    // 4---3
+    //
+    const uint16_t pointIndecies[6] = {
+      0, 1, 2, 3, 4, 1
+    };
+  }
+
+  meshDesc_t DefinePoints(float width, const linePoints_t& points)
+  {
+    std::vector<glm::vec2> vpos;
+    std::vector<float> distance;
+    std::vector<uint16_t> indecies;
+
+    width = bb::CheckValueBounds(width, 0.01f, 100.0f);
+
+    size_t totalPoints = points.size();
+
+    if ((totalPoints == 0) || (totalPoints*5 >= std::numeric_limits<uint16_t>::max()))
+    { // Programmer's error!
+      // Can't be so few or so many points
+      assert(0);
+      return bb::meshDesc_t();
+    }
+
+    vpos.reserve(points.size()*5);
+    distance.reserve(points.size()*5);
+    indecies.reserve(points.size()*7);
+
+    for (auto cpos: points)
+    {
+      uint16_t cIndex = static_cast<uint16_t>(vpos.size());
+
+      vpos.emplace_back(cpos);
+      vpos.emplace_back(cpos.x - width, cpos.y - width);
+      vpos.emplace_back(cpos.x + width, cpos.y - width);
+      vpos.emplace_back(cpos.x + width, cpos.y + width);
+      vpos.emplace_back(cpos.x - width, cpos.y + width);
+
+      distance.emplace_back(1.0f);
+      distance.emplace_back(0.0f);
+      distance.emplace_back(0.0f);
+      distance.emplace_back(0.0f);
+      distance.emplace_back(0.0f);
+
+      for (size_t i = 0; i < countof(pointIndecies); ++i)
+      {
+        indecies.emplace_back(cIndex + pointIndecies[i]);
+      }
+      indecies.emplace_back(0xFFFF);
+    }
+
+    bb::meshDesc_t result;
+
+    result.Buffers().emplace_back(
+      MakeVertexBuffer(std::move(vpos))
+    );
+    result.Buffers().emplace_back(
+      MakeVertexBuffer(std::move(distance))
+    );
+    result.Indecies() = std::move(indecies);
+    result.SetDrawMode(GL_TRIANGLE_FAN);
+    return result;
+  }
+
 }

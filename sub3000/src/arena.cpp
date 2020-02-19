@@ -4,6 +4,7 @@
 #include <shapes.hpp>
 
 #include <vector>
+#include <random>
 
 namespace sub3000
 {
@@ -14,8 +15,8 @@ namespace sub3000
     menuConfig.Load("./arena.config");
 
     this->shader = bb::shader_t::LoadProgramFromFiles(
-      menuConfig.Value("shader.vp", "arena.vp.glsl").c_str(),
-      menuConfig.Value("shader.fp", "arena.fp.glsl").c_str()
+      menuConfig.Value("radar.shader.vp", "radar.vp.glsl").c_str(),
+      menuConfig.Value("radar.shader.fp", "radar.fp.glsl").c_str()
     );
 
     FILE* input = fopen(menuConfig.Value("radar.mesh", "radar.msh").c_str(), "rb");
@@ -34,6 +35,26 @@ namespace sub3000
     );
 
     this->fb = bb::framebuffer_t(512, 512);
+
+    std::random_device rd;
+    std::mt19937 mt(rd());
+    std::uniform_real_distribution<float> dist(0.0f, 1.0f);
+    bb::linePoints_t unitPos;
+
+    for (int i = 0; i < 10; ++i)
+    {
+      float angle = static_cast<float>(dist(mt)*M_PI*2.0f);
+      float pdist = dist(mt)*0.8f;
+      unitPos.emplace_back(
+        pdist*cos(angle),
+        pdist*sin(angle)
+      );
+    }
+
+    this->units = bb::GenerateMesh(
+      bb::DefinePoints(0.02f, unitPos)
+    );
+
   }
 
   void radarScreen_t::OnUpdate(double)
@@ -59,6 +80,7 @@ namespace sub3000
       this->camera.UniformBlock()
     );
 
+    this->units.Render();
     this->radar.Render();
   }
 
@@ -73,20 +95,40 @@ namespace sub3000
     ;
   }
 
-  glm::vec3 CenterOfScreen()
+  glm::vec2 OffsetFromCenterOfScreen(glm::vec2 offset)
   {
-    return glm::vec3(
-      bb::context_t::Instance().Dimensions()/2.0f,
-      0.0f
-    );
+    auto screenDim = bb::context_t::Instance().Dimensions();
+    auto center = screenDim*0.5f;
+
+    return center + screenDim*offset;
+  }
+
+  glm::vec2 SquareScreenPercent(float percent)
+  {
+    auto screenDim = bb::context_t::Instance().Dimensions();
+    auto minDim = std::min(screenDim.x, screenDim.y);
+    return glm::vec2(minDim*percent);
   }
 
   void arenaScene_t::OnPrepare()
   {
+    bb::config_t menuConfig;
+    menuConfig.Load("./arena.config");
+
     this->radarScreen.Prepare();
     this->radarPlane = bb::GeneratePlane(
-      glm::vec2(100.0f, 100.0f),
-      CenterOfScreen()
+      SquareScreenPercent(
+        static_cast<float>(menuConfig.Value("arena.radar.size", 0.9))
+      ),
+      glm::vec3(
+        OffsetFromCenterOfScreen(
+          glm::vec2(
+            static_cast<float>(menuConfig.Value("arena.radar.offset.x", 0.25)),
+            static_cast<float>(menuConfig.Value("arena.radar.offset.y", 0.0))
+          )
+        ),
+        0.0f
+      )
     );
 
     this->camera = bb::camera_t::Orthogonal(
@@ -97,8 +139,8 @@ namespace sub3000
     );
 
     this->shader = bb::shader_t::LoadProgramFromFiles(
-      "desktop.vp.glsl",
-      "desktop.fp.glsl"
+      menuConfig.Value("arena.shader.vp", "desktop.vp.glsl").c_str(),
+      menuConfig.Value("arena.shader.fp", "desktop.fp.glsl").c_str()
     );
 
   }
