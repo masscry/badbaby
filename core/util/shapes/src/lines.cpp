@@ -129,7 +129,7 @@ namespace bb
       vpos.emplace_back(cpos.x + width, cpos.y + width);
       vpos.emplace_back(cpos.x - width, cpos.y + width);
 
-      distance.emplace_back(1.0f);
+      distance.emplace_back(0.5f);
       distance.emplace_back(0.0f);
       distance.emplace_back(0.0f);
       distance.emplace_back(0.0f);
