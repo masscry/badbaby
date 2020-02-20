@@ -10,6 +10,7 @@ add_executable(sub3000
   include/authors.hpp
   include/mapGen.hpp
   include/arena.hpp
+  include/space.hpp
 
 # Sources
   src/sub3000.cpp
@@ -20,6 +21,7 @@ add_executable(sub3000
   src/authors.cpp
   src/mapGen.cpp
   src/arena.cpp
+  src/space.cpp
 )
 
 target_include_directories(sub3000
