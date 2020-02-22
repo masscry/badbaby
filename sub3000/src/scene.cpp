@@ -91,12 +91,16 @@ namespace sub3000
 
   void PostChangeScene(sceneID_t newScene)
   {
-    PostToMain(bb::MakeMsg(-1, mainMessage_t::change_scene, newScene));
+    PostToMain(
+      bb::Issue<sub3000::changeScene_t>(newScene)
+    );
   }
 
   void PostExit()
   {
-    PostToMain(bb::MakeMsg(-1, mainMessage_t::exit, 0));
+    PostToMain(
+      bb::Issue<sub3000::exit_t>()
+    );
   }
 
 

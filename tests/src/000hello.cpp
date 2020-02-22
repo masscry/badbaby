@@ -5,26 +5,28 @@
 
 using namespace bb;
 
-enum simpleMessage_t: uint16_t
+class helloMsg_t final: public msg::basic_t
 {
-  hello = bb::msgID_t::USR00
+public:
+  helloMsg_t() { ; }
+  ~helloMsg_t() override = default;
 };
 
 class hello_t: public role_t
 {
-  msgResult_t OnProcessMessage(const actor_t&, msg_t msg) override
+  msg::result_t OnProcessMessage(const actor_t&, const msg::basic_t& msg) override
   {
-    switch (msg.type)
+    if (As<helloMsg_t>(msg) != nullptr)
     {
-    case simpleMessage_t::hello:
       Info("Hello!");
-      break;
-    default:
-      Error("Unknown Message Type: %d", msg.type);
-      break;
     }
+    else
+    {
+      Error("Unknown Message Type: %s", typeid(msg).name());
+    }
+
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    return msgResult_t::complete;
+    return msg::result_t::complete;
   }
 
   const char* DefaultName() const override
@@ -46,7 +48,10 @@ int main(int argc, char* argv[])
   for (int i = 0; i < 20; ++i)
   {
     Debug("Say Hello!");
-    workerPool_t::Instance().PostMessage(actorID, MakeMsg(-1, simpleMessage_t::hello, 0));
+    workerPool_t::Instance().PostMessage(
+      actorID,
+      Issue<helloMsg_t>()
+    );
     std::this_thread::sleep_for(std::chrono::seconds(1));
   }
 

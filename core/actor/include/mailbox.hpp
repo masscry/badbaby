@@ -42,7 +42,7 @@ namespace bb
 
     bool Poll(msg_t* result);
 
-    void Put(msg_t msg);
+    void Put(msg_t&& msg);
 
     mailbox_t() = default;
     ~mailbox_t() = default;

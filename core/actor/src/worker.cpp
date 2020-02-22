@@ -92,7 +92,7 @@ namespace bb
         for (size_t curActorIndex = 0; curActorIndex < totalKnownActors; ++curActorIndex)
         {
           auto actorIt = this->actors.begin() + static_cast<long>(curActorIndex);
-          auto actorProcessResult = msgResult_t::skipped;
+          auto actorProcessResult = msg::result_t::skipped;
           auto& actor = *actorIt;
           if (actor)
           {
@@ -109,10 +109,10 @@ namespace bb
           }
           switch (actorProcessResult)
           {
-          case msgResult_t::skipped:
-          case msgResult_t::complete:
+          case msg::result_t::skipped:
+          case msg::result_t::complete:
             break;
-          case msgResult_t::poisoned:
+          case msg::result_t::poisoned:
             {
               // this is only way to delete actor, code works in a way that
               // only actor itself says when it can be killed.
@@ -127,7 +127,7 @@ namespace bb
               actorIt->reset();
             }
             break;
-          case msgResult_t::error:
+          case msg::result_t::error:
             bb::Error("Actor \"%s\" (%d) works with errors", actor->Name().c_str(), actor->ID());
             break;
           default:
@@ -245,7 +245,7 @@ namespace bb
     return -1;
   }
 
-  int workerPool_t::PostMessage(int actorID, msg_t message)
+  int workerPool_t::PostMessage(int actorID, msg_t&& message)
   {
     uint16_t actorIndex = GetActorIndex(actorID);
     assert(actorIndex < this->actors.size());
@@ -256,7 +256,7 @@ namespace bb
       auto actIt = this->actors.begin() + actorIndex;
       if ((*actIt) && ((*actIt)->ID() == actorID))
       {
-        (*actIt)->PostMessage(message);
+        (*actIt)->PostMessage(std::move(message));
       }
       else
       {
@@ -273,7 +273,9 @@ namespace bb
 
   int workerPool_t::Unregister(int actorID)
   {
-    return this->PostMessage(actorID, bb::MakeMsg(-1, POISON, 0));
+    return this->PostMessage(actorID,
+      bb::IssuePoison()
+    );
   }
 
 }

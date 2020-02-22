@@ -26,7 +26,7 @@ namespace sub3000
 
   class authorsModel_t final: public bb::role_t
   {
-    bb::msgResult_t OnProcessMessage(const bb::actor_t&, bb::msg_t msg) override;
+    bb::msg::result_t OnProcessMessage(const bb::actor_t&, const bb::msg::basic_t& msg) override;
   public:
 
     const char* DefaultName() const override

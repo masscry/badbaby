@@ -17,35 +17,11 @@
 namespace bb
 {
 
-  msg_t IssuePoison()
-  {
-    return MakeMsg(-1, msgID_t::POISON, 0);
-  }
-
-  msg_t IssueSetID(int id)
-  {
-    return MakeMsg(-1, msgID_t::SETID, id);
-  }
-
-  msg_t IssueSetName(const char* name)
-  {
-    size_t nameLen = strlen(name);
-    assert(nameLen <= msgDataByteLength);
-
-    msg_t result;
-
-    result.src = -1;
-    result.type = msgID_t::SETNAME;
-    memset(result.data, ' ', msgDataByteLength);
-    memcpy(result.data, name, nameLen);
-    return result;
-  }
-
-  msgResult_t actor_t::ProcessMessagesCore()
+  msg::result_t actor_t::ProcessMessagesCore()
   {
     if (this->sick)
     {
-      return msgResult_t::skipped;
+      return msg::result_t::skipped;
     }
 
     auto& curRole = *this->role;
@@ -53,73 +29,70 @@ namespace bb
     size_t msgAlreadyInQueue = this->mailbox.Has();
     if (msgAlreadyInQueue == 0)
     {
-      return msgResult_t::skipped;
+      return msg::result_t::skipped;
     }
 
     Debug("Process \"%s\" (%08x)", this->Name().c_str(), this->ID());
 
-    auto result = msgResult_t::complete;
+    auto result = msg::result_t::complete;
     while(msgAlreadyInQueue-->0)
     {
       auto msg = this->mailbox.Wait();
-      switch(msg.type)
+
+      if (bb::As<bb::msg::poison_t>(msg) != nullptr)
       {
-      case msgID_t::SETNAME:
-        {
-          char tmpBuf[msgDataByteLength+1];
-          memcpy(tmpBuf, msg.data, msgDataByteLength);
-          tmpBuf[msgDataByteLength] = 0;
-          this->name = tmpBuf;
-        }
-        break;
-      case msgID_t::SETID:
-        this->id = GetMsgData<int>(msg);
-        break;
-      case msgID_t::POISON:
-        {
-          bb::Debug("Actor \"%s\" (%08x) is poisoned", this->Name().c_str(), this->ID());
-          context_t::UnregisterActorCallbacksIfContextExists(this->ID());
-          this->sick = true;
-          this->id = -1;
-          return msgResult_t::poisoned;
-        }
-        break;
-      default:
-        {
-          auto tmpResult = curRole.ProcessMessage(*this, msg);
-          if (tmpResult == msgResult_t::poisoned)
-          {
-            bb::Debug("Actor \"%s\" (%08x) poisoned himself", this->Name().c_str(), this->ID());
-            this->sick = true;
-            this->id = -1;
-            return msgResult_t::poisoned;
-          }
-          if (tmpResult != msgResult_t::complete)
-          {
-            result = tmpResult;
-          }
-        }
+        bb::Debug("Actor \"%s\" (%08x) is poisoned", this->Name().c_str(), this->ID());
+        context_t::UnregisterActorCallbacksIfContextExists(this->ID());
+        this->sick = true;
+        this->id = -1;
+        return msg::result_t::poisoned;
+      }
+
+      if (auto data = bb::As<bb::msg::setName_t>(msg))
+      {
+        this->name = data->Name();
+        continue; 
+      }
+
+      if (auto data = bb::As<bb::msg::setID_t>(msg))
+      {
+        this->id = data->ID();
+        continue;
+      }
+
+      auto tmpResult = curRole.ProcessMessage(*this, *msg.get());
+      if (tmpResult == msg::result_t::poisoned)
+      {
+        bb::Debug("Actor \"%s\" (%08x) poisoned himself", this->Name().c_str(), this->ID());
+        this->sick = true;
+        this->id = -1;
+        return msg::result_t::poisoned;
+      }
+      
+      if (tmpResult != msg::result_t::complete)
+      {
+        result = tmpResult;
       }
     }
     return result;
   }
 
-  msgResult_t actor_t::ProcessMessages()
+  msg::result_t actor_t::ProcessMessages()
   {
     std::unique_lock<std::mutex> inProcessLock(this->inProcess, std::try_to_lock);
     if (!inProcessLock.owns_lock())
     {
-      return msgResult_t::skipped;
+      return msg::result_t::skipped;
     }
     return this->ProcessMessagesCore();
   }
 
-  msgResult_t actor_t::ProcessMessagesReadReleaseAquire(rwMutex_t& mutex)
+  msg::result_t actor_t::ProcessMessagesReadReleaseAquire(rwMutex_t& mutex)
   {
     std::unique_lock<std::mutex> inProcessLock(this->inProcess, std::try_to_lock);
     if (!inProcessLock.owns_lock())
     {
-      return msgResult_t::skipped;
+      return msg::result_t::skipped;
     }
     mutex.UnlockRead();
     BB_DEFER(mutex.LockRead());

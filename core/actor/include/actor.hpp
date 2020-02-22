@@ -34,7 +34,7 @@ namespace bb
     actor_t(actor_t&&) = delete;
     actor_t& operator=(actor_t&&) = delete;
 
-    msgResult_t ProcessMessagesCore();
+    msg::result_t ProcessMessagesCore();
 
   public:
 
@@ -44,11 +44,11 @@ namespace bb
 
     int ID() const;
 
-    msgResult_t ProcessMessages();
+    msg::result_t ProcessMessages();
 
-    msgResult_t ProcessMessagesReadReleaseAquire(rwMutex_t& mutex);
+    msg::result_t ProcessMessagesReadReleaseAquire(rwMutex_t& mutex);
 
-    void PostMessage(msg_t msg);
+    void PostMessage(msg_t&& msg);
 
     bool NeedProcessing();
 
@@ -72,9 +72,9 @@ namespace bb
     return this->id;
   }
 
-  inline void actor_t::PostMessage(msg_t msg)
+  inline void actor_t::PostMessage(msg_t&& msg)
   {
-    this->mailbox.Put(msg);
+    this->mailbox.Put(std::move(msg));
   }
 
 }

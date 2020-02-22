@@ -69,7 +69,7 @@ namespace bb
     int Register(std::unique_ptr<role_t>&& role);
     int FindFirstByName(const std::string& name);
 
-    int PostMessage(int actorID, msg_t message);
+    int PostMessage(int actorID, msg_t&& message);
     int Unregister(int actorID);
 
   };

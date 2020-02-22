@@ -27,7 +27,7 @@ namespace bb
       return false;
     }
 
-    *result = this->storage.front();
+    *result = std::move(this->storage.front());
     this->storage.pop();
     return true;
   }
@@ -37,18 +37,18 @@ namespace bb
     std::unique_lock<std::mutex> lock(this->guard);
     if (!this->storage.empty())
     {
-      msg_t result = this->storage.front();
+      msg_t result = std::move(this->storage.front());
       this->storage.pop();
       return result;
     }
 
     this->notify.wait(lock, [this](){ return !this->storage.empty(); });
-    msg_t result = this->storage.front();
+    msg_t result = std::move(this->storage.front());
     this->storage.pop();
     return result;
   }
 
-  void mailbox_t::Put(msg_t msg)
+  void mailbox_t::Put(msg_t&& msg)
   {
     std::lock_guard<std::mutex> lock(this->guard);
     this->storage.emplace(std::move(msg));

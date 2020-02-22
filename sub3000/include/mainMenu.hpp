@@ -49,7 +49,7 @@ namespace sub3000
 
     uint32_t selectedLine;
 
-    bb::msgResult_t OnProcessMessage(const bb::actor_t&, bb::msg_t msg) override;
+    bb::msg::result_t OnProcessMessage(const bb::actor_t&, const bb::msg::basic_t& msg) override;
 
   public:
 

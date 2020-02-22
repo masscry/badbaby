@@ -5,12 +5,14 @@ add_library(actor STATIC
   include/actor.hpp
   include/mailbox.hpp
   include/role.hpp
+  include/msg.hpp
 
 # SOURCES
   src/worker.cpp
   src/actor.cpp
   src/mailbox.cpp
   src/role.cpp
+  src/msg.cpp
 )
 
 target_include_directories(actor PUBLIC include)

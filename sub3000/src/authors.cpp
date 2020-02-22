@@ -28,30 +28,26 @@ namespace
 namespace sub3000
 {
 
-  bb::msgResult_t authorsModel_t::OnProcessMessage(const bb::actor_t&, bb::msg_t msg)
+  bb::msg::result_t authorsModel_t::OnProcessMessage(const bb::actor_t&, const bb::msg::basic_t& msg)
   {
-    switch (msg.type)
+    if (auto keyEvent = bb::msg::As<bb::msg::keyEvent_t>(msg))
     {
-      case bb::msgID_t::KEYBOARD:
+      if (keyEvent->Press() != GLFW_RELEASE)
       {
-        auto keyEvent = bb::GetMsgData<bb::keyEvent_t>(msg);
-        if (keyEvent.press != GLFW_RELEASE)
-        {
-          PostChangeScene(sub3000::sceneID_t::mainMenu);
-        }
+        PostChangeScene(sub3000::sceneID_t::mainMenu);
       }
-      break;
-      default:
-        assert(0);
+      return bb::msg::result_t::complete;
     }
-    return bb::msgResult_t::complete;
+
+    bb::Error("Unknown message: %s", typeid(msg).name());
+    assert(0);
+    return bb::msg::result_t::error;
   }
 
   authorsModel_t::authorsModel_t()
   {
     ;
   }
-
 
   void authorsScene_t::OnPrepare()
   {

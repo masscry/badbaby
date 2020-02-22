@@ -16,6 +16,9 @@
 
 #include <msg.hpp>
 
+#include "actionTable.hpp"
+#include "scene.hpp"
+
 namespace sub3000
 {
 
@@ -52,20 +55,65 @@ namespace sub3000
 
   };
 
-  void PostToMain(bb::msg_t msg);
+  void PostToMain(bb::msg_t&& msg);
 
-  enum mainMessage_t: uint16_t
+  class changeScene_t: public bb::msg::basic_t
   {
-    nop = bb::msgID_t::USR00,
-    change_scene,
-    exit,
-    action
+    sceneID_t sceneID;
+  public:
+
+    sceneID_t SceneID() const
+    {
+      return this->sceneID;
+    }
+
+    changeScene_t(sceneID_t sceneID)
+    : sceneID(sceneID)
+    {
+      ;
+    }
+
+    changeScene_t(const changeScene_t&) = default;
+    changeScene_t& operator=(const changeScene_t&) = default;
+    changeScene_t(changeScene_t&&) = default;
+    changeScene_t& operator=(changeScene_t&&) = default;
+    ~changeScene_t() override = default;
+
+  };
+
+  class exit_t: public bb::msg::basic_t
+  {
+  public:
+    exit_t() { ; }
+    ~exit_t() override = default;
+  };
+
+  class action_t: public bb::msg::basic_t
+  {
+    gameAction_t gameAction;
+  public:
+
+    gameAction_t GameAction() const
+    {
+      return this->gameAction;
+    }
+
+    action_t(bb::actorPID_t src, gameAction_t gameAction)
+    : bb::msg::basic_t(src),
+      gameAction(gameAction)
+    {
+      ;
+    }
+
+    action_t(const action_t&) = default;
+    action_t& operator=(const action_t&) = default;
+    action_t(action_t&&) = default;
+    action_t& operator=(action_t&&) = default;
+    ~action_t() override = default;
   };
 
   bool RequestGenerateMap(uint16_t width, uint16_t height, float radius, int sendResultToID);
 
 } // namespace sub3000
-
-#include "actionTable.hpp"
 
 #endif /* __SUB3000_HEADER__ */
