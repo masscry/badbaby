@@ -19,7 +19,7 @@ namespace bb
 
   class actor_t final
   {
-    mailbox_t               mailbox;
+    mailbox_t::shared_t     mailbox;
     std::unique_ptr<role_t> role;
     std::mutex              inProcess;
     std::string             name;
@@ -74,7 +74,7 @@ namespace bb
 
   inline void actor_t::PostMessage(msg_t&& msg)
   {
-    this->mailbox.Put(std::move(msg));
+    this->mailbox->Put(std::move(msg));
   }
 
 }

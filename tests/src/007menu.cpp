@@ -34,7 +34,7 @@ const char* menuTextLines[ML_TOTAL] = {
   "Выход"
 };
 
-bb::mailbox_t renderTasks;
+bb::mailbox_t::shared_t renderTasks = bb::postOffice_t::Instance().New("RenderTasks");
 
 namespace menu
 {
@@ -135,7 +135,7 @@ namespace menu
     {
       int nextMenuLine = this->selected;
       nextMenuLine = (((nextMenuLine-1) < ML_FIRST)?(ML_LAST):(nextMenuLine-1));
-      renderTasks.Put(
+      renderTasks->Put(
         bb::Issue<menu::animation_t>(nextMenuLine)
       );
     }
@@ -144,7 +144,7 @@ namespace menu
     {
       int nextMenuLine = this->selected;
       nextMenuLine = (((nextMenuLine+1) > ML_LAST)?(ML_FIRST):(nextMenuLine+1));
-      renderTasks.Put(
+      renderTasks->Put(
         bb::Issue<menu::animation_t>(nextMenuLine)
       );
     }
@@ -153,7 +153,7 @@ namespace menu
     {
       if (this->selected == ML_EXIT)
       {
-        renderTasks.Put(
+        renderTasks->Put(
           bb::Issue<menu::exit_t>()
         );
       }
@@ -265,7 +265,7 @@ int main(int argc, char* argv[])
 
   do
   {
-    while(renderTasks.Poll(&renderMsg))
+    while(renderTasks->Poll(&renderMsg))
     {
       if (auto anim = bb::As<menu::animation_t>(renderMsg))
       {

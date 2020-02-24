@@ -198,14 +198,14 @@ namespace sub3000
     this->gameInfoNode.Translate(bb::vec3_t(100.0f, -100.0f, 0.0f));
 
     auto& pool = bb::workerPool_t::Instance();
-    this->menuModelID = pool.Register(std::unique_ptr<bb::role_t>(new sub3000::mainMenuModel_t(this->textList, this->mailbox)));
+    this->menuModelID = pool.Register(std::unique_ptr<bb::role_t>(new sub3000::mainMenuModel_t(this->textList, *this->mailbox)));
     this->pContext->RegisterActorCallback(menuModelID, bb::cmfKeyboard);
   }
 
   void mainMenuScene_t::OnUpdate(double)
   {
     bb::msg_t msg;
-    while(this->mailbox.Poll(&msg))
+    while(this->mailbox->Poll(&msg))
     {
       if (auto selectedLine = bb::As<sub3000::selectLine_t>(msg))
       {
@@ -272,7 +272,8 @@ namespace sub3000
 
   mainMenuScene_t::mainMenuScene_t()
   : scene_t(sceneID_t::mainMenu, "Main Menu"),
-    pContext(nullptr)
+    pContext(nullptr),
+    mailbox(bb::postOffice_t::Instance().New("mainMenuScene_t"))
   {
     bb::config_t menuConfig;
     menuConfig.Load("./mainMenu.config");
