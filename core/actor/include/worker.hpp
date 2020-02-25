@@ -16,6 +16,7 @@
 #include <list>
 #include <atomic>
 #include <deque>
+#include <list>
 
 #include <common.hpp>
 #include <actor.hpp>
@@ -38,7 +39,7 @@ namespace bb
     using vectorOfWorkers_t = std::vector<std::thread>;
     using vectorOfInfo_t = std::vector<workerInfo_t>;
 
-    using actorStorage_t = std::vector<std::unique_ptr<actor_t>>;
+    using actorStorage_t = std::list<std::unique_ptr<actor_t>>;
     using deletedActorList_t = std::deque<uint16_t>; 
 
     void PrepareInfo(workerID_t id);
@@ -49,7 +50,6 @@ namespace bb
 
     rwMutex_t          actorsGuard;
     actorStorage_t     actors;
-    deletedActorList_t deletedActors;
 
     workerPool_t();
     ~workerPool_t();

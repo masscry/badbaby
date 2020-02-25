@@ -100,24 +100,6 @@ namespace bb
       ~setName_t() override = default;
     };
 
-    class setID_t final: public basic_t
-    {
-      int id;
-    public:
-
-      int ID() const;
-
-      setID_t(int id);
-
-      setID_t(const setID_t&) = default;
-      setID_t& operator=(const setID_t&) = default;
-
-      setID_t(setID_t&&) = default;
-      setID_t& operator=(setID_t&&) = default;
-
-      ~setID_t() override = default;
-    };
-
     class keyEvent_t final: public basic_t
     {
       int key;
@@ -178,17 +160,6 @@ namespace bb
       ;
     }
 
-    inline int setID_t::ID() const
-    {
-      return this->id;
-    }
-
-    inline setID_t::setID_t(int id)
-    : id(id)
-    {
-      ;
-    }
-
     inline int keyEvent_t::Key() const
     {
       return this->key;
@@ -210,8 +181,6 @@ namespace bb
   using msg_t = std::unique_ptr<bb::msg::basic_t>;
 
   msg_t IssuePoison();
-
-  msg_t IssueSetID(int id);
 
   msg_t IssueSetName(const char* name);
 

@@ -44,7 +44,6 @@ namespace bb
         bb::Debug("Actor \"%s\" (%08x) is poisoned", this->Name().c_str(), this->ID());
         context_t::UnregisterActorCallbacksIfContextExists(this->ID());
         this->sick = true;
-        this->id = -1;
         return msg::result_t::poisoned;
       }
 
@@ -54,18 +53,11 @@ namespace bb
         continue; 
       }
 
-      if (auto data = bb::As<bb::msg::setID_t>(msg))
-      {
-        this->id = data->ID();
-        continue;
-      }
-
       auto tmpResult = curRole.ProcessMessage(*this, *msg.get());
       if (tmpResult == msg::result_t::poisoned)
       {
         bb::Debug("Actor \"%s\" (%08x) poisoned himself", this->Name().c_str(), this->ID());
         this->sick = true;
-        this->id = -1;
         return msg::result_t::poisoned;
       }
       
@@ -112,7 +104,6 @@ namespace bb
   actor_t::actor_t(std::unique_ptr<role_t>&& role)
   : mailbox(postOffice_t::Instance().New(role->DefaultName())),
     role(std::move(role)),
-    id(-1),
     sick(false)
   {
     this->name = this->role->DefaultName();
@@ -120,7 +111,6 @@ namespace bb
 
   actor_t::~actor_t()
   {
-    assert(this->ID() == -1);
     assert(this->mailbox->Empty());
   }
 

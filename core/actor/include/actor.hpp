@@ -23,7 +23,6 @@ namespace bb
     std::unique_ptr<role_t> role;
     std::mutex              inProcess;
     std::string             name;
-    int                     id;
     bool                    sick;
 
     // role can't be copied
@@ -69,7 +68,11 @@ namespace bb
 
   inline int actor_t::ID() const
   {
-    return this->id;
+    if (this->mailbox)
+    {
+      return this->mailbox->Address();
+    }
+    return -1;
   }
 
   inline void actor_t::PostMessage(msg_t&& msg)
