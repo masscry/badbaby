@@ -11,7 +11,7 @@
 namespace 
 {
 
-  bb::mailbox_t mail;
+  bb::mailbox_t::shared_t mail = bb::postOffice_t::Instance().New("sub3000");
 
   std::mutex g_mapGenLock;
   int g_mapGenActorID = -1;
@@ -23,7 +23,7 @@ namespace sub3000
 
   void PostToMain(bb::msg_t&& msg)
   {
-    mail.Put(std::move(msg));
+    mail->Put(std::move(msg));
   }
 
   bool RequestGenerateMap(uint16_t width, uint16_t height, float radius, int sendResultToID)
@@ -102,7 +102,7 @@ int main(int argc, char* argv[])
       break;
     }
 
-    if (mail.Poll(&msgToMain))
+    if (mail->Poll(&msgToMain))
     {
       if (auto changeScene = bb::As<sub3000::changeScene_t>(msgToMain))
       {

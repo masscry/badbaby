@@ -34,6 +34,8 @@ namespace bb
 
   public:
 
+    bool Good() const;
+
     void Render();
 
     mesh_t();
@@ -44,6 +46,11 @@ namespace bb
     mesh_t& operator=(mesh_t&&) = default;
     ~mesh_t() = default;
   };
+
+  inline bool mesh_t::Good() const
+  {
+    return (this->totalVerts != 0) && (this->vao.Good());
+  }
 
   mesh_t GeneratePlane(glm::vec2 size, glm::vec3 pos);
 

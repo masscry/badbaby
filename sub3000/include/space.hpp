@@ -11,23 +11,89 @@
 
 #include <actor.hpp>
 #include <role.hpp>
+#include <meshDesc.hpp>
 
 namespace sub3000
 {
 
   class step_t final: public bb::msg::basic_t
   {
+    int count;
+    double dt;
   public:
-    step_t() { ; }
+
+    int Count() const
+    {
+      return this->count;
+    }
+
+    double DeltaTime() const
+    {
+      return this->dt;
+    }
+
+    step_t(int src, int count, double dt)
+    : bb::msg::basic_t(src),
+      count(count),
+      dt(dt)
+    {
+      ;
+    }
+
+    step_t(const step_t&) = default;
+    step_t& operator= (const step_t&) = default;
+
+    step_t(step_t&&) = default;
+    step_t& operator= (step_t&&) = default;
+
     ~step_t() override = default;
+  };
+
+  class state_t final: public bb::msg::basic_t
+  {
+    bb::linePoints_t units;
+  public:
+
+    bb::linePoints_t& Units()
+    {
+      return this->units;
+    }
+
+    const bb::linePoints_t& Units() const
+    {
+      return this->units;
+    }
+
+    state_t()
+    {
+      ;
+    }
+
+    state_t(const bb::linePoints_t& units)
+    : units(units)
+    {
+      ;
+    }
+
+    state_t(const state_t&) = default;
+    state_t& operator=(const state_t&) = default;
+
+    state_t(state_t&&) = default;
+    state_t& operator=(state_t&&) = default;
+
+    ~state_t() override = default;
   };
 
   class space_t final: public bb::role_t
   {
+    bb::linePoints_t units;
+    bb::linePoints_t speeds;
 
     bb::msg::result_t OnProcessMessage(const bb::actor_t&, const bb::msg::basic_t& msg) override;
 
   public:
+
+    void Step(double dt);
 
     const char* DefaultName() const override;
 
@@ -36,7 +102,7 @@ namespace sub3000
 
   };
 
-  const char* space_t::DefaultName() const
+  inline const char* space_t::DefaultName() const
   {
     return "space";
   }

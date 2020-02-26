@@ -15,7 +15,7 @@
 
 namespace
 {
-  bb::mailbox_t mail;
+  bb::mailbox_t::shared_t mail = bb::postOffice_t::Instance().New("painter");
 }
 
 namespace paint
@@ -23,7 +23,7 @@ namespace paint
 
   void PostToMain(bb::msg_t&& msg)
   {
-    mail.Put(std::move(msg));
+    mail->Put(std::move(msg));
   }
 
   const char* MainMsgToStr(const bb::msg_t& msg)
@@ -350,7 +350,7 @@ int main(int argc, char* argv[])
 
     bb::msg_t msgToMain;
 
-    if (mail.Poll(&msgToMain))
+    if (mail->Poll(&msgToMain))
     {
       bb::Debug(
         "Got \"%s\" (%lu) message",

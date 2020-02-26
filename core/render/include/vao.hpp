@@ -69,6 +69,8 @@ namespace bb
 
   public:
 
+    bool Good() const;
+
     vao_t(vao_t&&);
     vao_t& operator = (vao_t&&);
 
@@ -85,6 +87,11 @@ namespace bb
     static void Unbind();
 
   };
+
+  inline bool vao_t::Good() const
+  {
+    return this->self != 0;
+  }
 
 } // namespace bb
 

@@ -2,97 +2,109 @@
 #include <arena.hpp>
 #include <camera.hpp>
 #include <shapes.hpp>
+#include <worker.hpp>
+#include <space.hpp>
 
 #include <vector>
-#include <random>
 
 namespace sub3000
 {
 
-  void radarScreen_t::OnPrepare()
+  namespace radar
   {
-    bb::config_t menuConfig;
-    menuConfig.Load("./arena.config");
 
-    this->shader = bb::shader_t::LoadProgramFromFiles(
-      menuConfig.Value("radar.shader.vp", "radar.vp.glsl").c_str(),
-      menuConfig.Value("radar.shader.fp", "radar.fp.glsl").c_str()
-    );
-
-    FILE* input = fopen(menuConfig.Value("radar.mesh", "radar.msh").c_str(), "rb");
-    if (input == nullptr)
-    { // resource not found!
-      assert(0);
-    }
-    BB_DEFER(fclose(input));
-
-    this->radar = bb::GenerateMesh(
-      bb::meshDesc_t::Load(input)
-    );
-
-    this->camera = bb::camera_t::Orthogonal(
-      -1.0f, 1.0f, 1.0f, -1.0f
-    );
-
-    this->fb = bb::framebuffer_t(512, 512);
-
-    std::random_device rd;
-    std::mt19937 mt(rd());
-    std::uniform_real_distribution<float> dist(0.0f, 1.0f);
-    bb::linePoints_t unitPos;
-
-    for (int i = 0; i < 10; ++i)
+    void screen_t::OnPrepare()
     {
-      float angle = static_cast<float>(dist(mt)*M_PI*2.0f);
-      float pdist = dist(mt)*0.8f;
-      unitPos.emplace_back(
-        pdist*cos(angle),
-        pdist*sin(angle)
+      bb::config_t menuConfig;
+      menuConfig.Load("./arena.config");
+
+      this->shader = bb::shader_t::LoadProgramFromFiles(
+        menuConfig.Value("radar.shader.vp", "radar.vp.glsl").c_str(),
+        menuConfig.Value("radar.shader.fp", "radar.fp.glsl").c_str()
+      );
+
+      FILE* input = fopen(menuConfig.Value("radar.mesh", "radar.msh").c_str(), "rb");
+      if (input == nullptr)
+      { // resource not found!
+        assert(0);
+      }
+      BB_DEFER(fclose(input));
+
+      this->radar = bb::GenerateMesh(
+        bb::meshDesc_t::Load(input)
+      );
+
+      this->camera = bb::camera_t::Orthogonal(
+        -1.0f, 1.0f, 1.0f, -1.0f
+      );
+
+      this->fb = bb::framebuffer_t(512, 512);
+
+      this->box = bb::postOffice_t::Instance().New("arenaScreen");
+
+      this->spaceActorID = bb::workerPool_t::Instance().Register(
+        std::unique_ptr<bb::role_t>(new sub3000::space_t())
+      );
+
+    }
+
+    void screen_t::UpdateUnits(const bb::linePoints_t& units)
+    {
+      this->units = bb::GenerateMesh(
+        bb::DefinePoints(0.02f, units)
       );
     }
 
-    this->units = bb::GenerateMesh(
-      bb::DefinePoints(0.02f, unitPos)
-    );
+    void screen_t::OnUpdate(double dt)
+    {
+      bb::workerPool_t::Instance().PostMessage(
+        this->spaceActorID,
+        bb::msg_t(new step_t(this->box->Address(), 1, dt))
+      );
 
-  }
+      auto msg = this->box->Wait();
+      if (auto state = bb::As<state_t>(msg))
+      {
+        this->UpdateUnits(state->Units());
+      }
+    }
 
-  void radarScreen_t::OnUpdate(double)
-  {
+    void screen_t::OnRender()
+    {
+      bb::framebuffer_t::Bind(this->fb);
 
-  }
+      glDisable(GL_DEPTH_TEST);
+      glBlendFunc(
+        GL_ONE, GL_ONE_MINUS_SRC_ALPHA
+      );
 
-  void radarScreen_t::OnRender()
-  {
-    bb::framebuffer_t::Bind(this->fb);
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      bb::shader_t::Bind(this->shader);
+      camera.Update();
 
-    glDisable(GL_DEPTH_TEST);
-    glBlendFunc(
-      GL_ONE, GL_ONE_MINUS_SRC_ALPHA
-    );
+      this->shader.SetBlock(
+        this->shader.UniformBlockIndex("camera"),
+        this->camera.UniformBlock()
+      );
 
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    bb::shader_t::Bind(this->shader);
-    camera.Update();
+      if (this->units.Good())
+      {
+        this->units.Render();
+      }
+      this->radar.Render();
+    }
 
-    this->shader.SetBlock(
-      this->shader.UniformBlockIndex("camera"),
-      this->camera.UniformBlock()
-    );
+    void screen_t::OnCleanup()
+    {
+      bb::workerPool_t::Instance().Unregister(this->spaceActorID);
+    }
 
-    this->units.Render();
-    this->radar.Render();
-  }
+    screen_t::screen_t()
+    : scene_t(sceneID_t::radarScreen, "Radar")
+    {
+      ;
+    }
 
-  void radarScreen_t::OnCleanup()
-  {
-    ;
-  }
-
-  radarScreen_t::radarScreen_t()
-  : scene_t(sceneID_t::radarScreen, "Radar")
-  {
-    ;
   }
 
   glm::vec2 OffsetFromCenterOfScreen(glm::vec2 offset)
