@@ -14,15 +14,22 @@
 namespace sub3000
 {
 
+  const double SPACE_TIME_STEP = 1.0/30.0;
+
   void space_t::Step(double dt)
   {
-    auto unit = this->units.begin();
-    auto speed = this->speeds.begin();
-    for (int i = 0; i < 10; ++i)
+    this->cumDT += dt;
+    while (this->cumDT > SPACE_TIME_STEP)
     {
-      *unit += *speed * static_cast<float>(dt);
-      ++unit;
-      ++speed;
+      auto unit = this->units.begin();
+      auto speed = this->speeds.begin();
+      for (int i = 0; i < 10; ++i)
+      {
+        *unit += *speed * static_cast<float>(SPACE_TIME_STEP);
+        ++unit;
+        ++speed;
+      }
+      this->cumDT -= SPACE_TIME_STEP;
     }
   }
 
@@ -30,16 +37,13 @@ namespace sub3000
   {
     if (auto step = bb::msg::As<step_t>(msg))
     {
-      for (int i = 0; i < step->Count(); ++i)
-      {
-        this->Step(step->DeltaTime()/step->Count());
-      }
+      this->Step(step->DeltaTime());
 
       if (step->Source() != bb::INVALID_ACTOR)
       {
         bb::workerPool_t::Instance().PostMessage(
           step->Source(),
-          bb::Issue<state_t>(this->units)
+          bb::Issue<state_t>(this->pos, this->units)
         );
       }
       return bb::msg::result_t::complete;
@@ -56,6 +60,9 @@ namespace sub3000
     std::mt19937 mt(rd());
     std::uniform_real_distribution<float> dist(0.0f, 1.0f);
     bb::linePoints_t unitPos;
+
+    this->pos = bb::vec2_t(0.0f);
+    this->dir = bb::vec2_t(0.0f, -1.0f);
 
     for (int i = 0; i < 10; ++i)
     {

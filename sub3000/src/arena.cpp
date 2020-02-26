@@ -59,7 +59,7 @@ namespace sub3000
     {
       bb::workerPool_t::Instance().PostMessage(
         this->spaceActorID,
-        bb::msg_t(new step_t(this->box->Address(), 1, dt))
+        bb::msg_t(new step_t(this->box->Address(), dt))
       );
 
       auto msg = this->box->Wait();

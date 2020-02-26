@@ -18,23 +18,16 @@ namespace sub3000
 
   class step_t final: public bb::msg::basic_t
   {
-    int count;
     double dt;
   public:
-
-    int Count() const
-    {
-      return this->count;
-    }
 
     double DeltaTime() const
     {
       return this->dt;
     }
 
-    step_t(int src, int count, double dt)
+    step_t(int src, double dt)
     : bb::msg::basic_t(src),
-      count(count),
       dt(dt)
     {
       ;
@@ -69,10 +62,13 @@ namespace sub3000
       ;
     }
 
-    state_t(const bb::linePoints_t& units)
-    : units(units)
+    state_t(bb::vec2_t pos, const bb::linePoints_t& units)
     {
-      ;
+      this->units.assign(units.begin(), units.end());
+      for (auto& unit: this->units)
+      {
+        unit -= pos;
+      }
     }
 
     state_t(const state_t&) = default;
@@ -86,6 +82,10 @@ namespace sub3000
 
   class space_t final: public bb::role_t
   {
+    double cumDT;
+    bb::vec2_t pos;
+    bb::vec2_t dir;
+
     bb::linePoints_t units;
     bb::linePoints_t speeds;
 
