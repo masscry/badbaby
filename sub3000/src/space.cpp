@@ -14,13 +14,13 @@
 namespace sub3000
 {
 
-  void space_t::Step()
+  void space_t::Step(double dt)
   {
     auto unit = this->units.begin();
     auto speed = this->speeds.begin();
     for (int i = 0; i < 10; ++i)
     {
-      *unit += *speed;
+      *unit += *speed * static_cast<float>(dt);
       ++unit;
       ++speed;
     }
@@ -32,7 +32,7 @@ namespace sub3000
     {
       for (int i = 0; i < step->Count(); ++i)
       {
-        this->Step();
+        this->Step(step->DeltaTime()/step->Count());
       }
 
       if (step->Source() != bb::INVALID_ACTOR)

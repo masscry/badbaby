@@ -186,7 +186,7 @@ namespace bb
     int resultActorID = newActor->ID();
     this->actors.emplace_back(std::move(newActor));
     
-    bb::Info("Actor \"%s\" (%d) registered", roleName.c_str(), resultActorID);
+    bb::Info("Actor \"%s\" (%x) registered", roleName.c_str(), resultActorID);
     return resultActorID;
   }
 

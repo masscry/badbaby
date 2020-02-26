@@ -2,6 +2,8 @@
 #include <arena.hpp>
 #include <camera.hpp>
 #include <shapes.hpp>
+#include <worker.hpp>
+#include <space.hpp>
 
 #include <vector>
 
@@ -37,6 +39,13 @@ namespace sub3000
       );
 
       this->fb = bb::framebuffer_t(512, 512);
+
+      this->box = bb::postOffice_t::Instance().New("arenaScreen");
+
+      this->spaceActorID = bb::workerPool_t::Instance().Register(
+        std::unique_ptr<bb::role_t>(new sub3000::space_t())
+      );
+
     }
 
     void screen_t::UpdateUnits(const bb::linePoints_t& units)
@@ -46,9 +55,18 @@ namespace sub3000
       );
     }
 
-    void screen_t::OnUpdate(double)
+    void screen_t::OnUpdate(double dt)
     {
+      bb::workerPool_t::Instance().PostMessage(
+        this->spaceActorID,
+        bb::msg_t(new step_t(this->box->Address(), 1, dt))
+      );
 
+      auto msg = this->box->Wait();
+      if (auto state = bb::As<state_t>(msg))
+      {
+        this->UpdateUnits(state->Units());
+      }
     }
 
     void screen_t::OnRender()
@@ -78,7 +96,7 @@ namespace sub3000
 
     void screen_t::OnCleanup()
     {
-      ;
+      bb::workerPool_t::Instance().Unregister(this->spaceActorID);
     }
 
     screen_t::screen_t()

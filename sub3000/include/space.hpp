@@ -19,6 +19,7 @@ namespace sub3000
   class step_t final: public bb::msg::basic_t
   {
     int count;
+    double dt;
   public:
 
     int Count() const
@@ -26,9 +27,16 @@ namespace sub3000
       return this->count;
     }
 
-    step_t(int count)
-    : count(count)
-    { 
+    double DeltaTime() const
+    {
+      return this->dt;
+    }
+
+    step_t(int src, int count, double dt)
+    : bb::msg::basic_t(src),
+      count(count),
+      dt(dt)
+    {
       ;
     }
 
@@ -85,7 +93,7 @@ namespace sub3000
 
   public:
 
-    void Step();
+    void Step(double dt);
 
     const char* DefaultName() const override;
 
@@ -94,7 +102,7 @@ namespace sub3000
 
   };
 
-  const char* space_t::DefaultName() const
+  inline const char* space_t::DefaultName() const
   {
     return "space";
   }
