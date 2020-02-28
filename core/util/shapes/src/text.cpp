@@ -297,6 +297,16 @@ namespace bb
     this->renderI = textI;
   }
 
+  void textDynamic_t::Update(const char* format, ...)
+  {
+    va_list vl;
+    va_start(vl, format);
+
+    
+
+    va_end(vl);
+  }
+
   void textDynamic_t::Render()
   {
     if (!this->vertecies.indecies.empty())
