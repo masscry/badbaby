@@ -14,6 +14,7 @@ E    ([Ee][+-]?{D}+)
 
 #include <assert.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 #include <token.h>
 
@@ -31,19 +32,19 @@ E    ([Ee][+-]?{D}+)
                         return BB_SET;
                       }
 
-{D}+{E}?              {
+[-]*{D}+{E}?          {
                         yyextra->num = strtod_l(yytext, nullptr, locale);
                         yyextra->type = BB_NUMBER; 
                         return BB_NUMBER; 
                       }
 
-{D}*"."{D}+{E}?       {
+[-]*{D}*"."{D}+{E}?   {
                         yyextra->num = strtod_l(yytext, nullptr, locale);
                         yyextra->type = BB_NUMBER;
                         return BB_NUMBER;
                       }
 
-{D}+"."{D}*{E}?       {
+[-]*{D}+"."{D}*{E}?   {
                         yyextra->num = strtod_l(yytext, nullptr, locale);
                         yyextra->type = BB_NUMBER;
                         return BB_NUMBER;
@@ -58,7 +59,7 @@ E    ([Ee][+-]?{D}+)
                       
 [[:space:]]+          { /* IGNORE SPACES */ }
 
-.                     { /* SOME INVALID CHARACTER */  assert(0); }
+.                     { /* SOME INVALID CHARACTER */ printf(isprint(*yytext)?"%c\n":"<%02X>\n", *yytext); assert(0); }
 
 %%
 

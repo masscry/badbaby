@@ -2,6 +2,7 @@
 #include <simplex.hpp>
 #include <worker.hpp>
 #include <msg.hpp>
+#include <context.hpp>
 
 #include <cassert>
 #include <cmath>
@@ -10,6 +11,7 @@
 
 #include <glm/gtc/constants.hpp>
 #include <glm/vec3.hpp>
+
 
 namespace sub3000
 {
@@ -30,6 +32,7 @@ namespace sub3000
         ++speed;
       }
       this->cumDT -= SPACE_TIME_STEP;
+      this->player.Update(static_cast<float>(SPACE_TIME_STEP));
     }
   }
 
@@ -43,8 +46,52 @@ namespace sub3000
       {
         bb::workerPool_t::Instance().PostMessage(
           step->Source(),
-          bb::Issue<state_t>(this->pos, this->units)
+          bb::Issue<state_t>(this->player.pos, this->player.angle, this->units)
         );
+
+        bb::postOffice_t::Instance().Post(
+          "arenaStatus",
+          bb::Issue<playerStatus_t>(
+            this->player.pos,
+            this->player.vel,
+            this->player.engineMode,
+            this->player.rudderMode,
+            this->player.angle,
+            this->player.actualOutput
+          )
+        );
+
+      }
+      return bb::msg::result_t::complete;
+    }
+
+    if (auto key = bb::msg::As<bb::msg::keyEvent_t>(msg))
+    {
+      if (key->Press() != GLFW_RELEASE)
+      {
+        int control = (key->Key() == GLFW_KEY_DOWN) - (key->Key() == GLFW_KEY_UP);        
+        int newOutput = control + this->player.engineMode;
+        if ((newOutput >= EM_FULL_AHEAD) && (newOutput <= EM_FULL_ASTERN))
+        {
+          this->player.engineMode = static_cast<engineMode_t>(newOutput);
+        }
+
+        int rotate = (key->Key() == GLFW_KEY_RIGHT) - (key->Key() == GLFW_KEY_LEFT);
+        int newRudder = rotate + this->player.rudderMode;
+        if ((newRudder >= RM_40_LEFT) && (newRudder <= RM_40_RIGHT))
+        {
+          this->player.rudderMode = static_cast<rudderMode_t>(newRudder);
+        }
+      }
+      return bb::msg::result_t::complete;
+    }
+
+    if (auto control = bb::msg::As<control_t>(msg))
+    {
+      int newOutput = control->Control() + this->player.engineMode;
+      if ((newOutput >= EM_FULL_AHEAD) && (newOutput <= EM_FULL_ASTERN))
+      {
+        this->player.engineMode = static_cast<engineMode_t>(newOutput);
       }
       return bb::msg::result_t::complete;
     }
@@ -61,20 +108,12 @@ namespace sub3000
     std::uniform_real_distribution<float> dist(0.0f, 1.0f);
     bb::linePoints_t unitPos;
 
-    this->pos = bb::vec2_t(0.0f);
-    this->dir = bb::vec2_t(0.0f, -1.0f);
-
     for (int i = 0; i < 10; ++i)
     {
       glm::vec2 pos;
-      glm::vec2 speed;
-
-      float angle = static_cast<float>(dist(mt)*M_PI*2.0f);
-      float pspeed = 0.1f;
 
       this->speeds.emplace_back(
-        pspeed*cos(angle),
-        pspeed*sin(angle)
+        0.0f
       );
 
       this->units.emplace_back(

@@ -2,6 +2,7 @@
 
 #include <atomic>
 
+#include <mailbox.hpp>
 #include <worker.hpp>
 #include <common.hpp>
 #include <config.hpp>
@@ -205,7 +206,7 @@ namespace bb
 
   int workerPool_t::PostMessage(int actorID, msg_t&& message)
   {
-    if (postOffice_t::Instance().Post(actorID, std::move(message)) != 0)
+    if (bb::postOffice_t::Instance().Post(actorID, std::move(message)) != 0)
     {
       bb::Error("Actor (%08x) is no longer exists!", actorID);
       assert(0);

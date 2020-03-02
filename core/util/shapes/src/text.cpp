@@ -1,3 +1,5 @@
+#include <cstdarg>
+
 #include <text.hpp>
 #include <utf8.hpp>
 #include <common.hpp>
@@ -5,30 +7,61 @@
 namespace
 {
 
+  template<typename text_t>
+  uint32_t GetTotalSpaceCount(const text_t& text)
+  {
+    uint32_t result = 0;
+    for (auto smb: text)
+    {
+      result += (std::isspace(smb) != 0);
+    }
+    return result;
+  }
+
+  const glm::vec2 uvMatrix[] = {
+    { 0.0f, 1.0f },
+    { 1.0f, 1.0f },
+    { 0.0f, 0.0f },
+    { 1.0f, 0.0f }
+  };
+
+  const glm::vec2 uvInvertedMatrix[] = {
+    { 0.0f, 0.0f },
+    { 1.0f, 0.0f },
+    { 0.0f, 1.0f },
+    { 1.0f, 1.0f }
+  };
+
+  static_assert(bb::countof(uvMatrix) == bb::countof(uvInvertedMatrix));
+  static_assert(bb::countof(uvMatrix) == 4);
+
   size_t MakeText(
     const bb::font_t& font,
-    const std::string& text,
+    const char* text,
     bb::vec2_t chSize,
     bb::textStorage_t& output)
   {
-    auto symbols = bb::utf8extract(text.c_str());
+    auto symbols = bb::utf8extract(text);
+    auto totalSpaces = GetTotalSpaceCount(symbols);
 
-    assert(symbols.size()*4 < bb::BREAKING_INDEX); // in debug we assert this issue
-    if (symbols.size()*4 >= bb::BREAKING_INDEX)
+    auto totalSymbols = symbols.size() - totalSpaces;
+
+    assert(totalSymbols*4 < bb::BREAKING_INDEX); // in debug we assert this issue
+    if (totalSymbols*4 >= bb::BREAKING_INDEX)
     { // we are using uint16_t for vert indecies
       // need to check if given text is to long for
       // in release we truncate tail
       symbols.resize(bb::BREAKING_INDEX);
     }
 
-    if (output.vPos.size() < symbols.size()*4)
+    if (output.vPos.size() < totalSymbols*4)
     {
-      output.vPos.resize(symbols.size()*4);
-      output.vUV.resize(symbols.size()*4);
-      output.indecies.resize(symbols.size()*6);
+      output.vPos.resize(totalSymbols*4);
+      output.vUV.resize(totalSymbols*4);
+      output.indecies.resize(totalSymbols*6);
     }
 
-    assert(symbols.size()*6 <= output.indecies.size());
+    assert(totalSymbols*6 <= output.indecies.size());
 
     uint32_t vID = 0;
     bb::vec3_t cursor = bb::vec3_t(0.0f);
@@ -37,32 +70,55 @@ namespace
     auto vUVIt = output.vUV.begin();
     auto indIt = output.indecies.begin();
 
-    for (auto it = symbols.begin(), e = symbols.end(); it != e; ++it)
+    const glm::vec2* pUVMatrix = (chSize.y < 0)?(uvInvertedMatrix):(uvMatrix);
+
+    for (auto it: symbols)
     {
-      bb::vec2_t smbOffset = font.SymbolOffset(*it);
-      bb::vec2_t smbSize   = font.SymbolSize(*it);
+      if (std::isspace(it) != 0)
+      {
+        switch (it)
+        {
+        case '\n':
+          cursor.x = 0.0f;
+          cursor.y += chSize.y;
+          break;
+        case '\t':
+          // Move cursor integer part of tab stops in cursor + 1
+          cursor.x = (floorf(cursor.x/(chSize.x*2.0f))+1.0f)*chSize.x*2.0f;
+          break;
+        default:
+          bb::Warning("Unknown space char: (%02X)", it);
+          /* FALLTHROUGH */
+        case ' ':
+          cursor.x += chSize.x;
+        }
+      }
+      else
+      {
+        bb::vec2_t smbOffset = font.SymbolOffset(it);
+        bb::vec2_t smbSize   = font.SymbolSize(it);
 
-      *vPosIt++ = { cursor.x, cursor.y, cursor.z };
-      *vPosIt++ = { cursor.x + chSize.x, cursor.y, cursor.z};
-      *vPosIt++ = { cursor.x, cursor.y + chSize.y, cursor.z};
-      *vPosIt++ = { cursor.x + chSize.x, cursor.y + chSize.y, cursor.z};
+        *vPosIt++ = { cursor.x, cursor.y, cursor.z };
+        *vPosIt++ = { cursor.x + chSize.x, cursor.y, cursor.z};
+        *vPosIt++ = { cursor.x, cursor.y + chSize.y, cursor.z};
+        *vPosIt++ = { cursor.x + chSize.x, cursor.y + chSize.y, cursor.z};
 
-      *vUVIt++ = { smbOffset.x, smbOffset.y + smbSize.y };
-      *vUVIt++ = { smbOffset.x + smbSize.x, smbOffset.y + smbSize.y };
-      *vUVIt++ = { smbOffset.x, smbOffset.y };
-      *vUVIt++ = { smbOffset.x + smbSize.x, smbOffset.y };
+        *vUVIt++ = { smbOffset.x + smbSize.x * pUVMatrix[0].x, smbOffset.y + smbSize.y * pUVMatrix[0].y };
+        *vUVIt++ = { smbOffset.x + smbSize.x * pUVMatrix[1].x, smbOffset.y + smbSize.y * pUVMatrix[1].y };
+        *vUVIt++ = { smbOffset.x + smbSize.x * pUVMatrix[2].x, smbOffset.y + smbSize.y * pUVMatrix[2].y };
+        *vUVIt++ = { smbOffset.x + smbSize.x * pUVMatrix[3].x, smbOffset.y + smbSize.y * pUVMatrix[3].y };
 
-      *indIt++ = static_cast<uint16_t>(vID+0u);
-      *indIt++ = static_cast<uint16_t>(vID+1u);
-      *indIt++ = static_cast<uint16_t>(vID+2u);
-      *indIt++ = static_cast<uint16_t>(vID+1u);
-      *indIt++ = static_cast<uint16_t>(vID+3u);
-      *indIt++ = static_cast<uint16_t>(vID+2u);
-
-      vID += 4u;
-      cursor.x += chSize.x;
+        *indIt++ = static_cast<uint16_t>(vID+0u);
+        *indIt++ = static_cast<uint16_t>(vID+1u);
+        *indIt++ = static_cast<uint16_t>(vID+2u);
+        *indIt++ = static_cast<uint16_t>(vID+1u);
+        *indIt++ = static_cast<uint16_t>(vID+3u);
+        *indIt++ = static_cast<uint16_t>(vID+2u);
+        vID += 4u;
+        cursor.x += chSize.x;
+      }
     }
-    return symbols.size()*6;
+    return totalSymbols*6;
   }
 
   using range_t = std::tuple<bb::utf8Symbols::iterator, bb::utf8Symbols::iterator>;
@@ -233,7 +289,7 @@ namespace bb
 
     if (maxWidth == 0)
     {
-      MakeText(font, text, chSize, textV);
+      MakeText(font, text.c_str(), chSize, textV);
     }
     else
     {
@@ -253,7 +309,7 @@ namespace bb
     this->mesh = mesh_t(std::move(vao), textV.indecies.size(), GL_TRIANGLES, 2);
   }
 
-  void textDynamic_t::Update(const std::string& text)
+  void textDynamic_t::UpdateText(const char* text)
   {
     assert(this->font != nullptr);
     size_t textI = MakeText(*this->font, text, this->chSize, this->vertecies);
@@ -295,6 +351,28 @@ namespace bb
     }
 
     this->renderI = textI;
+  }
+
+  void textDynamic_t::Update(const std::string& text)
+  {
+    this->UpdateText(text.c_str());
+  }
+
+  void textDynamic_t::Update(const char* format, ...)
+  {
+    char* text = nullptr;
+    va_list vl;
+    va_start(vl, format);
+    BB_DEFER(va_end(vl));
+
+    auto len = vasprintf(&text, format, vl);
+    if (len == -1)
+    {
+      bb::Error("%s", "vasprintf failed");
+      return;
+    }
+    BB_DEFER(free(text));
+    this->UpdateText(text);
   }
 
   void textDynamic_t::Render()
