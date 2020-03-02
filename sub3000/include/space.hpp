@@ -13,6 +13,9 @@
 #include <role.hpp>
 #include <meshDesc.hpp>
 
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/matrix_transform_2d.hpp>
+
 namespace sub3000
 {
 
@@ -84,6 +87,42 @@ namespace sub3000
     }
   }
 
+  enum rudderMode_t
+  {
+    RM_40_LEFT = 0,
+    RM_20_LEFT,
+    RM_10_LEFT,
+    RM_MIDSHIP,
+    RM_10_RIGHT,
+    RM_20_RIGHT,
+    RM_40_RIGHT,
+    RM_TOTAL
+  };
+
+  inline const char* RudderModeString(rudderMode_t rudderMode)
+  {
+    switch(rudderMode)
+    {
+    case RM_40_LEFT:
+      return "LEFT 40°";
+    case RM_20_LEFT:
+      return "LEFT 20°";
+    case RM_10_LEFT:
+      return "LEFT 10°";
+    case RM_MIDSHIP:
+      return "MIDSHIP";
+    case RM_10_RIGHT:
+      return "RIGHT 10°";
+    case RM_20_RIGHT:
+      return "RIGHT 20°";
+    case RM_40_RIGHT:
+      return "RIGHT 40°";
+    default:
+      assert(0);
+      return "???";
+    }
+  }
+
   class state_t final: public bb::msg::basic_t
   {
     bb::linePoints_t units;
@@ -104,12 +143,18 @@ namespace sub3000
       ;
     }
 
-    state_t(bb::vec2_t pos, const bb::linePoints_t& units)
+    state_t(bb::vec2_t pos, float angle, const bb::linePoints_t& units)
     {
+      glm::mat3 toLocal(1.0f);
+
+      toLocal = glm::rotate(toLocal, angle);
+      toLocal = glm::translate(toLocal, pos);
+      toLocal = glm::scale(toLocal, glm::vec2(0.1f));
+
       this->units.assign(units.begin(), units.end());
       for (auto& unit: this->units)
       {
-        unit = (unit - pos)*0.2f;
+        unit = toLocal*glm::vec3(unit, 1.0f);
       }
     }
 
@@ -128,10 +173,26 @@ namespace sub3000
 
     bb::vec2_t pos;
     bb::vec2_t vel;
+    engineMode_t engineMode;
+    rudderMode_t rudderMode;
 
-    playerStatus_t(bb::vec2_t pos, bb::vec2_t vel)
+    float angle;
+    float engineOutput;
+
+    playerStatus_t(
+      bb::vec2_t pos,
+      bb::vec2_t vel,
+      engineMode_t engineMode,
+      rudderMode_t rudderMode,
+      float angle,
+      float engineOutput
+    )
     : pos(pos),
-      vel(vel)
+      vel(vel),
+      engineMode(engineMode),
+      rudderMode(rudderMode),
+      angle(angle),
+      engineOutput(engineOutput)
     {
       ;
     }
@@ -172,23 +233,23 @@ namespace sub3000
     switch(engineMode)
     {
     case EM_FULL_AHEAD:
-      return 1.0f;
-    case EM_HALF_AHEAD:
       return 0.5f;
-    case EM_SLOW_AHEAD:
+    case EM_HALF_AHEAD:
       return 0.25f;
+    case EM_SLOW_AHEAD:
+      return 0.125f;
     case EM_DEAD_SLOW_AHEAD:
-      return 0.1f;
+      return 0.05f;
     case EM_STOP:
       return 0.0f;
     case EM_DEAD_SLOW_ASTERN:
-      return -0.05f;
+      return -0.025f;
     case EM_SLOW_ASTERN:
-      return -0.1f;
+      return -0.05f;
     case EM_HALF_ASTERN:
-      return -0.2f;
+      return -0.1f;
     case EM_FULL_ASTERN:
-      return -0.4f;
+      return -0.2f;
     default:
       // Programmer's mistake!
       assert(0);
@@ -196,16 +257,48 @@ namespace sub3000
     }
   }
 
+  inline float RudderOutput(rudderMode_t rudderMode)
+  {
+    switch(rudderMode)
+    {
+      case RM_40_LEFT:
+        return static_cast<float>(40.0*M_PI/180.0);
+      case RM_20_LEFT:
+        return static_cast<float>(20.0*M_PI/180.0);
+      case RM_10_LEFT:
+        return static_cast<float>(10.0*M_PI/180.0);
+      case RM_MIDSHIP:
+        return 0.0f;
+      case RM_10_RIGHT:
+        return static_cast<float>(-10.0*M_PI/180.0);
+      case RM_20_RIGHT:
+        return static_cast<float>(-20.0*M_PI/180.0);
+      case RM_40_RIGHT:
+        return static_cast<float>(-40.0*M_PI/180.0);
+      default:
+        // Programmer's mistake!
+        assert(0);
+        return 0.0f;
+    }
+  }
+
+  const float PLAYER_MAX_OUTPUT_CHANGE = 0.03f;
+
   struct player_t final
   {
     bb::vec2_t pos;
     bb::vec2_t vel;
-    bb::vec2_t dir;
     engineMode_t engineMode;
+    rudderMode_t rudderMode;
+
+    float angle;
+    float actualOutput;
 
     void Update(float dt)
     {
-      float engineOutput = EngineOutput(this->engineMode);
+      float expectedOutput = EngineOutput(this->engineMode);
+      float expectedRudder = RudderOutput(this->rudderMode);
+
       bb::vec2_t force(0.0f);
       bb::vec2_t velDir(0.0f);
       float velLen = glm::dot(this->vel, this->vel);
@@ -214,14 +307,28 @@ namespace sub3000
         velDir = glm::normalize(this->vel);
       }
 
-      force += dir * engineOutput - velDir*velLen/2.0f*0.8f;
+      bb::vec2_t dir;
+      sincosf(this->angle, &dir.x, &dir.y);
+      this->angle += abs(expectedOutput*20.0f)*expectedRudder * dt;
+      this->angle = fmodf(this->angle, static_cast<float>(2.0*M_PI));
 
+      force += dir * this->actualOutput - velDir*velLen/2.0f*0.8f;
       this->pos += this->vel * dt;
       this->vel += force * dt;
+      this->actualOutput += glm::clamp(
+        expectedOutput - this->actualOutput,
+        -PLAYER_MAX_OUTPUT_CHANGE,
+         PLAYER_MAX_OUTPUT_CHANGE
+      )*dt;
     }
 
     player_t()
-    : pos(0.0f), vel(0.0f), dir(0.0f, 1.0f), engineMode(EM_STOP)
+    : pos(0.0f),
+      vel(0.0f),
+      engineMode(EM_STOP),
+      rudderMode(RM_MIDSHIP),
+      angle(0.0f),
+      actualOutput(0.0f)
     {
       ;
     }

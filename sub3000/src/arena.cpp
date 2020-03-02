@@ -24,15 +24,15 @@ namespace sub3000
       );
 
       this->camera = bb::camera_t::Orthogonal(
-        -256.0f, 256.0f, -256.0f, 256.0f
+        -12.0f, 500.0f, -256.0f, 256.0f
       );
 
       this->fb = bb::framebuffer_t(512, 512);
       this->box = bb::postOffice_t::Instance().New("arenaStatus");
 
       this->font = bb::font_t(menuConfig.Value("status.font", "mono.config"));
-      this->text = bb::textDynamic_t(this->font, bb::vec2_t(12, 24));
-      this->text.Update("Статус");
+      this->text = bb::textDynamic_t(this->font, bb::vec2_t(12.0f, -24.0f));
+      this->text.Update("%s", "");
     }
 
     void status_t::OnUpdate(double)
@@ -42,7 +42,18 @@ namespace sub3000
       {
         if (auto status = bb::As<playerStatus_t>(msg))
         {
-          
+          this->text.Update(
+            "ENGINE:\t%s\n"
+            "OUTPUT:\t%+6.3f\n"
+            "SPEED:\t[%+6.3f;%+6.3f]\n"
+            "RUDDER:\t%s\n"
+            "ANGLE:\t%+6.3f",
+            EngineModeString(status->engineMode),
+            status->engineOutput,
+            status->vel.x, status->vel.y,
+            RudderModeString(status->rudderMode),
+            status->angle*180.0/M_PI
+          );
         }
       }
     }

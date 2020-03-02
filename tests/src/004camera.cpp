@@ -115,14 +115,11 @@ int main(int argc, char* argv[])
     auto dir = rotate(glm::inverse(qRot), glm::vec3(0.0f, 0.0f, -1.0f));
     auto up = rotate(glm::inverse(qRot), glm::vec3(0.0f, 1.0f, 0.0f));
 
-    char buffer[80];
-    snprintf(buffer, sizeof(buffer), "[%+6.3f, %+6.3f, %+6.3f] [%+6.3f, %+6.3f, %+6.3f] [%+6.3f %+6.3f]",
+    fpsText.Update("[%+6.3f, %+6.3f, %+6.3f] [%+6.3f, %+6.3f, %+6.3f] [%+6.3f %+6.3f]", 
       pos.x, pos.y, pos.z,
       dir.x, dir.y, dir.z,
       pitch, yaw
     );
-
-    fpsText.Update(buffer);
     fpsText.Render();
 
     if (!context.Update())

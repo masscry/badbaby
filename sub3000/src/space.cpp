@@ -46,12 +46,19 @@ namespace sub3000
       {
         bb::workerPool_t::Instance().PostMessage(
           step->Source(),
-          bb::Issue<state_t>(this->player.pos, this->units)
+          bb::Issue<state_t>(this->player.pos, this->player.angle, this->units)
         );
 
         bb::postOffice_t::Instance().Post(
           "arenaStatus",
-          bb::Issue<playerStatus_t>(this->player.pos, this->player.vel)
+          bb::Issue<playerStatus_t>(
+            this->player.pos,
+            this->player.vel,
+            this->player.engineMode,
+            this->player.rudderMode,
+            this->player.angle,
+            this->player.actualOutput
+          )
         );
 
       }
@@ -62,12 +69,18 @@ namespace sub3000
     {
       if (key->Press() != GLFW_RELEASE)
       {
-        int control = (key->Key() == GLFW_KEY_DOWN) - (key->Key() == GLFW_KEY_UP);
+        int control = (key->Key() == GLFW_KEY_DOWN) - (key->Key() == GLFW_KEY_UP);        
         int newOutput = control + this->player.engineMode;
         if ((newOutput >= EM_FULL_AHEAD) && (newOutput <= EM_FULL_ASTERN))
         {
           this->player.engineMode = static_cast<engineMode_t>(newOutput);
-          printf("MODE: %s\n", EngineModeString(this->player.engineMode));
+        }
+
+        int rotate = (key->Key() == GLFW_KEY_RIGHT) - (key->Key() == GLFW_KEY_LEFT);
+        int newRudder = rotate + this->player.rudderMode;
+        if ((newRudder >= RM_40_LEFT) && (newRudder <= RM_40_RIGHT))
+        {
+          this->player.rudderMode = static_cast<rudderMode_t>(newRudder);
         }
       }
       return bb::msg::result_t::complete;
@@ -79,7 +92,6 @@ namespace sub3000
       if ((newOutput >= EM_FULL_AHEAD) && (newOutput <= EM_FULL_ASTERN))
       {
         this->player.engineMode = static_cast<engineMode_t>(newOutput);
-          printf("MODE: %s\n", EngineModeString(this->player.engineMode));
       }
       return bb::msg::result_t::complete;
     }
@@ -99,14 +111,9 @@ namespace sub3000
     for (int i = 0; i < 10; ++i)
     {
       glm::vec2 pos;
-      glm::vec2 speed;
-
-      float angle = static_cast<float>(dist(mt)*M_PI*2.0f);
-      float pspeed = 0.1f;
 
       this->speeds.emplace_back(
-        pspeed*cos(angle),
-        pspeed*sin(angle)
+        0.0f
       );
 
       this->units.emplace_back(

@@ -250,7 +250,7 @@ int main(int argc, char* argv[])
 
   auto font = bb::font_t("mono.config");
   auto text = bb::textDynamic_t(font, bb::vec2_t(0.1, 0.3));
-  text.Update(menuTextLines[0]);
+  text.Update("%s", menuTextLines[0]);
 
   glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
@@ -270,7 +270,7 @@ int main(int argc, char* argv[])
       if (auto anim = bb::As<menu::animation_t>(renderMsg))
       {
         auto line = anim->NewLine();
-        text.Update(menuTextLines[line]);
+        text.Update("%s", menuTextLines[line]);
         pool.PostMessage(
           menuActor,
           bb::Issue<menu::done_t>(line)
