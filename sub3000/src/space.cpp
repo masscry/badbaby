@@ -32,7 +32,7 @@ namespace sub3000
         ++speed;
       }
       this->cumDT -= SPACE_TIME_STEP;
-      this->player.Update(static_cast<float>(SPACE_TIME_STEP));
+      player::Update(&this->player, static_cast<float>(SPACE_TIME_STEP));
     }
   }
 
@@ -51,13 +51,8 @@ namespace sub3000
 
         bb::postOffice_t::Instance().Post(
           "arenaStatus",
-          bb::Issue<playerStatus_t>(
-            this->player.pos,
-            this->player.vel,
-            this->player.engineMode,
-            this->player.rudderMode,
-            this->player.angle,
-            this->player.actualOutput
+          bb::Issue<player::status_t>(
+            this->player
           )
         );
 
@@ -67,32 +62,7 @@ namespace sub3000
 
     if (auto key = bb::msg::As<bb::msg::keyEvent_t>(msg))
     {
-      if (key->Press() != GLFW_RELEASE)
-      {
-        int control = (key->Key() == GLFW_KEY_DOWN) - (key->Key() == GLFW_KEY_UP);        
-        int newOutput = control + this->player.engineMode;
-        if ((newOutput >= EM_FULL_AHEAD) && (newOutput <= EM_FULL_ASTERN))
-        {
-          this->player.engineMode = static_cast<engineMode_t>(newOutput);
-        }
-
-        int rotate = (key->Key() == GLFW_KEY_RIGHT) - (key->Key() == GLFW_KEY_LEFT);
-        int newRudder = rotate + this->player.rudderMode;
-        if ((newRudder >= RM_40_LEFT) && (newRudder <= RM_40_RIGHT))
-        {
-          this->player.rudderMode = static_cast<rudderMode_t>(newRudder);
-        }
-      }
-      return bb::msg::result_t::complete;
-    }
-
-    if (auto control = bb::msg::As<control_t>(msg))
-    {
-      int newOutput = control->Control() + this->player.engineMode;
-      if ((newOutput >= EM_FULL_AHEAD) && (newOutput <= EM_FULL_ASTERN))
-      {
-        this->player.engineMode = static_cast<engineMode_t>(newOutput);
-      }
+      player::Control(&this->player, *key);
       return bb::msg::result_t::complete;
     }
 
@@ -121,6 +91,103 @@ namespace sub3000
         (dist(mt) - 0.5f)*2.0f
       );
     }
+  }
+
+  state_t::state_t(bb::vec2_t pos, float angle, const bb::linePoints_t& units)
+  {
+    glm::mat3 toLocal(1.0f);
+
+    toLocal = glm::rotate(toLocal, angle);
+    toLocal = glm::translate(toLocal, pos);
+    toLocal = glm::scale(toLocal, glm::vec2(0.1f));
+
+    for (const auto& unit: units)
+    {
+      this->units.emplace_back(
+        toLocal*glm::vec3(unit, 1.0f)
+      );
+    }
+  }
+
+  namespace player
+  {
+
+    void Update(data_t* data, float dt)
+    {
+      if (data == nullptr)
+      { // programmer's mistake
+        assert(0);
+        return;
+      }
+
+      bb::vec2_t force(0.0f);
+      bb::vec2_t velDir(0.0f);
+
+      float velLen = glm::dot(data->vel, data->vel);
+      if (velLen != 0.0f)
+      {
+        velDir = glm::normalize(data->vel);
+      }
+
+      bb::vec2_t dir;
+
+      sincosf(data->angle, &dir.x, &dir.y);
+
+      force += dir * data->engineOutput - velDir*velLen/2.0f*0.8f;
+      data->pos += data->vel * dt;
+      data->vel += force * dt;
+
+      data->angle = fmodf(
+        data->angle + data->rudderPos * 40.0f * velLen * dt,
+        static_cast<float>(2.0*M_PI)
+      );
+
+      float expectedOutput = engine::Output(data->engine);
+
+      data->engineOutput += glm::clamp(
+        expectedOutput - data->engineOutput,
+        -player::MAX_OUTPUT_CHANGE,
+         player::MAX_OUTPUT_CHANGE
+      )*dt;
+
+      float expectedRudder = rudder::Output(data->rudder);
+
+      data->rudderPos += glm::clamp(
+        expectedRudder - data->rudderPos,
+        -player::MAX_ANGLE_CHANGE,
+         player::MAX_ANGLE_CHANGE
+      )*dt;
+    }
+
+    int Control(data_t* data, const bb::msg::keyEvent_t& key)
+    {
+      if (data == nullptr)
+      {
+        assert(0);
+        return -1;
+      }
+
+      if (key.Press() == GLFW_RELEASE)
+      {
+        return 0;
+      }
+
+      int control = (key.Key() == GLFW_KEY_DOWN) - (key.Key() == GLFW_KEY_UP);
+      int newOutput = control + data->engine;
+      if ((newOutput >= engine::full_ahead) && (newOutput <= engine::full_astern))
+      {
+        data->engine = static_cast<engine::mode_t>(newOutput);
+      }
+
+      int rotate = (key.Key() == GLFW_KEY_RIGHT) - (key.Key() == GLFW_KEY_LEFT);
+      int newRudder = rotate + data->rudder;
+      if ((newRudder >= rudder::left_40) && (newRudder <= rudder::right_40))
+      {
+        data->rudder = static_cast<rudder::mode_t>(newRudder);
+      }
+      return 1;
+    }
+
   }
 
 }

@@ -7,6 +7,7 @@
 #include <msg.hpp>
 #include <mapGen.hpp>
 #include <worker.hpp>
+#include <monfs.hpp>
 
 namespace 
 {
@@ -71,6 +72,9 @@ void ProcessGameAction(int src, sub3000::gameAction_t action)
   }
 }
 
+int fsMonitorIDCounter = 0;
+std::unordered_map<int, bb::fs::monitor_t> fsMonitors;
+
 int main(int argc, char* argv[])
 {
   if (bb::ProcessStartupArguments(argc, argv) != 0)
@@ -133,9 +137,52 @@ int main(int argc, char* argv[])
         continue;
       }
 
+      if (auto watch = bb::As<sub3000::fs::watch_t>(msgToMain))
+      {
+        auto newMon = bb::fs::monitor_t::Create(std::move(watch->Processor()));
+        auto result = newMon.Watch(watch->Filename().c_str());
+
+        if (result == -1)
+        { // add watch failed, so just return
+          if (watch->Source() != bb::INVALID_ACTOR)
+          {
+            bb::workerPool_t::Instance().PostMessage(
+              watch->Source(), 
+              bb::Issue<sub3000::fs::status_t>(-1)
+            );
+          }
+          continue;
+        }
+
+        // otherwise, store monitor and return it's id
+        fsMonitors[fsMonitorIDCounter] = std::move(newMon);
+
+        if (watch->Source() != bb::INVALID_ACTOR)
+        {
+          bb::workerPool_t::Instance().PostMessage(
+            watch->Source(), 
+            bb::Issue<sub3000::fs::status_t>(fsMonitorIDCounter)
+          );
+        }
+        ++fsMonitorIDCounter;
+        continue;
+      }
+
+      if (auto rmWatch = bb::As<sub3000::fs::rmWatch_t>(msgToMain))
+      {
+        fsMonitors.erase(rmWatch->Watch());
+        continue;
+      }
+
       bb::Error("Unknown action type: %s", typeid(*msgToMain.get()).name());
       assert(0);
     }
+
+    for (auto& monitor: fsMonitors)
+    {
+      monitor.second.Check();
+    }
+
   }
 
   {
