@@ -74,7 +74,7 @@ namespace sub3000
   space_t::space_t()
   {
     bb::config_t config;
-    config.Load("./level.config");
+    config.Load("./arena.config");
 
     int totalUnits = static_cast<int>(config.Value("level.gen.units", 10));
     float genRadius = static_cast<float>(config.Value("level.gen.radius", 1.0f));
@@ -100,7 +100,6 @@ namespace sub3000
 
     this->player.mass = static_cast<float>(config.Value("player.mass", 1.0f));
     this->player.rotMoment = static_cast<float>(config.Value("player.moment", 1.0f));
-    
   }
 
   state_t::state_t(bb::vec2_t pos, float angle, const bb::linePoints_t& units)
@@ -130,26 +129,54 @@ namespace sub3000
         return;
       }
 
-      bb::vec2_t force(0.0f);
-      bb::vec2_t velDir(0.0f);
-
       float velLen = glm::dot(data->vel, data->vel);
+      bb::vec2_t velDir(0.0f);
       if (velLen != 0.0f)
       {
         velDir = glm::normalize(data->vel);
       }
 
-      bb::vec2_t dir;
+      // dragForce - force applied to stop ship in direction of it moving
+      bb::vec2_t dragForce( // drag - two times speed in opposite direction of vel
+        -velDir*velLen/2.0f*0.8f // add config params!
+      );
 
-      sincosf(data->angle, &dir.x, &dir.y);
+      // shipDir - direction in which linear force applied
+      bb::vec2_t shipDir;
+      sincosf(data->angle, &shipDir.x, &shipDir.y);
 
-      force += dir * data->engineOutput - velDir*velLen/2.0f*0.8f;
+      // rudderDir.y - part of force applied to linear velocity
+      // rudderDir.x - part of force applied to rotation
+      bb::vec2_t rudderDir;
+      sincosf(data->rudderPos, &rudderDir.x, &rudderDir.y);
+
+      // linear force = engineForce + dragForce
+      bb::vec2_t linForce = shipDir * data->engineOutput * rudderDir.y
+        + dragForce;
+
+      float aVelLen = data->aVel*data->aVel;
+      float aVelDir = 0.0f;
+      if (aVelLen != 0.0f)
+      {
+        aVelDir = data->aVel/aVelLen;
+      }
+
+      // rotDrag - force applied to stop ship from rotating
+      float rotDragForce = -aVelDir*aVelLen/2.0f*0.8f;
+
+      // water flow help to rotate ship if no force applied from engine
+      // idea - projection of ship velocity on ship direction gives
+      // value proportional to force which to add to engine output
+      float rotFromLinVel = glm::dot(data->vel, shipDir);
+
+      float rotForce = (data->engineOutput + rotFromLinVel*10.0f) * rudderDir.x
+        + rotDragForce;
+
       data->pos += data->vel * dt;
-      data->vel += force/data->mass * dt;
+      data->vel += linForce/data->mass * dt;
 
-      float rotVel = (data->rudderPos / data->rotMoment) * velLen;
-
-      data->angle += rotVel * dt;
+      data->angle += data->aVel * dt;
+      data->aVel += rotForce/data->rotMoment * dt;
 
       // force angle in 0 - 2*PI
       data->angle = fmodf(

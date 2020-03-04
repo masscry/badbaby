@@ -21,6 +21,7 @@ namespace sub3000
       bb::vec2_t pos;
       bb::vec2_t vel;
       float angle;
+      float aVel;
 
       engine::mode_t engine;
       rudder::mode_t rudder;
@@ -45,6 +46,7 @@ namespace sub3000
     : pos(0.0f),
       vel(0.0f),
       angle(0.0f),
+      aVel(0.0f),
       engine(engine::stop),
       rudder(rudder::midship),
       engineOutput(0.0f),
