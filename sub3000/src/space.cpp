@@ -73,12 +73,18 @@ namespace sub3000
 
   space_t::space_t()
   {
+    bb::config_t config;
+    config.Load("./level.config");
+
+    int totalUnits = static_cast<int>(config.Value("level.gen.units", 10));
+    float genRadius = static_cast<float>(config.Value("level.gen.radius", 1.0f));
+
     std::random_device rd;
     std::mt19937 mt(rd());
-    std::uniform_real_distribution<float> dist(0.0f, 1.0f);
+    std::uniform_real_distribution<float> dist(-genRadius, genRadius);
     bb::linePoints_t unitPos;
 
-    for (int i = 0; i < 10; ++i)
+    for (int i = 0; i < totalUnits; ++i)
     {
       glm::vec2 pos;
 
@@ -87,10 +93,14 @@ namespace sub3000
       );
 
       this->units.emplace_back(
-        (dist(mt) - 0.5f)*2.0f,
-        (dist(mt) - 0.5f)*2.0f
+        dist(mt),
+        dist(mt)
       );
     }
+
+    this->player.mass = static_cast<float>(config.Value("player.mass", 1.0f));
+    this->player.rotMoment = static_cast<float>(config.Value("player.moment", 1.0f));
+    
   }
 
   state_t::state_t(bb::vec2_t pos, float angle, const bb::linePoints_t& units)
@@ -135,10 +145,15 @@ namespace sub3000
 
       force += dir * data->engineOutput - velDir*velLen/2.0f*0.8f;
       data->pos += data->vel * dt;
-      data->vel += force * dt;
+      data->vel += force/data->mass * dt;
 
+      float rotVel = (data->rudderPos / data->rotMoment) * velLen;
+
+      data->angle += rotVel * dt;
+
+      // force angle in 0 - 2*PI
       data->angle = fmodf(
-        data->angle + data->rudderPos * 40.0f * velLen * dt,
+        data->angle,
         static_cast<float>(2.0*M_PI)
       );
 

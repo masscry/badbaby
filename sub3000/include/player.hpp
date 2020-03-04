@@ -28,6 +28,9 @@ namespace sub3000
       float engineOutput;
       float rudderPos;
 
+      float mass;
+      float rotMoment;
+
       data_t();
 
       data_t(const data_t&) = default;
@@ -45,7 +48,9 @@ namespace sub3000
       engine(engine::stop),
       rudder(rudder::midship),
       engineOutput(0.0f),
-      rudderPos(0.0f)
+      rudderPos(0.0f),
+      mass(1.0f),
+      rotMoment(1.0f)
     {
       ;
     }
