@@ -26,10 +26,22 @@ E    ([Ee][+-]?{D}+)
 
 %%
 
-[:]                   {
+\:                    {
                         yyextra->str = nullptr;
                         yyextra->type = BB_SET;
                         return BB_SET;
+                      }
+
+\{                    {
+                        yyextra->str = nullptr;
+                        yyextra->type = BB_START;
+                        return BB_START;
+                      }
+
+\}                    {
+                        yyextra->str = nullptr;
+                        yyextra->type = BB_FINISH;
+                        return BB_FINISH;
                       }
 
 [-]*{D}+{E}?          {

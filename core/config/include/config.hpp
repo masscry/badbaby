@@ -26,7 +26,7 @@ namespace bb
     config_t(const config_t&) = delete;
     config_t& operator=(const config_t&) = delete;
 
-    void ParseString(const std::string& line);
+    std::string ParseString(const std::string& line, const std::string& context);
 
   public:
 

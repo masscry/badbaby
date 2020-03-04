@@ -46,13 +46,28 @@ namespace bb
     ;
   }
 
-  void config_t::ParseString(const std::string& line)
+  static void ThrowTokenError(int token, const bbCoreConfigTokenData_t& tokenData)
+  {
+    switch (tokenData.type)
+    {
+    case BB_STRING:
+      bb::Error("Unexpected token: %d (\"%s\")", token, tokenData.str);
+      break;
+    case BB_NUMBER:
+      bb::Error("Unexpected token: %d (\"%e\")", token, tokenData.num);
+      break;
+    default:
+      break;
+    }
+    throw std::runtime_error("Invalid configuration line");
+  }
+
+  std::string config_t::ParseString(const std::string& line, const std::string& context)
   {
     if (line.empty())
     {
-      return;
+      return context;
     }
-
 
     locale_t c_locale = newlocale(LC_ALL_MASK, "C", NULL);
     if (c_locale == ((locale_t)0))
@@ -80,47 +95,84 @@ namespace bb
     BB_DEFER(yy_delete_buffer(tmpBuf, scanner));
 
     // Only this variants expected
+    // }
+    // "key" {
     // "key": value
     // "key": "value"
 
-    // expect key
-    if (yylex(scanner, c_locale) != BB_STRING)
-    {
-      throw std::runtime_error("Invalid configuration line");
-    }
+    // Expect "key" or }
+    int token = yylex(scanner, c_locale);
 
-    std::string key = tokenData.str;
+    std::string key;
+    switch (token)
+    {
+      case BB_STRING:
+        key = tokenData.str;
+        break;
+      case BB_FINISH:
+        {
+          if (context.empty())
+          {
+            bb::Error("Unexpected context close");
+            throw std::runtime_error("Unexpected context close");
+          }
+
+          auto dotPos = context.rfind('.');
+          if (dotPos == std::string::npos)
+          {
+            dotPos = 0;
+          }
+          return context.substr(0, dotPos);
+        }
+      default:
+        ThrowTokenError(token, tokenData);
+    }
     bbCoreConfigTokenReset(&tokenData);
 
-    //expect :
-    if (yylex(scanner, c_locale) != BB_SET)
+    // expect : or {
+    token = yylex(scanner, c_locale);
+
+    switch(token)
     {
-      throw std::runtime_error("Invalid configuration line");
+      case BB_SET:
+        // just go to next token
+        break;
+      case BB_START:
+        // new context started, just return
+        return  (context.empty())?(key):(context + "." + key);
+      default:
+        ThrowTokenError(token, tokenData);
     }
     bbCoreConfigTokenReset(&tokenData);
+
+    std::string fullKey = (context.empty())?(key):(context + "." + key);
 
     switch (yylex(scanner, c_locale))
     {
     case BB_STRING:
-      this->dict[key] = ref_t::String(tokenData.str);
+      this->dict[fullKey] = ref_t::String(tokenData.str);
       break;
     case BB_NUMBER:
-      this->dict[key] = ref_t::Number(tokenData.num);
+      this->dict[fullKey] = ref_t::Number(tokenData.num);
       break;
     default:
       throw std::runtime_error("Invalid configuration line");
     }
+
+    return context;
   }
 
   void config_t::Load(const std::string& filename)
   {
     std::ifstream input(filename);
+    std::string context;
+
     if (input)
     {
       std::string line;
       while(std::getline(input, line))
       {
-        this->ParseString(line);
+        context = this->ParseString(line, context);
       }
     }
     else
