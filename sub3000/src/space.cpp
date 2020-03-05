@@ -129,21 +129,23 @@ namespace sub3000
         return;
       }
 
-      float velLen = glm::dot(data->vel, data->vel);
+      float velLen = glm::dot(data->vel, data->vel); // two times velocity
       bb::vec2_t velDir(0.0f);
       if (velLen != 0.0f)
       {
         velDir = glm::normalize(data->vel);
       }
 
-      // dragForce - force applied to stop ship in direction of it moving
-      bb::vec2_t dragForce( // drag - two times speed in opposite direction of vel
-        -velDir*velLen/2.0f*0.8f // add config params!
-      );
-
       // shipDir - direction in which linear force applied
       bb::vec2_t shipDir;
       sincosf(data->angle, &shipDir.x, &shipDir.y);
+
+      float dragCoeff = (1.0f - glm::dot(velDir, shipDir))*100.0f;
+
+      // dragForce - force applied to stop ship in direction of it moving
+      bb::vec2_t dragForce( // drag - two times speed in opposite direction of vel
+        -velDir*velLen/2.0f*0.8f*dragCoeff // add config params!
+      );
 
       // rudderDir.y - part of force applied to linear velocity
       // rudderDir.x - part of force applied to rotation
