@@ -5,7 +5,7 @@ model.
 
 ## Project directory structure
 
-* atil - Game built around BadBaby engine
+* sub3000 - Game built around BadBaby engine
   * WORK IN PROGRESS
 * core - engine core components
   * actor - actor-based multithreading system

@@ -4,6 +4,26 @@ All notable changes to this project will be documented in this file
 
 ## [Unreleased]
 
+## [0.1.0] - 2020-03-06
+### Added
+ - core.shapes: textStatic_t typography, textDynamic_t multiline support
+ - core.shapes: ring, line and point shapes
+ - core.effects: simple blur shaded
+ - core.render: camera_t added, UBO support
+ - core: filesystem monitor based on inotify
+ - sub3000: game prototype, simple control, radar screen
+ 
+### Changed
+ - core.render: better API for shader, VAO, framebuffer
+ - core.render: meshes improved
+ - clang, gcc: build fixes, warning resolving
+ - core.actor: message system redone, actors redone
+ - core.config: config block support added
+
+### Removed
+ - core.config: BSON removed
+
+
 ## [0.0.5] - 2019-11-17
 ### Added
 - core.config: simple BSON parser
@@ -54,7 +74,8 @@ All notable changes to this project will be documented in this file
 - tests: 000hello, 001render, 002config, 003font
 - documentation: README.md, CHANGELOG.md, plan.md, LICENSE.md
 
-[Unreleased]: https://github.com/masscry/badbaby/compare/v0.0.5...HEAD
+[Unreleased]: https://github.com/masscry/badbaby/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/masscry/badbaby/releases/tag/v0.1.0
 [0.0.5]: https://github.com/masscry/badbaby/releases/tag/v0.0.5
 [0.0.4]: https://github.com/masscry/badbaby/releases/tag/v0.0.4
 [0.0.3]: https://github.com/masscry/badbaby/releases/tag/v0.0.3
