@@ -11,23 +11,68 @@
 
 #include <actor.hpp>
 #include <role.hpp>
+#include <meshDesc.hpp>
+
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/matrix_transform_2d.hpp>
+
+#include <control.hpp>
+#include <player.hpp>
 
 namespace sub3000
 {
 
-  enum class spaceMsg_t: uint16_t
+  class step_t final: public bb::msg::basic_t
   {
-    firstItem = bb::msgID_t::USR00,
-    step = firstItem,
-    totalItems
+    double dt;
+  public:
+
+    double DeltaTime() const;
+
+    step_t(int src, double dt);
+
+    step_t(const step_t&) = default;
+    step_t& operator= (const step_t&) = default;
+
+    step_t(step_t&&) = default;
+    step_t& operator= (step_t&&) = default;
+
+    ~step_t() override = default;
+  };
+
+  class state_t final: public bb::msg::basic_t
+  {
+    bb::linePoints_t units;
+  public:
+
+    bb::linePoints_t& Units();
+
+    const bb::linePoints_t& Units() const;
+
+    state_t(bb::vec2_t pos, float angle, const bb::linePoints_t& units);
+
+    state_t(const state_t&) = default;
+    state_t& operator=(const state_t&) = default;
+
+    state_t(state_t&&) = default;
+    state_t& operator=(state_t&&) = default;
+
+    ~state_t() override = default;
   };
 
   class space_t final: public bb::role_t
   {
+    double cumDT;
+    double newPointDT;
+    player::data_t player;
 
-    bb::msgResult_t OnProcessMessage(const bb::actor_t&, bb::msg_t msg) override;
+    bb::linePoints_t units;
+
+    bb::msg::result_t OnProcessMessage(const bb::actor_t&, const bb::msg::basic_t& msg) override;
 
   public:
+
+    void Step(double dt);
 
     const char* DefaultName() const override;
 
@@ -36,9 +81,31 @@ namespace sub3000
 
   };
 
-  const char* space_t::DefaultName() const
+  inline double step_t::DeltaTime() const
+  {
+    return this->dt;
+  }
+
+  inline step_t::step_t(int src, double dt)
+  : bb::msg::basic_t(src),
+    dt(dt)
+  {
+    ;
+  }
+
+  inline const char* space_t::DefaultName() const
   {
     return "space";
+  }
+
+  inline bb::linePoints_t& state_t::Units()
+  {
+    return this->units;
+  }
+
+  inline const bb::linePoints_t& state_t::Units() const
+  {
+    return this->units;
   }
 
 } // namespace sub3000

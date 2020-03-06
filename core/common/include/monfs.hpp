@@ -28,7 +28,7 @@ namespace bb
       virtual int OnChange(const char* filename, event_t event) = 0;
     };
 
-    class monitor_t
+    class monitor_t final
     {
       int self;
       std::unique_ptr<processor_t> processor;
@@ -49,10 +49,12 @@ namespace bb
 
       int Watch(const char* filename);
 
+      int RemoveWatch(int wd);
+
       monitor_t();
       monitor_t(monitor_t&&);
       monitor_t& operator=(monitor_t&&);
-      virtual ~monitor_t();
+      ~monitor_t();
 
       static monitor_t Create(
         std::unique_ptr<processor_t>&& processor

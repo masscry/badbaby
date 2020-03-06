@@ -19,11 +19,10 @@ namespace bb
 
   class actor_t final
   {
-    mailbox_t               mailbox;
+    mailbox_t::shared_t     mailbox;
     std::unique_ptr<role_t> role;
     std::mutex              inProcess;
     std::string             name;
-    int                     id;
     bool                    sick;
 
     // role can't be copied
@@ -34,7 +33,7 @@ namespace bb
     actor_t(actor_t&&) = delete;
     actor_t& operator=(actor_t&&) = delete;
 
-    msgResult_t ProcessMessagesCore();
+    msg::result_t ProcessMessagesCore();
 
   public:
 
@@ -44,11 +43,11 @@ namespace bb
 
     int ID() const;
 
-    msgResult_t ProcessMessages();
+    msg::result_t ProcessMessages();
 
-    msgResult_t ProcessMessagesReadReleaseAquire(rwMutex_t& mutex);
+    msg::result_t ProcessMessagesReadReleaseAquire(rwMutex_t& mutex);
 
-    void PostMessage(msg_t msg);
+    void PostMessage(msg_t&& msg);
 
     bool NeedProcessing();
 
@@ -69,12 +68,16 @@ namespace bb
 
   inline int actor_t::ID() const
   {
-    return this->id;
+    if (this->mailbox)
+    {
+      return this->mailbox->Address();
+    }
+    return -1;
   }
 
-  inline void actor_t::PostMessage(msg_t msg)
+  inline void actor_t::PostMessage(msg_t&& msg)
   {
-    this->mailbox.Put(msg);
+    this->mailbox->Put(std::move(msg));
   }
 
 }

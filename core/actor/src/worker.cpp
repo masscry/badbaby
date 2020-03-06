@@ -2,6 +2,7 @@
 
 #include <atomic>
 
+#include <mailbox.hpp>
 #include <worker.hpp>
 #include <common.hpp>
 #include <config.hpp>
@@ -12,26 +13,6 @@ namespace
   void SetThisThreadName(const std::string& name)
   {
     pthread_setname_np(pthread_self(), name.c_str());
-  }
-
-  int MakeNewActorID(uint16_t actorIndex)
-  {
-    //
-    // System requires some way to separate deleted actors from active,
-    // I decided to use unique IDs.
-    //
-    // 0xUUUUIIII
-    //
-    // I - 16-bit index in actors array
-    // U - 16-bit always increasing counter
-    //
-    static std::atomic_uint16_t uid(0);
-    return (((uid++) & 0x7FFF) << 16) | actorIndex;
-  }
-
-  uint16_t GetActorIndex(int actorID)
-  {
-    return static_cast<uint16_t>(actorID & 0xFFFF);
   }
 
 }
@@ -88,11 +69,9 @@ namespace bb
         auto readLock = this->actorsGuard.GetReadLock();
         assert(this->actors.size() <= maxActorsInWorkerPool);
 
-        size_t totalKnownActors = this->actors.size();
-        for (size_t curActorIndex = 0; curActorIndex < totalKnownActors; ++curActorIndex)
+        for (auto actorIt = this->actors.begin(), actorEnd = this->actors.end(); actorIt != actorEnd; ++actorIt)
         {
-          auto actorIt = this->actors.begin() + static_cast<long>(curActorIndex);
-          auto actorProcessResult = msgResult_t::skipped;
+          auto actorProcessResult = msg::result_t::skipped;
           auto& actor = *actorIt;
           if (actor)
           {
@@ -109,10 +88,10 @@ namespace bb
           }
           switch (actorProcessResult)
           {
-          case msgResult_t::skipped:
-          case msgResult_t::complete:
+          case msg::result_t::skipped:
+          case msg::result_t::complete:
             break;
-          case msgResult_t::poisoned:
+          case msg::result_t::poisoned:
             {
               // this is only way to delete actor, code works in a way that
               // only actor itself says when it can be killed.
@@ -123,11 +102,10 @@ namespace bb
 
               // wlock dies before BB_DEFER executes
               auto wlock = this->actorsGuard.GetWriteLock();
-              this->deletedActors.push_back(static_cast<uint16_t>(curActorIndex & 0xFFFF));
-              actorIt->reset();
+              actorIt = this->actors.erase(actorIt);
             }
             break;
-          case msgResult_t::error:
+          case msg::result_t::error:
             bb::Error("Actor \"%s\" (%d) works with errors", actor->Name().c_str(), actor->ID());
             break;
           default:
@@ -196,39 +174,20 @@ namespace bb
   int workerPool_t::Register(std::unique_ptr<role_t>&& role)
   {
     assert(role);
-    const char* roleName = role->DefaultName();
+    std::string roleName = role->DefaultName();
 
     auto lock = this->actorsGuard.GetWriteLock();
-    if (this->deletedActors.empty() && (this->actors.size() >= maxActorsInWorkerPool))
+    if (this->actors.size() >= maxActorsInWorkerPool)
     {
       bb::Error("%s %u", "Too many actors! Must not be greater than ", maxActorsInWorkerPool);
       return -1;
     }
 
     std::unique_ptr<actor_t> newActor(new actor_t(std::move(role)));
-
-    int resultActorID = -1;
-    if (this->deletedActors.empty())
-    {
-      uint16_t actorIndex = (this->actors.size() & 0xFFFF);
-
-      resultActorID = MakeNewActorID(actorIndex);
-      newActor->PostMessage(IssueSetID(resultActorID));
-      newActor->ProcessMessages();
-      this->actors.emplace_back(std::move(newActor));
-    }
-    else
-    {
-      uint16_t actorIndex = this->deletedActors.front();
-      this->deletedActors.pop_front();
-      
-      resultActorID = MakeNewActorID(actorIndex);
-      newActor->PostMessage(IssueSetID(resultActorID));
-      newActor->ProcessMessages();
-      this->actors[actorIndex].swap(newActor);
-    }
-
-    bb::Info("Actor \"%s\" (%08x) registered", roleName, resultActorID);
+    int resultActorID = newActor->ID();
+    this->actors.emplace_back(std::move(newActor));
+    
+    bb::Info("Actor \"%s\" (%x) registered", roleName.c_str(), resultActorID);
     return resultActorID;
   }
 
@@ -245,24 +204,13 @@ namespace bb
     return -1;
   }
 
-  int workerPool_t::PostMessage(int actorID, msg_t message)
+  int workerPool_t::PostMessage(int actorID, msg_t&& message)
   {
-    uint16_t actorIndex = GetActorIndex(actorID);
-    assert(actorIndex < this->actors.size());
-
+    if (bb::postOffice_t::Instance().Post(actorID, std::move(message)) != 0)
     {
-      auto lock = this->actorsGuard.GetReadLock();
-
-      auto actIt = this->actors.begin() + actorIndex;
-      if ((*actIt) && ((*actIt)->ID() == actorID))
-      {
-        (*actIt)->PostMessage(message);
-      }
-      else
-      {
-        bb::Error("Actor (%08x) is no longer exists!", actorID);
-        return -1;
-      }
+      bb::Error("Actor (%08x) is no longer exists!", actorID);
+      assert(0);
+      return -1;
     }
     for (auto& info: this->infos)
     {
@@ -273,7 +221,9 @@ namespace bb
 
   int workerPool_t::Unregister(int actorID)
   {
-    return this->PostMessage(actorID, bb::MakeMsg(-1, POISON, 0));
+    return this->PostMessage(actorID,
+      bb::IssuePoison()
+    );
   }
 
 }

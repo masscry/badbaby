@@ -11,93 +11,208 @@
 #include <cstring>
 #include <cstdint>
 
+#include <string>
+#include <memory>
+#include <utility>
 #include <type_traits>
 
 namespace bb
 {
 
-  enum msgID_t: uint16_t
-  {
-    NOOP     = 0x0000,
-    POISON   = 0x0001,
-    SETNAME  = 0x0002,
-    SETID    = 0x0003,
-    KEYBOARD = 0x0004,
-    LASTSYS  = 0x00FF,
-    USR00    = 0x0100,
-    TOTAL    = 0xFFFF
-  };
-
-  enum class msgResult_t
-  {
-    skipped = 0,
-    complete = 1,
-    error,
-    poisoned
-  };
-
   using actorPID_t = int;
 
-  const size_t msgDataByteLength = 8;
+  const actorPID_t INVALID_ACTOR = -1;
 
-  struct msg_t final
+  namespace msg
   {
-    actorPID_t src;
-    uint16_t   type;
-    uint8_t    data[msgDataByteLength];
-  };
+    enum class result_t
+    {
+      skipped = 0,
+      complete = 1,
+      error,
+      poisoned
+    };
+
+    class basic_t
+    {
+      actorPID_t src;
+
+    public:
+
+      actorPID_t Source() const;
+
+      basic_t();
+      basic_t(actorPID_t src);
+
+      basic_t(const basic_t&) = default;
+      basic_t& operator=(const basic_t&) = default;
+
+      basic_t(basic_t&&) = default;
+      basic_t& operator=(basic_t&&) = default;
+
+      virtual ~basic_t() = 0;
+    };
+
+    template<typename castType_t>
+    const castType_t* As(const basic_t& msg)
+    {
+      static_assert(std::is_base_of<bb::msg::basic_t, castType_t>::value,
+        "Can be used only with bb::msg::basic_t subclasses"
+      );
+
+      if (typeid(msg) != typeid(castType_t))
+      {
+        return nullptr;
+      }
+
+      return static_cast<const castType_t*>(&msg);
+    }
+
+    class poison_t final: public basic_t
+    {
+    public:
+      poison_t();
+      poison_t(const poison_t&) = default;
+      poison_t& operator=(const poison_t&) = default;
+
+      poison_t(poison_t&&) = default;
+      poison_t& operator=(poison_t&&) = default;
+
+      ~poison_t() override = default;
+    };
+
+    class setName_t final: public basic_t
+    {
+      std::string name;
+    public:
+
+      const std::string& Name() const;
+
+      setName_t(const std::string& name);
+      setName_t(std::string&& name);
+
+      setName_t(const setName_t&) = default;
+      setName_t& operator=(const setName_t&) = default;
+
+      setName_t(setName_t&&) = default;
+      setName_t& operator=(setName_t&&) = default;
+
+      ~setName_t() override = default;
+    };
+
+    class keyEvent_t final: public basic_t
+    {
+      int key;
+      int press;
+
+    public:
+
+      int Key() const;
+      int Press() const;
+
+      keyEvent_t(int key, int press);
+
+      keyEvent_t(const keyEvent_t&) = default;
+      keyEvent_t& operator=(const keyEvent_t&) = default;
+
+      keyEvent_t(keyEvent_t&&) = default;
+      keyEvent_t& operator=(keyEvent_t&&) = default;
+
+      ~keyEvent_t() override = default;
+    };
+
+    inline actorPID_t basic_t::Source() const
+    {
+      return this->src;
+    }
+
+    inline basic_t::basic_t()
+    : src(INVALID_ACTOR)
+    {
+      ;
+    }
+
+    inline basic_t::basic_t(actorPID_t src)
+    : src(src)
+    {
+      ;
+    }
+
+    inline poison_t::poison_t()
+    {
+      ;
+    }
+
+    inline const std::string& setName_t::Name() const
+    {
+      return this->name;
+    }
+
+    inline setName_t::setName_t(const std::string& name)
+    : name(name)
+    {
+      ;
+    }
+
+    inline setName_t::setName_t(std::string&& name)
+    : name(std::move(name))
+    {
+      ;
+    }
+
+    inline int keyEvent_t::Key() const
+    {
+      return this->key;
+    }
+
+    inline int keyEvent_t::Press() const
+    {
+      return this->press;
+    }
+
+    inline keyEvent_t::keyEvent_t(int key, int press)
+    : key(key), press(press)
+    {
+      ;
+    }
+
+  }
+
+  using msg_t = std::unique_ptr<bb::msg::basic_t>;
 
   msg_t IssuePoison();
 
-  msg_t IssueSetID(int id);
-
   msg_t IssueSetName(const char* name);
 
-  template<typename data_t, typename msgXID_t>
-  msg_t MakeMsg(int src, msgXID_t type, data_t data)
+  template<typename castType_t>
+  castType_t* As(msg_t& msg)
   {
-    msg_t result;
-    static_assert(sizeof(data_t) <= sizeof(msg_t::data), "Data must fit in 8 bytes");
-    static_assert(std::is_pod<data_t>::value, "Data must be POD");
-    static_assert(sizeof(msgXID_t) == sizeof(msgID_t), "Message type must be 2 bytes");
+    static_assert(std::is_base_of<bb::msg::basic_t, castType_t>::value,
+      "Can be used only with bb::msg::basic_t subclasses"
+    );
 
-    result.src = src;
-    result.type = static_cast<uint16_t>(type);
-    memcpy(result.data, &data, sizeof(data_t));
-    return result;
+    if (typeid(*msg.get()) != typeid(castType_t))
+    {
+      return nullptr;
+    }
+    return static_cast<castType_t*>(msg.get());
   }
 
-  template<typename data_t, typename msgXID_t>
-  msg_t MakeMsgPtr(int src, msgXID_t type, data_t* pData)
+  template<typename castType_t>
+  const castType_t* As(const msg_t& msg)
   {
-    msg_t result;
-    static_assert(sizeof(data_t*) <= sizeof(msg_t::data), "Pointer must fit in 8 bytes");
-    static_assert(sizeof(msgXID_t) == sizeof(msgID_t), "Message type must be 2 bytes");
-
-    result.src = src;
-    result.type = static_cast<uint16_t>(type);
-    memcpy(result.data, &pData, sizeof(data_t*));
-    return result;
+    return As<castType_t>(const_cast<msg_t&>(msg));
   }
 
-  template<typename data_t>
-  data_t* GetMsgPtr(const msg_t& msg)
+  template<typename msgType_t, typename... args_t>
+  msg_t Issue(args_t ... args)
   {
-    data_t* result;
-    memcpy(&result, msg.data, sizeof(data_t*));
-    return result;
+    static_assert(std::is_base_of<bb::msg::basic_t, msgType_t>::value,
+      "Can be used only with bb::msg::basic_t subclasses"
+    );
+    return msg_t(new msgType_t(std::forward<args_t>(args)...));
   }
 
-  template<typename data_t>
-  data_t GetMsgData(const msg_t& msg)
-  {
-    static_assert(sizeof(data_t) <= sizeof(msg_t::data), "Data must fit in 8 bytes");
-    static_assert(std::is_pod<data_t>::value, "Data must be POD");
-
-    data_t result;
-    memcpy(&result, msg.data, sizeof(data_t));
-    return result;
-  }
 
 }
 

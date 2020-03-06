@@ -7,11 +7,12 @@
 #include <msg.hpp>
 #include <mapGen.hpp>
 #include <worker.hpp>
+#include <monfs.hpp>
 
 namespace 
 {
 
-  bb::mailbox_t mail;
+  bb::mailbox_t::shared_t mail = bb::postOffice_t::Instance().New("sub3000");
 
   std::mutex g_mapGenLock;
   int g_mapGenActorID = -1;
@@ -21,9 +22,9 @@ namespace
 namespace sub3000
 {
 
-  void PostToMain(bb::msg_t msg)
+  void PostToMain(bb::msg_t&& msg)
   {
-    mail.Put(msg);
+    mail->Put(std::move(msg));
   }
 
   bool RequestGenerateMap(uint16_t width, uint16_t height, float radius, int sendResultToID)
@@ -37,10 +38,9 @@ namespace sub3000
     auto& pool = bb::workerPool_t::Instance();
     pool.PostMessage(
       g_mapGenActorID,
-      bb::MakeMsg(sendResultToID, sub3000::mapGenMsg_t::generate, 
-        sub3000::mapGenerateParams_t {
-          width, height, radius
-        }
+      bb::Issue<sub3000::generate_t>(
+        sendResultToID,
+        width, height, radius
       )
     );
     return true;
@@ -71,6 +71,9 @@ void ProcessGameAction(int src, sub3000::gameAction_t action)
     assert(0);
   }
 }
+
+int fsMonitorIDCounter = 0;
+std::unordered_map<int, bb::fs::monitor_t> fsMonitors;
 
 int main(int argc, char* argv[])
 {
@@ -103,33 +106,83 @@ int main(int argc, char* argv[])
       break;
     }
 
-    if (mail.Poll(&msgToMain))
+    if (mail->Poll(&msgToMain))
     {
-      switch(msgToMain.type)
+      if (auto changeScene = bb::As<sub3000::changeScene_t>(msgToMain))
       {
-        case sub3000::nop:
-          break;
-        case sub3000::change_scene:
-          sub3000::PopScene();
-          sub3000::PushScene(sub3000::GetScene(
-            bb::GetMsgData<sub3000::sceneID_t>(msgToMain)
-          ));
-          break;
-        case sub3000::exit:
-          sub3000::PopScene();
-          loop = false;
-          break;
-        case sub3000::action:
-          {
-            auto gameAction = bb::GetMsgData<sub3000::gameAction_t>(msgToMain);
-            bb::Debug("Action: %s from %d", sub3000::GetTextForAction(gameAction), msgToMain.src);
-            ProcessGameAction(msgToMain.src, gameAction);
-          }
-          break;
-        default:
-          assert(0);
+        sub3000::PopScene();
+        sub3000::PushScene(
+          sub3000::GetScene(
+            changeScene->SceneID()
+          )
+        );
+        continue;
       }
+
+      if (bb::As<sub3000::exit_t>(msgToMain))
+      {
+        sub3000::PopScene();
+        loop = false;
+        continue;
+      }
+
+      if (auto action = bb::As<sub3000::action_t>(msgToMain))
+      {
+        auto gameAction = action->GameAction();
+        bb::Debug("Action: %s from %d", sub3000::GetTextForAction(gameAction), action->Source());
+        ProcessGameAction(
+          action->Source(),
+          gameAction
+        );
+        continue;
+      }
+
+      if (auto watch = bb::As<sub3000::fs::watch_t>(msgToMain))
+      {
+        auto newMon = bb::fs::monitor_t::Create(std::move(watch->Processor()));
+        auto result = newMon.Watch(watch->Filename().c_str());
+
+        if (result == -1)
+        { // add watch failed, so just return
+          if (watch->Source() != bb::INVALID_ACTOR)
+          {
+            bb::workerPool_t::Instance().PostMessage(
+              watch->Source(), 
+              bb::Issue<sub3000::fs::status_t>(-1)
+            );
+          }
+          continue;
+        }
+
+        // otherwise, store monitor and return it's id
+        fsMonitors[fsMonitorIDCounter] = std::move(newMon);
+
+        if (watch->Source() != bb::INVALID_ACTOR)
+        {
+          bb::workerPool_t::Instance().PostMessage(
+            watch->Source(), 
+            bb::Issue<sub3000::fs::status_t>(fsMonitorIDCounter)
+          );
+        }
+        ++fsMonitorIDCounter;
+        continue;
+      }
+
+      if (auto rmWatch = bb::As<sub3000::fs::rmWatch_t>(msgToMain))
+      {
+        fsMonitors.erase(rmWatch->Watch());
+        continue;
+      }
+
+      bb::Error("Unknown action type: %s", typeid(*msgToMain.get()).name());
+      assert(0);
     }
+
+    for (auto& monitor: fsMonitors)
+    {
+      monitor.second.Check();
+    }
+
   }
 
   {

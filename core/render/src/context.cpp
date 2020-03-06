@@ -307,7 +307,11 @@ namespace bb
     {
       if ((actorPair.second & cmfKeyboard) != 0)
       {
-        workerPool_t::Instance().PostMessage(actorPair.first, bb::MakeMsg(-1, msgID_t::KEYBOARD, keyEvent_t{ key, action }));
+        workerPool_t::Instance().PostMessage(actorPair.first,
+          bb::msg_t(
+            new bb::msg::keyEvent_t(key, action)
+          )
+        );
       }
     }
   }
@@ -319,8 +323,6 @@ namespace bb
 
   void context_t::UnregisterActorCallbacks(int actorID)
   {
-    assert(actorID >= 0);
-
     this->actorCallbackList.remove_if(
       [actorID](const pairOfFlags& pof) -> bool
       {

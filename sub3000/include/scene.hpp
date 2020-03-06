@@ -14,7 +14,8 @@ namespace sub3000
     mainMenu,
     authors,
     arena,
-    radarScreen
+    radarScreen,
+    radarStatus,
   };
 
   class scene_t

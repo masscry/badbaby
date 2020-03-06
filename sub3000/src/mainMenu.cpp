@@ -30,53 +30,80 @@ namespace
 namespace sub3000
 {
 
-  enum mainMenuSceneMsg_t: uint16_t
+  class selectLine_t: public bb::msg::basic_t
   {
-    MMS_SELECT_LINE = bb::msgID_t::USR00
+    uint32_t line;
+  public:
+
+    uint32_t Line() const
+    {
+      return this->line;
+    }
+
+    selectLine_t(uint32_t line)
+    : line(line)
+    {
+      ;
+    }
+
+    selectLine_t(const selectLine_t&) = default;
+    selectLine_t& operator= (const selectLine_t&) = default;
+    selectLine_t(selectLine_t&&) = default;
+    selectLine_t& operator= (selectLine_t&&) = default;
+    ~selectLine_t() override = default;
   };
 
-  bb::msgResult_t mainMenuModel_t::OnProcessMessage(const bb::actor_t& actor, bb::msg_t msg)
+  bb::msg::result_t mainMenuModel_t::OnProcessMessage(const bb::actor_t& actor, const bb::msg::basic_t& msg)
   {
-    switch (msg.type)
+    if (auto keyEvent = bb::msg::As<bb::msg::keyEvent_t>(msg))
     {
-      case bb::msgID_t::KEYBOARD:
+      if (keyEvent->Press() != GLFW_RELEASE)
       {
-        auto keyEvent = bb::GetMsgData<bb::keyEvent_t>(msg);
-        if (keyEvent.press != GLFW_RELEASE)
+        switch(keyEvent->Key())
         {
-          switch(keyEvent.key)
-          {
-            case GLFW_KEY_UP:
-              if (this->selectedLine > 0)
-              {
-                --this->selectedLine;
-                this->view.Put(bb::MakeMsg(0, MMS_SELECT_LINE, this->selectedLine));
-              }
-              break;
-            case GLFW_KEY_DOWN:
-              if (this->selectedLine < this->textList.size()-1)
-              {
-                ++this->selectedLine;
-                this->view.Put(bb::MakeMsg(0, MMS_SELECT_LINE, this->selectedLine));
-              }
-              break;
-            case GLFW_KEY_ENTER:
-              PostToMain(bb::MakeMsg(actor.ID(), sub3000::mainMessage_t::action, this->textList[this->selectedLine].action));
-              break;
-          }
+          case GLFW_KEY_UP:
+            if (this->selectedLine > 0)
+            {
+              --this->selectedLine;
+              this->view.Put(
+                bb::Issue<selectLine_t>(this->selectedLine)
+              );
+            }
+            break;
+          case GLFW_KEY_DOWN:
+            if (this->selectedLine < this->textList.size()-1)
+            {
+              ++this->selectedLine;
+              this->view.Put(
+                bb::Issue<selectLine_t>(this->selectedLine)
+              );
+            }
+            break;
+          case GLFW_KEY_ENTER:
+            PostToMain(
+              bb::Issue<sub3000::action_t>(
+                actor.ID(),
+                this->textList[this->selectedLine].action
+              )
+            );
+            break;
         }
       }
-      break;
-      case static_cast<int>(sub3000::mapGenMsg_t::done):
-      {
-        std::unique_ptr<sub3000::heightMap_t> heightMap(bb::GetMsgPtr<sub3000::heightMap_t>(msg));
-        bb::Debug("Map Generation Done: %d %d", heightMap->width, heightMap->height);
-      }
-      break;
-      default:
-        assert(0);
+      return bb::msg::result_t::complete;
     }
-    return bb::msgResult_t::complete;
+
+    if (auto done = bb::msg::As<sub3000::done_t>(msg))
+    {
+      bb::Debug("Map Generation Done: %d %d",
+        done->HeightMap().width,
+        done->HeightMap().height
+      );
+      return bb::msg::result_t::complete;
+    }
+
+    bb::Error("Unknown message %s", typeid(msg).name());
+    assert(0);
+    return bb::msg::result_t::error;
   }
 
   mainMenuModel_t::mainMenuModel_t(textList_t& textList, bb::mailbox_t& view)
@@ -84,7 +111,9 @@ namespace sub3000
     view(view),
     selectedLine(0)
   {
-    this->view.Put(bb::MakeMsg(0, MMS_SELECT_LINE, selectedLine));
+    this->view.Put(
+      bb::Issue<selectLine_t>(selectedLine)
+    );
   }
 
   mainMenuScene_t::menuLines_t mainMenuScene_t::LoadMenuLines(const bb::config_t& config, const std::string& prefix)
@@ -169,24 +198,23 @@ namespace sub3000
     this->gameInfoNode.Translate(bb::vec3_t(100.0f, -100.0f, 0.0f));
 
     auto& pool = bb::workerPool_t::Instance();
-    this->menuModelID = pool.Register(std::unique_ptr<bb::role_t>(new sub3000::mainMenuModel_t(this->textList, this->mailbox)));
+    this->menuModelID = pool.Register(std::unique_ptr<bb::role_t>(new sub3000::mainMenuModel_t(this->textList, *this->mailbox)));
     this->pContext->RegisterActorCallback(menuModelID, bb::cmfKeyboard);
   }
 
   void mainMenuScene_t::OnUpdate(double)
   {
     bb::msg_t msg;
-    while(this->mailbox.Poll(&msg))
+    while(this->mailbox->Poll(&msg))
     {
-      switch(msg.type)
+      if (auto selectedLine = bb::As<sub3000::selectLine_t>(msg))
       {
-        case MMS_SELECT_LINE:
-          this->selectedMenuLine = bb::GetMsgData<uint32_t>(msg);
-          break;
-        default:
-          // unknown action!
-          assert(0);
+        this->selectedMenuLine = selectedLine->Line();
+        continue;
       }
+
+      bb::Error("Unknown message: %s", typeid(*msg.get()).name());
+      assert(0);
     }
   }
 
@@ -244,7 +272,8 @@ namespace sub3000
 
   mainMenuScene_t::mainMenuScene_t()
   : scene_t(sceneID_t::mainMenu, "Main Menu"),
-    pContext(nullptr)
+    pContext(nullptr),
+    mailbox(bb::postOffice_t::Instance().New("mainMenuScene_t"))
   {
     bb::config_t menuConfig;
     menuConfig.Load("./mainMenu.config");

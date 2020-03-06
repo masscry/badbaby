@@ -34,88 +34,199 @@ const char* menuTextLines[ML_TOTAL] = {
   "Выход"
 };
 
-enum menuMsg_t: uint16_t
+bb::mailbox_t::shared_t renderTasks = bb::postOffice_t::Instance().New("RenderTasks");
+
+namespace menu
 {
-  MT_FIRST = bb::msgID_t::USR00,
-  MT_PREV = MT_FIRST,
-  MT_NEXT,
-  MT_SELECT,
-  MT_ANIMATION_START,
-  MT_ANIMATION_DONE,
-  MT_EXIT_GAME,
-  MT_LAST = MT_ANIMATION_DONE,
-  MT_TOTAL
-};
 
-bb::mailbox_t renderTasks;
-
-class menuModel_t: public bb::role_t
-{
-  int selected;
-
-  bb::msgResult_t OnProcessMessage(const bb::actor_t&, bb::msg_t msg) override
+  class action_t final: public bb::msg::basic_t
   {
-    int nextMenuLine = this->selected;
+  public:
 
-    switch (msg.type)
+    enum id_t
     {
-      case bb::KEYBOARD:
+      prev,
+      next,
+      select
+    };
+
+  private:
+
+    id_t id;
+
+  public:
+
+    id_t ID() const
+    {
+      return this->id;
+    }
+
+    action_t(id_t id)
+    : id(id)
+    {
+      ;
+    }
+
+    action_t(const action_t&) = default;
+    action_t& operator=(const action_t&) = default;
+    action_t(action_t&&) = default;
+    action_t& operator=(action_t&&) = default;
+    ~action_t() override = default;
+  };
+
+  class animation_t final: public bb::msg::basic_t
+  {
+    int newLine;
+  public:
+
+    int NewLine() const
+    {
+      return this->newLine;
+    }
+
+    animation_t(int newLine)
+    : newLine(newLine)
+    {
+      ;
+    }
+    animation_t(const animation_t&) = default;
+    animation_t& operator= (const animation_t&) = default;
+    animation_t(animation_t&&) = default;
+    animation_t& operator= (animation_t&&) = default;
+    ~animation_t() override = default;
+  };
+
+  class exit_t: public bb::msg::basic_t
+  {
+  public:
+    exit_t() { ; }
+    ~exit_t() override = default;
+  };
+
+  class done_t: public bb::msg::basic_t
+  {
+    int selected;
+  public:
+
+    int Selected() const
+    {
+      return this->selected;
+    }
+
+    done_t(int selected)
+    : selected(selected)
+    {
+      ;
+    }
+
+    done_t(const done_t&) = default;
+    done_t& operator=(const done_t&) = default;
+    done_t(done_t&&) = default;
+    done_t& operator=(done_t&&) = default;
+    ~done_t() override = default;
+
+  };
+
+  class model_t: public bb::role_t
+  {
+    int selected;
+
+    void PrevLine()
+    {
+      int nextMenuLine = this->selected;
+      nextMenuLine = (((nextMenuLine-1) < ML_FIRST)?(ML_LAST):(nextMenuLine-1));
+      renderTasks->Put(
+        bb::Issue<menu::animation_t>(nextMenuLine)
+      );
+    }
+
+    void NextLine()
+    {
+      int nextMenuLine = this->selected;
+      nextMenuLine = (((nextMenuLine+1) > ML_LAST)?(ML_FIRST):(nextMenuLine+1));
+      renderTasks->Put(
+        bb::Issue<menu::animation_t>(nextMenuLine)
+      );
+    }
+
+    void SelectLine()
+    {
+      if (this->selected == ML_EXIT)
+      {
+        renderTasks->Put(
+          bb::Issue<menu::exit_t>()
+        );
+      }
+    }
+
+    bb::msg::result_t OnProcessMessage(const bb::actor_t&, const bb::msg::basic_t& msg) override
+    {
+      if (auto keyEvent = bb::msg::As<bb::msg::keyEvent_t>(msg))
+      {
+        if (keyEvent->Press() != GLFW_RELEASE)
         {
-          auto keyEvent = bb::GetMsgData<bb::keyEvent_t>(msg);
-          if (keyEvent.press != GLFW_RELEASE)
+          switch(keyEvent->Key())
           {
-            switch(keyEvent.key)
-            {
-              case GLFW_KEY_UP:
-                goto DO_PREV;
-              case GLFW_KEY_DOWN:
-                goto DO_NEXT;
-              case GLFW_KEY_ENTER:
-                goto DO_SELECT;
-            }
+            case GLFW_KEY_UP:
+              this->PrevLine();
+              break;
+            case GLFW_KEY_DOWN:
+              this->NextLine();
+              break;
+            case GLFW_KEY_ENTER:
+              this->SelectLine();
+              break;
           }
         }
-        break;
-      case MT_PREV:
-      DO_PREV:
-        nextMenuLine = (((nextMenuLine-1) < ML_FIRST)?(ML_LAST):(nextMenuLine-1));
-        renderTasks.Put(bb::MakeMsg(-1, MT_ANIMATION_START, nextMenuLine));
-        break;
-      case MT_NEXT:
-      DO_NEXT:
-        nextMenuLine = (((nextMenuLine+1) > ML_LAST)?(ML_FIRST):(nextMenuLine+1));
-        renderTasks.Put(bb::MakeMsg(-1, MT_ANIMATION_START, nextMenuLine));
-        break;
-      case MT_SELECT:
-      DO_SELECT:
-        if (this->selected == ML_EXIT)
+        return bb::msg::result_t::complete;
+      }
+
+      if (auto menuAction = bb::msg::As<menu::action_t>(msg))
+      {
+        switch(menuAction->ID())
         {
-          renderTasks.Put(bb::MakeMsg(-1, MT_EXIT_GAME, 0));
+          case menu::action_t::id_t::prev:
+            this->PrevLine();
+            break;
+          case menu::action_t::id_t::next:
+            this->NextLine();
+            break;
+          case menu::action_t::id_t::select:
+            this->SelectLine();
+            break;
+          default:
+            assert(0);
         }
-        break;
-      case MT_ANIMATION_DONE:
-        this->selected = bb::GetMsgData<int>(msg);
-        break;
-      default:
-        assert(0);
+        return bb::msg::result_t::complete;
+      }
+
+      if (auto done = bb::msg::As<menu::done_t>(msg))
+      {
+        this->selected = done->Selected();
+        return bb::msg::result_t::complete;
+      }
+
+      assert(0);
+      return bb::msg::result_t::error;
     }
-    return bb::msgResult_t::complete;
-  }
 
-  const char* DefaultName() const override
-  {
-    return "menu_mdl";
-  }
+    const char* DefaultName() const override
+    {
+      return "menu_mdl";
+    }
 
-public:
+  public:
 
-  menuModel_t()
-  :selected(ML_FIRST)
-  {
-    ;
-  }
+    model_t()
+    : selected(ML_FIRST)
+    {
+      ;
+    }
 
-};
+  };
+
+}
+
 
 int main(int argc, char* argv[])
 {
@@ -126,7 +237,9 @@ int main(int argc, char* argv[])
 
   auto& context = bb::context_t::Instance();
   auto& pool = bb::workerPool_t::Instance();
-  int menuActor = pool.Register(std::unique_ptr<bb::role_t>(new menuModel_t));
+  int menuActor = pool.Register(
+    bb::MakeRole<menu::model_t>()
+  );
 
   context.RegisterActorCallback(menuActor, bb::cmfKeyboard);
 
@@ -137,7 +250,7 @@ int main(int argc, char* argv[])
 
   auto font = bb::font_t("mono.config");
   auto text = bb::textDynamic_t(font, bb::vec2_t(0.1, 0.3));
-  text.Update(menuTextLines[0]);
+  text.Update("%s", menuTextLines[0]);
 
   glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
@@ -152,23 +265,27 @@ int main(int argc, char* argv[])
 
   do
   {
-    while(renderTasks.Poll(&renderMsg))
+    while(renderTasks->Poll(&renderMsg))
     {
-      switch (renderMsg.type)
+      if (auto anim = bb::As<menu::animation_t>(renderMsg))
       {
-      case MT_ANIMATION_START:
-      {
-        auto msgData = bb::GetMsgData<int>(renderMsg);
-        text.Update(menuTextLines[msgData]);
-        pool.PostMessage(menuActor, bb::MakeMsg(-1, MT_ANIMATION_DONE, msgData));
-        break;
+        auto line = anim->NewLine();
+        text.Update("%s", menuTextLines[line]);
+        pool.PostMessage(
+          menuActor,
+          bb::Issue<menu::done_t>(line)
+        );
+        continue;
       }
-      case MT_EXIT_GAME:
+
+      if (bb::As<menu::exit_t>(renderMsg))
+      {
         run = false;
-        break;
-      default:
-        assert(0);
+        continue;
       }
+
+      bb::Error("Unknown message type: %s", typeid(*renderMsg.get()).name());
+      assert(0);
     }
 
     auto nowTick = glfwGetTime();

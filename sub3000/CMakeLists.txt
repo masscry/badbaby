@@ -38,3 +38,8 @@ target_link_libraries(sub3000
     shapes
     effects
 )
+
+install(TARGETS sub3000
+  RUNTIME DESTINATION bin
+  CONFIGURATIONS Release
+)

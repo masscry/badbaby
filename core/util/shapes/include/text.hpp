@@ -68,9 +68,13 @@ namespace bb
     textDynamic_t(const textDynamic_t&) = delete;
     textDynamic_t& operator=(const textDynamic_t&) = delete;
 
+    void UpdateText(const char* text);
+
   public:
 
     void Update(const std::string& text);
+
+    void Update(const char* format, ...) __attribute__ ((format (printf, 2, 3)));
 
     void Render();
 

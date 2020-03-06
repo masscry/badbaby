@@ -1,35 +1,32 @@
 #include <mailbox.hpp>
+#include <common.hpp>
 
 #include <cassert>
+#include <functional>
 
 namespace bb
 {
-
-  size_t mailbox_t::Has()
-  {
-    std::unique_lock<std::mutex> lock(this->guard);
-    return this->storage.size();
-  }
-
-  bool mailbox_t::Empty()
-  {
-    std::unique_lock<std::mutex> lock(this->guard);
-    return this->storage.empty();
-  }
 
   bool mailbox_t::Poll(msg_t* result)
   {
     assert(result != nullptr);
 
-    std::unique_lock<std::mutex> lock(this->guard);
+    std::lock_guard<std::mutex> lock(this->guard);
     if (this->storage.empty())
     {
       return false;
     }
 
-    *result = this->storage.front();
+    *result = std::move(this->storage.front());
     this->storage.pop();
     return true;
+  }
+
+  void mailbox_t::Put(msg_t&& msg)
+  {
+    std::lock_guard<std::mutex> lock(this->guard);
+    this->storage.emplace(std::move(msg));
+    this->notify.notify_one();
   }
 
   msg_t mailbox_t::Wait()
@@ -37,22 +34,85 @@ namespace bb
     std::unique_lock<std::mutex> lock(this->guard);
     if (!this->storage.empty())
     {
-      msg_t result = this->storage.front();
+      msg_t result = std::move(this->storage.front());
       this->storage.pop();
       return result;
     }
 
     this->notify.wait(lock, [this](){ return !this->storage.empty(); });
-    msg_t result = this->storage.front();
+    msg_t result = std::move(this->storage.front());
     this->storage.pop();
     return result;
   }
 
-  void mailbox_t::Put(msg_t msg)
+  postOffice_t& postOffice_t::Instance()
+  {
+    static postOffice_t postOffice;
+    return postOffice;
+  }
+
+  mailbox_t::shared_t postOffice_t::New(uint32_t address)
   {
     std::lock_guard<std::mutex> lock(this->guard);
-    this->storage.emplace(std::move(msg));
-    this->notify.notify_one();
+
+    auto item = this->storage.find(address);
+    if (item != this->storage.end())
+    {
+      bb::Error("Item with address %u already exists!", address);
+      // such item exists
+      assert(0);
+      return mailbox_t::shared_t();
+    }
+
+    auto result = std::shared_ptr<mailbox_t>(new mailbox_t(address));
+    this->storage[address] = result;
+    return result;
+  }
+
+  void postOffice_t::Delete(uint32_t address)
+  {
+    std::lock_guard<std::mutex> lock(this->guard);
+    this->storage.erase(address);
+  }
+
+  mailbox_t::shared_t postOffice_t::New(const std::string& address)
+  {
+    return this->New(static_cast<uint32_t>(std::hash<std::string>()(address)));
+  }
+
+  mailbox_t::mailbox_t(uint32_t address)
+  : address(address)
+  {
+    ;
+  }
+
+  mailbox_t::~mailbox_t()
+  {
+    postOffice_t::Instance().Delete(this->Address());
+  }
+
+  int postOffice_t::Post(const std::string& address, msg_t&& msg)
+  {
+    return this->Post(static_cast<uint32_t>(std::hash<std::string>()(address)), std::move(msg));
+  }
+
+  int postOffice_t::Post(uint32_t address, msg_t&& msg)
+  {
+    std::lock_guard<std::mutex> lock(this->guard);
+    auto item = this->storage.find(address);
+    if (item == this->storage.end())
+    {
+      return -1;
+    }
+
+    auto mailbox = item->second.lock();
+    if (!mailbox)
+    {
+      return -1;
+    }
+
+    mailbox->Put(std::move(msg));
+    return 0;
   }
 
 } // namespace bb

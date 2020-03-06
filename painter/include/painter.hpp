@@ -11,11 +11,18 @@
 namespace paint
 {
 
-  enum mainMessage_t: uint16_t
+  class update_t final: public bb::msg::basic_t
   {
-    nop = bb::msgID_t::USR00,
-    update,
-    exit
+  public:
+    update_t() { ; }
+    ~update_t() override = default;
+  };
+
+  class exit_t final: public bb::msg::basic_t
+  {
+  public:
+    exit_t() { ; }
+    ~exit_t() override = default;
   };
 
   /**
@@ -23,7 +30,7 @@ namespace paint
    *
    * @param msg message to main
    */
-  void PostToMain(bb::msg_t msg);
+  void PostToMain(bb::msg_t&& msg);
 
   const char* MainMsgToStr(const bb::msg_t& msg);
 

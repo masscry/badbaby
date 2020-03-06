@@ -29,12 +29,6 @@ namespace bb
     cmfKeyboard = 0x0001
   };
 
-  struct keyEvent_t
-  {
-    int32_t key;
-    int32_t press;
-  };
-
   class context_t final
   {
     static bool isAlreadyExists;

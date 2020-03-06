@@ -15,32 +15,32 @@
 
 namespace
 {
-  bb::mailbox_t mail;
+  bb::mailbox_t::shared_t mail = bb::postOffice_t::Instance().New("painter");
 }
 
 namespace paint
 {
 
-  void PostToMain(bb::msg_t msg)
+  void PostToMain(bb::msg_t&& msg)
   {
-    mail.Put(msg);
+    mail->Put(std::move(msg));
   }
 
   const char* MainMsgToStr(const bb::msg_t& msg)
   {
-    switch(msg.type)
+    if (bb::As<bb::msg::keyEvent_t>(msg) != nullptr)
     {
-      case bb::msgID_t::KEYBOARD:
-        return "key";
-      case mainMessage_t::update:
-        return "update";
-      case mainMessage_t::nop:
-        return "nop";
-      case mainMessage_t::exit:
-        return "exit";
-      default:
-        return "???";
+      return "key";
     }
+    if (bb::As<paint::update_t>(msg) != nullptr)
+    {
+      return "update";
+    }
+    if (bb::As<paint::exit_t>(msg) != nullptr)
+    {
+      return "exit";
+    }
+    return "???";
   }
 
 }
@@ -50,7 +50,9 @@ class monitorOpenedFile_t final: public bb::fs::processor_t
 public:
   int OnChange(const char*, bb::fs::event_t)
   {
-    paint::PostToMain(bb::MakeMsg(-1, paint::mainMessage_t::update, 0));
+    paint::PostToMain(
+      bb::Issue<paint::update_t>()
+    );
     return 0;
   }
 };
@@ -348,30 +350,32 @@ int main(int argc, char* argv[])
 
     bb::msg_t msgToMain;
 
-    if (mail.Poll(&msgToMain))
+    if (mail->Poll(&msgToMain))
     {
       bb::Debug(
-        "Got \"%s\" (%u) message",
+        "Got \"%s\" (%lu) message",
         paint::MainMsgToStr(msgToMain),
-        msgToMain.type
+        typeid(*msgToMain.get()).hash_code()
       );
-      switch(msgToMain.type)
+
+      if (bb::As<paint::update_t>(msgToMain))
       {
-        case paint::nop:
-          break;
-        case paint::update:
-          if (UpdateScene(argv[1]) != 0)
-          {
-            bb::Error("%s", "Invalid PVF");
-            fprintf(stderr, "%s\n", "Invalid PVF");
-          }
-          break;
-        case paint::exit:
-          loop = false;
-          break;
-        default:
-          assert(0);
+        if (UpdateScene(argv[1]) != 0)
+        {
+          bb::Error("%s", "Invalid PVF");
+          fprintf(stderr, "%s\n", "Invalid PVF");
+        }
+        continue;
       }
+
+      if (bb::As<paint::exit_t>(msgToMain))
+      {
+        loop = false;
+        continue;
+      }
+
+      bb::Error("Unknown message: %s", typeid(*msgToMain.get()).name());
+      assert(0);
     }
   }
 
