@@ -19,6 +19,8 @@ extern "C" {
     BB_STRING = 257,
     BB_NUMBER,
     BB_SET,
+    BB_START,
+    BB_FINISH,
     BB_ERROR,
   };
 

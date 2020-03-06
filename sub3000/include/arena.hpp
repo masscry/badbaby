@@ -112,6 +112,10 @@ namespace sub3000
     bb::shader_t shader;
     bb::camera_t camera;
 
+    bb::mailbox_t::shared_t box;
+
+    int configWatch;
+
     void OnPrepare() override;
     void OnUpdate(double delta) override;
     void OnRender() override;

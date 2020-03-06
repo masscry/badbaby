@@ -46,8 +46,8 @@ namespace bb
       if (dataIsReady < 0)
       { // Error happened!
         char buffer[1024];
-        strerror_r(errno, buffer, sizeof(buffer));
-        bb::Error("Error: inotify select failed \"%s\" (%d)", buffer, errno);
+        char* text = strerror_r(errno, buffer, sizeof(buffer));
+        bb::Error("Error: inotify select failed \"%s\" (%d)", text, errno);
         return -1;
       }
 
@@ -62,8 +62,8 @@ namespace bb
       if (notifyLen == -1)
       {
         char buffer[1024];
-        strerror_r(errno, buffer, sizeof(buffer));
-        bb::Error("Error: inotify read failed \"%s\" (%d)", buffer, errno);
+        char* text = strerror_r(errno, buffer, sizeof(buffer));
+        bb::Error("Error: inotify read failed \"%s\" (%d)", text, errno);
         return -1;
       }
 
@@ -98,15 +98,32 @@ namespace bb
         return -1;
       }
 
-      if (inotify_add_watch(this->self, filename, IN_MODIFY) == -1)
+      int wd = inotify_add_watch(this->self, filename, IN_MODIFY);
+      if (wd == -1)
       {
         char buffer[1024];
-        strerror_r(errno, buffer, sizeof(buffer));
-        bb::Error("Error: inotify_add_watch failed \"%s\" (%d)", buffer, errno);
+        char* text = strerror_r(errno, buffer, sizeof(buffer));
+        bb::Error("inotify_add_watch failed \"%s\" (%d)", text, errno);
+      }
+      return wd;
+    }
+
+    int monitor_t::RemoveWatch(int wd)
+    {
+      if (!this->IsGood())
+      { // Programmer's error!
+        assert(0);
         return -1;
       }
 
-      return 0;
+      int result = inotify_rm_watch(this->self, wd);
+      if (result == -1)
+      {
+        char buffer[1024];
+        char* text = strerror_r(errno, buffer, sizeof(buffer));
+        bb::Error("inotify_rm_watch failed \"%s\" (%d)", text, errno);
+      }
+      return result;
     }
 
     monitor_t::monitor_t()
@@ -120,6 +137,31 @@ namespace bb
       processor(std::move(processor))
     {
       ;
+    }
+
+    monitor_t::monitor_t(monitor_t&& monitor)
+    : self(monitor.self),
+      processor(std::move(monitor.processor))
+    {
+      monitor.self = -1;
+    }
+    
+    monitor_t& monitor_t::operator=(monitor_t&& monitor)
+    {
+      if (this != &monitor)
+      {
+        if (this->self != -1)
+        {
+          close(this->self);
+          this->self = -1;
+        }
+
+        this->self = monitor.self;
+        this->processor = std::move(monitor.processor);
+
+        monitor.self = -1;
+      }
+      return *this;
     }
 
     monitor_t::~monitor_t()
@@ -147,8 +189,8 @@ namespace bb
       if (notifyHandle == -1)
       {
         char buffer[1024];
-        strerror_r(errno, buffer, sizeof(buffer));
-        bb::Error("Error: inotify_init1 failed \"%s\" (%d)", buffer, errno);
+        char* text = strerror_r(errno, buffer, sizeof(buffer));
+        bb::Error("Error: inotify_init1 failed \"%s\" (%d)", text, errno);
         return monitor_t();
       }
 

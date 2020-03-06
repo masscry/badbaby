@@ -4,11 +4,22 @@
 #include <shapes.hpp>
 #include <worker.hpp>
 #include <space.hpp>
+#include <monfs.hpp>
 
 #include <vector>
 
 namespace sub3000
 {
+
+  class monitorConfig_t: public bb::fs::processor_t
+  {
+  public:
+    int OnChange(const char*, bb::fs::event_t)
+    {
+      sub3000::PostChangeScene(sub3000::sceneID_t::arena);
+      return 0;
+    }
+  };
 
   namespace radar
   {
@@ -40,19 +51,25 @@ namespace sub3000
       bb::msg_t msg;
       if (this->box->Poll(&msg))
       {
-        if (auto status = bb::As<playerStatus_t>(msg))
+        if (auto status = bb::As<player::status_t>(msg))
         {
           this->text.Update(
+            "POS:\t[%+6.3f;%+6.3f]\n"
             "ENGINE:\t%s\n"
             "OUTPUT:\t%+6.3f\n"
             "SPEED:\t[%+6.3f;%+6.3f]\n"
-            "RUDDER:\t%s\n"
-            "ANGLE:\t%+6.3f",
-            EngineModeString(status->engineMode),
-            status->engineOutput,
-            status->vel.x, status->vel.y,
-            RudderModeString(status->rudderMode),
-            status->angle*180.0/M_PI
+            "RUDDER:\t%s [%+6.3f]\n"
+            "AVEL:\t%+6.3f\n"
+            "ANGLE:\t%+6.3f\n"
+            "DRAG:\t%+6.3f",
+            status->Data().pos.x, status->Data().pos.y,
+            engine::ToString(status->Data().engine),
+            status->Data().engineOutput,
+            status->Data().vel.x, status->Data().vel.y,
+            rudder::ToString(status->Data().rudder), status->Data().rudderPos*180.0/M_PI,
+            status->Data().aVel*180.0/M_PI,
+            status->Data().angle*180.0/M_PI,
+            status->Data().dragCoeff
           );
         }
       }
@@ -85,7 +102,7 @@ namespace sub3000
 
     void status_t::OnCleanup()
     {
-
+      this->box.reset();
     }
 
     bb::framebuffer_t& status_t::Framebuffer()
@@ -141,7 +158,6 @@ namespace sub3000
         this->spaceActorID,
         bb::cmfKeyboard
       );
-
     }
 
     void screen_t::UpdateUnits(const bb::linePoints_t& units)
@@ -161,7 +177,10 @@ namespace sub3000
       auto msg = this->box->Wait();
       if (auto state = bb::As<state_t>(msg))
       {
-        this->UpdateUnits(state->Units());
+        if (!state->Units().empty())
+        {
+          this->UpdateUnits(state->Units());
+        }
       }
     }
 
@@ -193,6 +212,7 @@ namespace sub3000
     void screen_t::OnCleanup()
     {
       bb::workerPool_t::Instance().Unregister(this->spaceActorID);
+      this->box.reset();
     }
 
     screen_t::screen_t()
@@ -267,10 +287,29 @@ namespace sub3000
       menuConfig.Value("arena.shader.fp", "desktop.fp.glsl").c_str()
     );
 
+    this->box = bb::postOffice_t::Instance().New("arenaBox");
+    this->configWatch = -1;
+
+    sub3000::PostToMain(
+      bb::Issue<sub3000::fs::watch_t>(
+        this->box->Address(),
+        "./arena.config",
+        std::unique_ptr<bb::fs::processor_t>(new monitorConfig_t)
+      )
+    );
   }
 
   void arenaScene_t::OnUpdate(double dt)
   {
+    bb::msg_t msg;
+    if (this->box->Poll(&msg))
+    {
+      if (auto status = bb::As<sub3000::fs::status_t>(msg))
+      {
+        this->configWatch = status->Status();
+      }
+    }
+
     this->radarScreen.Update(dt);
     this->radarStatus.Update(dt);
   }
@@ -302,10 +341,19 @@ namespace sub3000
   {
     this->radarStatus.Cleanup();
     this->radarScreen.Cleanup();
+
+    if (this->configWatch != -1)
+    {
+      sub3000::PostToMain(
+        bb::Issue<sub3000::fs::rmWatch_t>(this->configWatch)
+      );
+    }
+    this->box.reset();
   }
 
   arenaScene_t::arenaScene_t()
-  : scene_t(sceneID_t::arena, "Arena")
+  : scene_t(sceneID_t::arena, "Arena"),
+    configWatch(-1)
   {
 
   }

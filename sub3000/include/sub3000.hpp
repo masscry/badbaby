@@ -15,6 +15,7 @@
 #include <memory>
 
 #include <msg.hpp>
+#include <monfs.hpp>
 
 #include "actionTable.hpp"
 #include "scene.hpp"
@@ -81,7 +82,99 @@ namespace sub3000
 
   };
 
-  class exit_t: public bb::msg::basic_t
+  namespace fs
+  {
+
+    class watch_t final: public bb::msg::basic_t
+    {
+      std::unique_ptr<bb::fs::processor_t> processor;
+      std::string filename;
+    public:
+
+      std::unique_ptr<bb::fs::processor_t>& Processor()
+      {
+        return this->processor;
+      }
+
+      const std::unique_ptr<bb::fs::processor_t>& Processor() const
+      {
+        return this->processor;
+      }
+
+      const std::string& Filename() const
+      {
+        return this->filename;
+      }
+
+      watch_t(bb::actorPID_t src, const std::string& filename, std::unique_ptr<bb::fs::processor_t>&& processor)
+      : bb::msg::basic_t(src),
+        processor(std::move(processor)),
+        filename(filename)
+      {
+        ;
+      }
+
+      watch_t(const watch_t&) = default;
+      watch_t& operator=(const watch_t&) = default;
+      watch_t(watch_t&&) = default;
+      watch_t& operator=(watch_t&&) = default;
+      ~watch_t() override = default;
+    };
+
+    class status_t final: public bb::msg::basic_t
+    {
+      int status;
+    public:
+
+      int Status() const
+      {
+        return this->status;
+      }
+
+      status_t(int status)
+      : status(status)
+      {
+        ;
+      }
+
+      status_t(const status_t&) = default;
+      status_t& operator=(const status_t&) = default;
+
+      status_t(status_t&&) = default;
+      status_t& operator=(status_t&&) = default;
+
+      ~status_t() override = default;
+    };
+
+    class rmWatch_t final: public bb::msg::basic_t
+    {
+      int watch;
+    public:
+
+      int Watch() const
+      {
+        return this->watch;
+      }
+
+      rmWatch_t(int watch)
+      : watch(watch)
+      {
+        ;
+      }
+
+      rmWatch_t(const rmWatch_t&) = default;
+      rmWatch_t& operator=(const rmWatch_t&) = default;
+
+      rmWatch_t(rmWatch_t&&) = default;
+      rmWatch_t& operator=(rmWatch_t&&) = default;
+
+      ~rmWatch_t() override = default;
+    };
+
+
+  }
+
+  class exit_t final: public bb::msg::basic_t
   {
   public:
     exit_t() { ; }
