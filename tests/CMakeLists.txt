@@ -52,18 +52,3 @@ add_executable(008script
 )
 
 target_link_libraries(008script PRIVATE script)
-
-install(TARGETS
-    000hello
-    001render
-    002config
-    003font
-    004camera
-    005splash
-    006simplex
-    007menu
-    008script
-  RUNTIME DESTINATION bin
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib
-)
