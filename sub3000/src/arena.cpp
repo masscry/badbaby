@@ -54,16 +54,22 @@ namespace sub3000
         if (auto status = bb::As<player::status_t>(msg))
         {
           this->text.Update(
+            "POS:\t[%+6.3f;%+6.3f]\n"
             "ENGINE:\t%s\n"
             "OUTPUT:\t%+6.3f\n"
             "SPEED:\t[%+6.3f;%+6.3f]\n"
             "RUDDER:\t%s [%+6.3f]\n"
-            "ANGLE:\t%+6.3f",
+            "AVEL:\t%+6.3f\n"
+            "ANGLE:\t%+6.3f\n"
+            "DRAG:\t%+6.3f",
+            status->Data().pos.x, status->Data().pos.y,
             engine::ToString(status->Data().engine),
             status->Data().engineOutput,
             status->Data().vel.x, status->Data().vel.y,
             rudder::ToString(status->Data().rudder), status->Data().rudderPos*180.0/M_PI,
-            status->Data().angle*180.0/M_PI
+            status->Data().aVel*180.0/M_PI,
+            status->Data().angle*180.0/M_PI,
+            status->Data().dragCoeff
           );
         }
       }
@@ -171,7 +177,10 @@ namespace sub3000
       auto msg = this->box->Wait();
       if (auto state = bb::As<state_t>(msg))
       {
-        this->UpdateUnits(state->Units());
+        if (!state->Units().empty())
+        {
+          this->UpdateUnits(state->Units());
+        }
       }
     }
 

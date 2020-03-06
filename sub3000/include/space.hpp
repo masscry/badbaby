@@ -63,10 +63,10 @@ namespace sub3000
   class space_t final: public bb::role_t
   {
     double cumDT;
+    double newPointDT;
     player::data_t player;
 
     bb::linePoints_t units;
-    bb::linePoints_t speeds;
 
     bb::msg::result_t OnProcessMessage(const bb::actor_t&, const bb::msg::basic_t& msg) override;
 

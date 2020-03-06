@@ -12,27 +12,55 @@
 #include <glm/gtc/constants.hpp>
 #include <glm/vec3.hpp>
 
+#include <scene.hpp>
 
 namespace sub3000
 {
 
+  namespace engine 
+  {
+  
+    modeList_t::modeList_t(const bb::config_t& config)
+    {
+      this->output[mode_t::full_ahead] = static_cast<float>(config.Value("engine.full_ahead", 0.5));
+      this->output[mode_t::half_ahead] = static_cast<float>(config.Value("engine.half_ahead", 0.25));
+      this->output[mode_t::slow_ahead] = static_cast<float>(config.Value("engine.slow_ahead", 0.125));
+      this->output[mode_t::dead_slow_ahead] = static_cast<float>(config.Value("engine.dead_slow_ahead", 0.05));
+      this->output[mode_t::stop] = 0.0f;
+      this->output[mode_t::dead_slow_astern] = static_cast<float>(config.Value("engine.slow_astern", -0.025));
+      this->output[mode_t::slow_astern] = static_cast<float>(config.Value("engine.slow_astern", -0.05));
+      this->output[mode_t::half_astern] = static_cast<float>(config.Value("engine.half_astern", -0.125));
+      this->output[mode_t::full_astern] = static_cast<float>(config.Value("engine.full_astern", -0.25));
+    }
+
+  } // namespace engine
+
+
   const double SPACE_TIME_STEP = 1.0/30.0;
+
+  const double NEW_POINT_TIME = 1.0;
 
   void space_t::Step(double dt)
   {
     this->cumDT += dt;
+    this->newPointDT += dt;
     while (this->cumDT > SPACE_TIME_STEP)
     {
-      auto unit = this->units.begin();
-      auto speed = this->speeds.begin();
-      for (int i = 0; i < 10; ++i)
-      {
-        *unit += *speed * static_cast<float>(SPACE_TIME_STEP);
-        ++unit;
-        ++speed;
-      }
       this->cumDT -= SPACE_TIME_STEP;
       player::Update(&this->player, static_cast<float>(SPACE_TIME_STEP));
+    }
+
+    while (this->newPointDT > NEW_POINT_TIME)
+    {
+      this->newPointDT -= NEW_POINT_TIME;
+
+      if (this->units.size() > 1000)
+      {
+        this->units.pop_front();
+      }
+      this->units.emplace_back(
+        -this->player.pos
+      );
     }
   }
 
@@ -72,34 +100,19 @@ namespace sub3000
   }
 
   space_t::space_t()
+  : cumDT(0.0),
+    newPointDT(0.0)
   {
     bb::config_t config;
     config.Load("./arena.config");
 
-    int totalUnits = static_cast<int>(config.Value("level.gen.units", 10));
-    float genRadius = static_cast<float>(config.Value("level.gen.radius", 1.0f));
-
-    std::random_device rd;
-    std::mt19937 mt(rd());
-    std::uniform_real_distribution<float> dist(-genRadius, genRadius);
-    bb::linePoints_t unitPos;
-
-    for (int i = 0; i < totalUnits; ++i)
-    {
-      glm::vec2 pos;
-
-      this->speeds.emplace_back(
-        0.0f
-      );
-
-      this->units.emplace_back(
-        dist(mt),
-        dist(mt)
-      );
-    }
-
     this->player.mass = static_cast<float>(config.Value("player.mass", 1.0f));
     this->player.rotMoment = static_cast<float>(config.Value("player.moment", 1.0f));
+    this->player.engineModeList = engine::modeList_t(config);
+    this->player.maxOutputChange =  static_cast<float>(config.Value("player.max.change.output", 0.1f));
+    this->player.maxAngleChange =  static_cast<float>(config.Value("player.max.change.angle", 0.3f));
+    this->player.width = static_cast<float>(config.Value("player.width", 1.0f));
+    this->player.length =  static_cast<float>(config.Value("player.length", 1.0f));
   }
 
   state_t::state_t(bb::vec2_t pos, float angle, const bb::linePoints_t& units)
@@ -108,7 +121,6 @@ namespace sub3000
 
     toLocal = glm::rotate(toLocal, angle);
     toLocal = glm::translate(toLocal, pos);
-    toLocal = glm::scale(toLocal, glm::vec2(0.1f));
 
     for (const auto& unit: units)
     {
@@ -140,11 +152,14 @@ namespace sub3000
       bb::vec2_t shipDir;
       sincosf(data->angle, &shipDir.x, &shipDir.y);
 
-      float dragCoeff = (1.0f - glm::dot(velDir, shipDir))*100.0f;
+      data->crossSection = static_cast<float>(M_PI) * data->width 
+        * glm::mix(data->length, data->width, abs(glm::dot(velDir, shipDir)));
+    
+      data->dragCoeff = 0.5f * velLen * 0.8f * data->crossSection;
 
       // dragForce - force applied to stop ship in direction of it moving
       bb::vec2_t dragForce( // drag - two times speed in opposite direction of vel
-        -velDir*velLen/2.0f*0.8f*dragCoeff // add config params!
+        -velDir*data->dragCoeff // add config params!
       );
 
       // rudderDir.y - part of force applied to linear velocity
@@ -160,11 +175,14 @@ namespace sub3000
       float aVelDir = 0.0f;
       if (aVelLen != 0.0f)
       {
-        aVelDir = data->aVel/aVelLen;
+        aVelDir = data->aVel/abs(data->aVel);
       }
 
+      float rotDragCoeff = 0.5f * aVelLen * 0.8f 
+        * static_cast<float>(M_PI)*(data->width*data->width);
+
       // rotDrag - force applied to stop ship from rotating
-      float rotDragForce = -aVelDir*aVelLen/2.0f*0.8f;
+      float rotDragForce = -aVelDir*rotDragCoeff;
 
       // water flow help to rotate ship if no force applied from engine
       // idea - projection of ship velocity on ship direction gives
@@ -186,20 +204,20 @@ namespace sub3000
         static_cast<float>(2.0*M_PI)
       );
 
-      float expectedOutput = engine::Output(data->engine);
+      float expectedOutput = data->engineModeList.Output(data->engine);
 
       data->engineOutput += glm::clamp(
         expectedOutput - data->engineOutput,
-        -player::MAX_OUTPUT_CHANGE,
-         player::MAX_OUTPUT_CHANGE
+        -data->maxOutputChange,
+         data->maxOutputChange
       )*dt;
 
       float expectedRudder = rudder::Output(data->rudder);
 
       data->rudderPos += glm::clamp(
         expectedRudder - data->rudderPos,
-        -player::MAX_ANGLE_CHANGE,
-         player::MAX_ANGLE_CHANGE
+        -data->maxAngleChange,
+         data->maxAngleChange
       )*dt;
     }
 
@@ -228,6 +246,10 @@ namespace sub3000
       if ((newRudder >= rudder::left_40) && (newRudder <= rudder::right_40))
       {
         data->rudder = static_cast<rudder::mode_t>(newRudder);
+      }
+      if (key.Key() == GLFW_KEY_ESCAPE)
+      {
+        sub3000::PostChangeScene(sub3000::sceneID_t::mainMenu);
       }
       return 1;
     }

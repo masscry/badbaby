@@ -12,6 +12,8 @@
 #include <cassert>
 #include <cmath>
 
+#include <config.hpp>
+
 namespace sub3000
 {
 
@@ -59,34 +61,45 @@ namespace sub3000
       }
     }
 
-    inline float Output(mode_t mode)
+    class modeList_t final
     {
-      switch(mode)
+      float output[mode_t::total];
+    public:
+
+      float Output(mode_t mode) const
       {
-      case full_ahead:
-        return 0.5f;
-      case half_ahead:
-        return 0.25f;
-      case slow_ahead:
-        return 0.125f;
-      case dead_slow_ahead:
-        return 0.05f;
-      case stop:
-        return 0.0f;
-      case dead_slow_astern:
-        return -0.025f;
-      case slow_astern:
-        return -0.05f;
-      case half_astern:
-        return -0.1f;
-      case full_astern:
-        return -0.2f;
-      default:
-        // Programmer's mistake!
-        assert(0);
-        return 0.0f;
+        switch(mode)
+        {
+        case full_ahead:
+        case half_ahead:
+        case slow_ahead:
+        case dead_slow_ahead:
+        case stop:
+        case dead_slow_astern:
+        case slow_astern:
+        case half_astern:
+        case full_astern:
+          return this->output[mode];
+        default:
+          // Programmer's mistake!
+          assert(0);
+          return 0.0f;
+        }
       }
-    }
+
+      modeList_t(const bb::config_t& config);
+
+      modeList_t()
+      {
+        for (auto& mode: output)
+        {
+          mode = 0.0f;
+        }
+      }
+      modeList_t(const modeList_t&) = default;
+      modeList_t& operator=(const modeList_t&) = default;
+      ~modeList_t() = default;
+    };
 
   } // namespace engine
 

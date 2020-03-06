@@ -12,10 +12,6 @@ namespace sub3000
 
   namespace player
   {
-    const float MAX_OUTPUT_CHANGE = 0.03f;
-
-    const float MAX_ANGLE_CHANGE = 0.3f;
-
     struct data_t final
     {
       bb::vec2_t pos;
@@ -31,6 +27,16 @@ namespace sub3000
 
       float mass;
       float rotMoment;
+
+      engine::modeList_t engineModeList;
+      float maxOutputChange;
+      float maxAngleChange;
+
+      float width;
+      float length;
+
+      float dragCoeff;
+      float crossSection;
 
       data_t();
 
@@ -52,7 +58,13 @@ namespace sub3000
       engineOutput(0.0f),
       rudderPos(0.0f),
       mass(1.0f),
-      rotMoment(1.0f)
+      rotMoment(1.0f),
+      maxOutputChange(0.1f),
+      maxAngleChange(0.3f),
+      width(1.0f),
+      length(1.0f),
+      dragCoeff(0.0f),
+      crossSection(0.0f)
     {
       ;
     }
