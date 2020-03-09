@@ -10,11 +10,25 @@
 
 namespace
 {
+#ifdef __APPLE__
+  void SetThisThreadName(const std::string& name)
+  {
+    pthread_setname_np(name.c_str());
+  }
+#define HAS_SetThisThreadName
+#endif
+
+#ifdef __linux__
   void SetThisThreadName(const std::string& name)
   {
     pthread_setname_np(pthread_self(), name.c_str());
   }
+#define HAS_SetThisThreadName
+#endif
 
+#ifndef HAS_SetThisThreadName
+#error "SetThisThreadName undefined for given platform!"
+#endif /* HAS_SetThisThreadName */
 }
 
 namespace bb
@@ -22,6 +36,9 @@ namespace bb
 
   static const uint32_t maxActorsInWorkerPool = 0x10000;
 
+  /**
+   * @todo add affinity settings for macOSX
+   */
   void workerPool_t::PrepareInfo(workerID_t id)
   {
     auto& info = this->infos[id];
@@ -29,10 +46,14 @@ namespace bb
     info.stop = false;
     SetThisThreadName(std::string("worker") + std::to_string(id));
 
+#ifdef __linux__
     cpu_set_t cpuset;
     CPU_ZERO(&cpuset);
     CPU_SET(id, &cpuset);
     pthread_setaffinity_np(pthread_self(), sizeof(cpuset), &cpuset);
+#endif /* __linux__ */
+
+
   }
 
   bool workerPool_t::HasActorsInQueue()

@@ -352,29 +352,37 @@ int main(int argc, char* argv[])
 
     if (mail->Poll(&msgToMain))
     {
-      bb::Debug(
-        "Got \"%s\" (%lu) message",
-        paint::MainMsgToStr(msgToMain),
-        typeid(*msgToMain.get()).hash_code()
-      );
-
-      if (bb::As<paint::update_t>(msgToMain))
+      if (auto* defMsg = msgToMain.get())
       {
-        if (UpdateScene(argv[1]) != 0)
+        bb::Debug(
+          "Got \"%s\" (%lu) message",
+          paint::MainMsgToStr(msgToMain),
+          typeid(*defMsg).hash_code()
+        );
+
+        if (bb::msg::As<paint::update_t>(*defMsg))
         {
-          bb::Error("%s", "Invalid PVF");
-          fprintf(stderr, "%s\n", "Invalid PVF");
+          if (UpdateScene(argv[1]) != 0)
+          {
+            bb::Error("%s", "Invalid PVF");
+            fprintf(stderr, "%s\n", "Invalid PVF");
+          }
+          continue;
         }
-        continue;
-      }
 
-      if (bb::As<paint::exit_t>(msgToMain))
+        if (bb::msg::As<paint::exit_t>(*defMsg))
+        {
+          loop = false;
+          continue;
+        }
+
+        bb::Error("Unknown message: %s", typeid(*defMsg).name());
+      }
+      else
       {
-        loop = false;
-        continue;
+        bb::Error("Unknown message: %s", "Invalid Message");
       }
 
-      bb::Error("Unknown message: %s", typeid(*msgToMain.get()).name());
       assert(0);
     }
   }

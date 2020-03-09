@@ -9,10 +9,14 @@
 #define __BB_CORE_CONFIG_TOKEN_HEADER__
 
 #include <locale.h>
+#ifdef __APPLE__
+#include <xlocale.h>
+#endif /* __APPLE__ */
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
+
 
   enum bbCoreConfigToken_t
   {

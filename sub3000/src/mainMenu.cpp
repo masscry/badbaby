@@ -213,7 +213,15 @@ namespace sub3000
         continue;
       }
 
-      bb::Error("Unknown message: %s", typeid(*msg.get()).name());
+      if (auto* defMsg = msg.get())
+      {
+        bb::Error("Unknown message: %s", typeid(*defMsg).name());
+      }
+      else
+      {
+        bb::Error("Unknown message: %s", "Invalid Message!");
+      }
+
       assert(0);
     }
   }

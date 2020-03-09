@@ -191,11 +191,15 @@ namespace bb
       "Can be used only with bb::msg::basic_t subclasses"
     );
 
-    if (typeid(*msg.get()) != typeid(castType_t))
+    if (auto* ptr = msg.get())
     {
-      return nullptr;
+      if (typeid(*ptr) != typeid(castType_t))
+      {
+        return nullptr;
+      }
+      return static_cast<castType_t*>(msg.get());
     }
-    return static_cast<castType_t*>(msg.get());
+    return nullptr;
   }
 
   template<typename castType_t>

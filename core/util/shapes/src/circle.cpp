@@ -9,6 +9,10 @@
 
 #include <glm/glm.hpp>
 
+#ifdef __APPLE__
+#define sincosf __sincosf
+#endif
+
 namespace bb
 {
 

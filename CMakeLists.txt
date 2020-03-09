@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.11)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
@@ -9,6 +9,13 @@ project(badbaby
   VERSION 0.1.0
   LANGUAGES C CXX
 )
+
+if (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+  set(BB_APPLE TRUE)
+else(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+  # TODO: add better detection in future!
+  set(BB_LINUX TRUE)
+endif(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
 
 find_package(Threads REQUIRED)
 

@@ -26,6 +26,7 @@ namespace bb
     {
     public:
       virtual int OnChange(const char* filename, event_t event) = 0;
+      virtual ~processor_t() = 0;
     };
 
     class monitor_t final
@@ -40,10 +41,7 @@ namespace bb
 
     public:
 
-      bool IsGood() const
-      {
-        return (this->self != -1) && (this->processor);
-      }
+      bool IsGood() const;
 
       int Check();
 

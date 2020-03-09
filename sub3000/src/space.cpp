@@ -14,6 +14,10 @@
 
 #include <scene.hpp>
 
+#ifdef __APPLE__
+#define sincosf __sincosf
+#endif /* __APPLE__ */
+
 namespace sub3000
 {
 

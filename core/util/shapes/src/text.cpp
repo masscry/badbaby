@@ -32,8 +32,8 @@ namespace
     { 1.0f, 1.0f }
   };
 
-  static_assert(bb::countof(uvMatrix) == bb::countof(uvInvertedMatrix));
-  static_assert(bb::countof(uvMatrix) == 4);
+  static_assert(bb::countof(uvMatrix) == bb::countof(uvInvertedMatrix), "Both matricies expected to be same size!");
+  static_assert(bb::countof(uvMatrix) == 4, "and size must be equal to 4, not 3, not 5, 4 is the number");
 
   size_t MakeText(
     const bb::font_t& font,

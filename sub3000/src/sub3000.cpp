@@ -174,7 +174,14 @@ int main(int argc, char* argv[])
         continue;
       }
 
-      bb::Error("Unknown action type: %s", typeid(*msgToMain.get()).name());
+      if (auto* defMsg = msgToMain.get())
+      {
+        bb::Error("Unknown action type: %s", typeid(*defMsg).name());
+      }
+      else
+      {
+        bb::Error("Unknown action type: %s", "Invalid Message");
+      }
       assert(0);
     }
 

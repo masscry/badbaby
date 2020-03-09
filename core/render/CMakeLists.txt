@@ -25,3 +25,7 @@ add_library(render STATIC
 target_include_directories(render PUBLIC include ${GLM_INCLUDE_DIRS})
 
 target_link_libraries(render PUBLIC common config glad glfw actor)
+
+find_package(Iconv REQUIRED)
+
+target_link_libraries(render PUBLIC Iconv::Iconv)
