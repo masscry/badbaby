@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.11)
+cmake_minimum_required(VERSION 3.10)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
@@ -11,6 +11,11 @@ project(badbaby
 )
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+  if (CMAKE_VERSION VERSION_LESS 3.11)
+    message(FATAL_ERROR
+      "macOS depends on iconv detection, which added in CMAKE 3.11"
+    )
+  endif (CMAKE_VERSION VERSION_LESS 3.11)
   set(BB_APPLE TRUE)
 else(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
   # TODO: add better detection in future!
