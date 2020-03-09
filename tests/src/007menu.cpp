@@ -284,7 +284,14 @@ int main(int argc, char* argv[])
         continue;
       }
 
-      bb::Error("Unknown message type: %s", typeid(*renderMsg.get()).name());
+      if (auto* defMsg = renderMsg.get())
+      {
+        bb::Error("Unknown message type: %s", typeid(*defMsg).name());
+      }
+      else
+      {
+        bb::Error("Unknown message type: %s", "Invalid Message");
+      }
       assert(0);
     }
 
