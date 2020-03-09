@@ -18,6 +18,16 @@ namespace bb
   namespace fs
   {
 
+    processor_t::~processor_t()
+    {
+      ;
+    }
+    
+    bool monitor_t::IsGood() const
+    {
+      return (this->self != -1) && (this->processor);
+    }
+
     int monitor_t::Check()
     {
       if (!this->IsGood())

@@ -16,6 +16,7 @@ E    ([Ee][+-]?{D}+)
 #include <stdlib.h>
 #include <ctype.h>
 
+#include <locale.h>
 #include <token.h>
 
 #ifndef __cplusplus

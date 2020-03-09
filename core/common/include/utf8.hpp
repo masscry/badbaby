@@ -13,6 +13,7 @@
 #include <cstdint>
 
 #include <vector>
+#include <string>
 
 namespace bb
 {
