@@ -25,6 +25,15 @@ target_include_directories(glad PUBLIC
   ${CMAKE_CURRENT_BINARY_DIR}/GLAD/include
 )
 
-find_package(glfw3 3.2 REQUIRED)
+set(BUILD_SHARED_LIBS ON)
+set(GLFW_BUILD_EXAMPLES OFF)
+set(GLFW_BUILD_TESTS OFF)
+set(GLFW_BUILD_DOCS OFF)
+set(GLFW_INSTALL ON)
+set(GLFW_INSTALL_ONLY_LIBS ON)
+set(GLFW_USE_WAYLAND OFF)
+set(GLFW_USE_MIR OFF)
+
+add_subdirectory(glfw)
 
 find_package(glm 0.9.9 REQUIRED)

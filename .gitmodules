@@ -1,0 +1,3 @@
+[submodule "core/render/contrib/glfw"]
+	path = core/render/contrib/glfw
+	url = https://github.com/masscry/glfw.git
