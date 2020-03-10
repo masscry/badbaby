@@ -35,6 +35,9 @@ target_link_libraries(badbaby INTERFACE
   Threads::Threads
 )
 
+# Additional path to search for glfw
+set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib")
+
 add_subdirectory(core)
 add_subdirectory(tests)
 add_subdirectory(sub3000)
@@ -51,7 +54,7 @@ install(DIRECTORY runtime/sub3000
     PATTERN "*.msh"
 )
 
-install(FILES "sub3000.sh"
+install(FILES sub3000.sh
   DESTINATION ./
   PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
   CONFIGURATIONS Release

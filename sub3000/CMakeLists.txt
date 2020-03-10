@@ -34,7 +34,7 @@ target_link_libraries(sub3000
     config
     render
     actor
-    simplex 
+    simplex
     shapes
     effects
 )
