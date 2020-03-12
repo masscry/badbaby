@@ -9,6 +9,22 @@ extern "C"
 {
 #include <token.h>
 #include <config.lex.h>
+
+  locale_t newlocale(int mask, const char* locale, locale_t)
+  {
+    return _create_locale(mask, locale);
+  }
+
+  void freelocale(locale_t locale)
+  {
+    _free_locale(locale);
+  }
+
+  double strtod_l(const char* strSource, char** endptr, locale_t locale)
+  {
+    return _strtod_l(strSource, endptr, locale);
+  }
+
 }
 
 namespace bb
