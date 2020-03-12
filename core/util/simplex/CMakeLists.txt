@@ -7,4 +7,4 @@ add_library(simplex
 
 target_include_directories(simplex PUBLIC include)
 
-target_link_libraries(simplex PUBLIC badbaby common)
+target_link_libraries(simplex PUBLIC badbaby common glm::glm)
