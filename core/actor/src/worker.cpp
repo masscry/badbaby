@@ -142,7 +142,7 @@ namespace bb
         auto readLock = this->actorsGuard.GetReadLock();
         assert(this->actors.size() <= maxActorsInWorkerPool);
 
-        for (auto actorIt = this->actors.begin(), actorEnd = this->actors.end(); actorIt != actorEnd; ++actorIt)
+        for (auto actorIt = this->actors.begin(), actorEnd = this->actors.end(); actorIt != actorEnd;)
         {
           auto actorProcessResult = msg::result_t::skipped;
           auto& actor = *actorIt;
@@ -161,8 +161,12 @@ namespace bb
           }
           switch (actorProcessResult)
           {
+          default:
+            /* programmer's mistake */
+            assert(0);
           case msg::result_t::skipped:
           case msg::result_t::complete:
+            ++actorIt; // just incrementing
             break;
           case msg::result_t::poisoned:
             {
@@ -175,14 +179,13 @@ namespace bb
 
               // wlock dies before BB_DEFER executes
               auto wlock = this->actorsGuard.GetWriteLock();
-              actorIt = this->actors.erase(actorIt);
+              actorIt = this->actors.erase(actorIt); // incrementing by deleting current, and taking next
             }
             break;
           case msg::result_t::error:
             bb::Error("Actor \"%s\" (%d) works with errors", actor->Name().c_str(), actor->ID());
+            ++actorIt; // just incrementing
             break;
-          default:
-            assert(0);
           }
         }
       }

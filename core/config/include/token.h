@@ -21,30 +21,23 @@ extern "C" {
 
   typedef _locale_t locale_t;
 
-  locale_t newlocale(int mask, const char* locale, locale_t);
-
   void freelocale(locale_t locale);
 
   double strtod_l(const char* strSource, char** endptr, locale_t locale);
-
-#define LC_COLLATE_MASK _M_COLLATE
-#define LC_CTYPE_MASK _M_CTYPE
-#define LC_MONETARY_MASK _M_MONETARY
-#define LC_NUMERIC_MASK _M_NUMERIC
-#define LC_TIME_MASK _M_TIME
-#define LC_MESSAGES_MASK _M_MESSAGES
-#define LC_ALL_MASK (  LC_COLLATE_MASK \
-                     | LC_CTYPE_MASK \
-                     | LC_MESSAGES_MASK \
-                     | LC_MONETARY_MASK \
-                     | LC_NUMERIC_MASK \
-                     | LC_TIME_MASK )
 
 #ifndef strdup
 #define strdup _strdup
 #endif
 
 #endif
+
+  /**
+   * This function must return standard C locale. 
+   *
+   * POSIX: newlocale(LC_ALL_MASK, "C", nullptr)
+   * WIN32: _create_locale(LC_ALL, "C")
+   */
+  locale_t clocale();
 
   enum bbCoreConfigToken_t
   {

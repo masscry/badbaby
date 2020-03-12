@@ -10,9 +10,11 @@ extern "C"
 #include <token.h>
 #include <config.lex.h>
 
-  locale_t newlocale(int mask, const char* locale, locale_t)
+#if _WIN32
+
+  locale_t clocale()
   {
-    return _create_locale(mask, locale);
+    return _create_locale(LC_ALL, "C");
   }
 
   void freelocale(locale_t locale)
@@ -24,6 +26,16 @@ extern "C"
   {
     return _strtod_l(strSource, endptr, locale);
   }
+  
+#else
+  
+  locale_t clocale()
+  {
+    return newlocale(LC_ALL_MASK, "C", nullptr);
+  }
+ 
+#endif
+  
 
 }
 
@@ -85,12 +97,12 @@ namespace bb
       return context;
     }
 
-    locale_t c_locale = newlocale(LC_ALL_MASK, "C", NULL);
-    if (c_locale == ((locale_t)0))
+    locale_t cLocale = clocale();
+    if (cLocale == ((locale_t)0))
     {
       throw std::runtime_error("Can't initialize locale");
     }
-    BB_DEFER(freelocale(c_locale));
+    BB_DEFER(freelocale(cLocale));
 
     yyscan_t scanner;
     if (yylex_init(&scanner) != 0)
@@ -117,7 +129,7 @@ namespace bb
     // "key": "value"
 
     // Expect "key" or }
-    int token = yylex(scanner, c_locale);
+    int token = yylex(scanner, cLocale);
 
     std::string key;
     switch (token)
@@ -146,7 +158,7 @@ namespace bb
     bbCoreConfigTokenReset(&tokenData);
 
     // expect : or {
-    token = yylex(scanner, c_locale);
+    token = yylex(scanner, cLocale);
 
     switch(token)
     {
@@ -163,7 +175,7 @@ namespace bb
 
     std::string fullKey = (context.empty())?(key):(context + "." + key);
 
-    switch (yylex(scanner, c_locale))
+    switch (yylex(scanner, cLocale))
     {
     case BB_STRING:
       this->dict[fullKey] = ref_t::String(tokenData.str);

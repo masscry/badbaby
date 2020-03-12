@@ -21,3 +21,8 @@ target_link_libraries(painter
     shapes
     script
 )
+
+set_target_properties(painter PROPERTIES
+	VS_DEBUGGER_WORKING_DIRECTORY
+		"${CMAKE_SOURCE_DIR}/runtime/painer"
+)

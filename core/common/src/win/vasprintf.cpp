@@ -3,9 +3,16 @@
 #include <cstdarg>
 #include <cstring>
 #include <cstdio>
+#include <cassert>
 
 extern "C" int vasprintf(char** strp, const char* fmt, va_list ap)
 {
+  if ((strp == nullptr) || (fmt == nullptr))
+  { // programmer's mistake
+    assert(0);
+    return -1;
+  }
+
   va_list apCopy;
   va_copy(apCopy, ap);
   BB_DEFER(va_end(apCopy));
@@ -22,6 +29,8 @@ extern "C" int vasprintf(char** strp, const char* fmt, va_list ap)
   {
     free(resultStr);
   }
+
+  *strp = resultStr;
   return result;
 }
 
