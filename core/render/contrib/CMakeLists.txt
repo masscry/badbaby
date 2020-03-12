@@ -1,16 +1,28 @@
 find_package(PythonInterp 3.6 REQUIRED)
 
-execute_process(
-  COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/glad/prepare.sh" ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/GLAD
-  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  RESULT_VARIABLE GLAD_PREP_FAILED
-)
+if(WIN32)
+# WIN32 Python3 places venv scripts in Script directory
+# also programs have .exe suffix
+set(VENV_BIN_DIR "Scripts")
+set(VENV_EXE_SUFFIX ".exe")
+else(WIN32)
+# All other platforms but venv script in bin directory
+set(VENV_BIN_DIR "bin")
+set(VENV_EXE_SUFFIX "")
+endif(WIN32)
 
-if (GLAD_PREP_FAILED)
-  message(FATAL_ERROR "GLAD Preparations Failed!")
-else(GLAD_PREP_FAILED)
-  message(STATUS "GLAD Ready")
-endif(GLAD_PREP_FAILED)
+add_custom_command(
+  OUTPUT 
+    "${CMAKE_CURRENT_BINARY_DIR}/GLAD/include/glad/glad.h"
+    "${CMAKE_CURRENT_BINARY_DIR}/GLAD/include/KHR/khrplatform.h"
+    "${CMAKE_CURRENT_BINARY_DIR}/GLAD/src/glad.c"
+  COMMAND "${PYTHON_EXECUTABLE}" -m venv "${CMAKE_CURRENT_BINARY_DIR}/.pyenv"
+  COMMAND "${CMAKE_CURRENT_BINARY_DIR}/.pyenv/${VENV_BIN_DIR}/pip${VENV_EXE_SUFFIX}" install wheel 
+  COMMAND "${CMAKE_CURRENT_BINARY_DIR}/.pyenv/${VENV_BIN_DIR}/pip${VENV_EXE_SUFFIX}" install glad
+  COMMAND "${CMAKE_CURRENT_BINARY_DIR}/.pyenv/${VENV_BIN_DIR}/glad${VENV_EXE_SUFFIX}" --profile core --out-path "${CMAKE_CURRENT_BINARY_DIR}/GLAD" --api gl=3.3 --generator c --spec gl --reproducible --no-loader
+  WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+  COMMENT "Prepare GLAD"
+)
 
 add_library(glad STATIC
 # HEADERS
@@ -41,4 +53,4 @@ set(GLFW_USE_MIR OFF)
 
 add_subdirectory(glfw)
 
-find_package(glm 0.9.9 REQUIRED)
+add_subdirectory(glm)

@@ -24,7 +24,7 @@ add_library(render STATIC
 
 target_include_directories(render PUBLIC include ${GLM_INCLUDE_DIRS})
 
-target_link_libraries(render PUBLIC common config glad glfw ${GLFW_LIBRARIES} actor)
+target_link_libraries(render PUBLIC common config glad glfw glm::glm ${GLFW_LIBRARIES} actor)
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
   find_package(Iconv REQUIRED)
