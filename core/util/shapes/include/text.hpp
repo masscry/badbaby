@@ -8,6 +8,7 @@
 #ifndef __BB_CORE_RENDER_TEXT_HEADER__
 #define __BB_CORE_RENDER_TEXT_HEADER__
 
+#include <common.hpp>
 #include <font.hpp>
 #include <shapes.hpp>
 
@@ -74,7 +75,7 @@ namespace bb
 
     void Update(const std::string& text);
 
-    void Update(const char* format, ...) __attribute__ ((format (printf, 2, 3)));
+    void Update(const char* format, ...) BB_FORMAT_LIKE_PRINTF(2, 3);
 
     void Render();
 

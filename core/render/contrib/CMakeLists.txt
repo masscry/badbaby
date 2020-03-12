@@ -38,19 +38,23 @@ target_include_directories(glad PUBLIC
 )
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
-  set(BUILD_SHARED_LIBS OFF)
+  set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build shader libs")
 else (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
-  set(BUILD_SHARED_LIBS ON)
+  set(BUILD_SHARED_LIBS ON CACHE BOOL "Build shader libs")
 endif (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
 
-set(GLFW_BUILD_EXAMPLES OFF)
-set(GLFW_BUILD_TESTS OFF)
-set(GLFW_BUILD_DOCS OFF)
-set(GLFW_INSTALL ON)
-set(GLFW_INSTALL_ONLY_LIBS ON)
-set(GLFW_USE_WAYLAND OFF)
-set(GLFW_USE_MIR OFF)
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "Do not build examples")
+set(GLFW_BUILD_TESTS OFF CACHE BOOL "Do not build tests")
+set(GLFW_BUILD_DOCS OFF CACHE BOOL "Do not build docs")
+set(GLFW_INSTALL ON CACHE BOOL "Make install target")
+set(GLFW_INSTALL_ONLY_LIBS ON CACHE BOOL "Install only runtime target")
+set(GLFW_USE_WAYLAND OFF CACHE BOOL "Do not use Wayland")
+set(GLFW_USE_MIR OFF CACHE BOOL "Do not use MIR")
 
 add_subdirectory(glfw)
 
 add_subdirectory(glm)
+
+if(BB_WINDOWS)
+	add_subdirectory(win-iconv)
+endif(BB_WINDOWS)

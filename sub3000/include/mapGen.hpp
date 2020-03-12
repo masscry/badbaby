@@ -78,7 +78,7 @@ namespace sub3000
     }
 
     heightMap_t(const heightMap_t&) = delete;
-    heightMap_t& operator=(const heightMap_t&&) = delete;
+    heightMap_t& operator=(const heightMap_t&) = delete;
 
     heightMap_t(heightMap_t&&) = default;
     heightMap_t& operator=(heightMap_t&&) = default;

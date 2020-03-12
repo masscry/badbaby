@@ -24,6 +24,7 @@ if(BB_WINDOWS)
   list(APPEND COMMON_SOURCES
 	src/win/monfs.cpp
 	src/win/getopt.cpp
+	src/win/vasprintf.cpp
   )	
 endif(BB_WINDOWS)
 

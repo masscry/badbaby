@@ -40,6 +40,13 @@ target_compile_options(badbaby INTERFACE
   $<$<CXX_COMPILER_ID:Clang>:-Wall -Wextra -Wconversion -Werror -fcolor-diagnostics>
 )
 
+if (BB_WINDOWS)
+	target_compile_definitions(badbaby INTERFACE
+		_USE_MATH_DEFINES
+		_CRT_SECURE_NO_WARNINGS
+	)
+endif(BB_WINDOWS)
+
 target_link_libraries(badbaby INTERFACE
   Threads::Threads
 )

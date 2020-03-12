@@ -41,6 +41,10 @@ namespace
    *
    */
 
+#include <Windows.h>
+
+#undef PostMessage
+
   static const DWORD MS_VC_EXCEPTION = 0x406D1388;
 #pragma pack(push,8)
   typedef struct tagTHREADNAME_INFO

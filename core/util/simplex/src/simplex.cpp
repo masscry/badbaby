@@ -129,7 +129,7 @@ namespace
 namespace bb
 {
 
-  simplex_t::simplex_t(long seed)
+  simplex_t::simplex_t(int64_t seed)
   :perm(new uint8_t[256]),
    perm3D(new uint8_t[256])
   {
