@@ -11,8 +11,10 @@
 namespace
 {
 #ifdef __APPLE__
+
   void SetThisThreadName(const std::string& name)
   {
+    // macOS threads can set names only to themselves
     pthread_setname_np(name.c_str());
   }
 #define HAS_SetThisThreadName
@@ -22,6 +24,52 @@ namespace
   void SetThisThreadName(const std::string& name)
   {
     pthread_setname_np(pthread_self(), name.c_str());
+  }
+#define HAS_SetThisThreadName
+#endif
+
+#ifdef _WIN32
+  /** @see https://docs.microsoft.com/ru-ru/visualstudio/debugger/how-to-set-a-thread-name-in-native-code?view=vs-2019 */
+  /* Threre are two ways to implement this functionality:
+   *  1) SetThreadDescription available from Windows10
+   *  2) Throw special exception (available only in debugger)
+   *
+   * I copied (2), because it is still better, than have no thread name at all
+   * and there is no way I can be sure, that engine won't be used in older Windows.
+   *
+   * Log names depends on thread names, but actually - it is all just for debugging
+   *
+   */
+
+  static const DWORD MS_VC_EXCEPTION = 0x406D1388;
+#pragma pack(push,8)
+  typedef struct tagTHREADNAME_INFO
+  {
+    DWORD dwType; // Must be 0x1000.
+    LPCSTR szName; // Pointer to name (in user addr space).
+    DWORD dwThreadID; // Thread ID (-1=caller thread).
+    DWORD dwFlags; // Reserved for future use, must be zero.
+  } THREADNAME_INFO;
+#pragma pack(pop)
+
+  void SetThisThreadName(const std::string& name) 
+  {
+    THREADNAME_INFO info;
+    info.dwType = 0x1000;
+    info.szName = name.c_str();
+    info.dwThreadID = -1;
+    info.dwFlags = 0;
+#pragma warning(push)
+#pragma warning(disable: 6320 6322)
+    __try 
+    {
+      RaiseException(MS_VC_EXCEPTION, 0, sizeof(info) / sizeof(ULONG_PTR), (ULONG_PTR*)& info);
+    }
+    __except (EXCEPTION_EXECUTE_HANDLER) 
+    {
+      ;
+    }
+#pragma warning(pop)
   }
 #define HAS_SetThisThreadName
 #endif

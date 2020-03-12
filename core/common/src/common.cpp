@@ -8,11 +8,33 @@
 #include <string>
 #include <array>
 
-#include <unistd.h>
-
 #include <common.hpp>
 
 #include <unordered_set>
+
+#ifndef  _WIN32
+#include <unistd.h>
+
+#else
+
+// WIN32 compatible functions
+
+struct tm* localtime_r(const time_t* time, struct tm* tm)
+{
+	if (localtime_s(tm, time) != 0)
+	{
+		return nullptr;
+	}
+	return tm;
+}
+
+extern "C"
+{
+  extern thread_local int optopt;
+  int getopt(int nargc, char* const* nargv, const char* ostr);
+}
+
+#endif // ! _WIN32
 
 namespace
 {
@@ -98,12 +120,17 @@ namespace bb
     static thread_local std::string cachedResult;
     if (cachedResult.empty())
     {
+#ifndef _WIN32
       // @see https://linux.die.net/man/3/pthread_getname_np (length is restricted to 16 characters, including the terminating null byte)
       std::array<char, 16> result;
       if (pthread_getname_np(pthread_self(), result.data(), result.size()) == 0)
       {
         cachedResult = std::string(result.data());
       }
+#else
+      std::hash<std::thread::id> hasher;
+	  cachedResult = std::to_string(hasher(std::this_thread::get_id()));
+#endif
     }
     return cachedResult;
   }
