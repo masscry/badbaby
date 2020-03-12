@@ -17,10 +17,19 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
     )
   endif (CMAKE_VERSION VERSION_LESS 3.11)
   set(BB_APPLE TRUE)
-else(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
-  # TODO: add better detection in future!
+
+  message(STATUS "Platform: macOS")
+
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  message(STATUS "Platform: Linux")
   set(BB_LINUX TRUE)
-endif(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  message(STATUS "Platform: Linux")
+  set(BB_LINUX TRUE)
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+  message(STATUS "Platform: Windows")
+  set(BB_WINDOWS TRUE)
+endif()
 
 find_package(Threads REQUIRED)
 
