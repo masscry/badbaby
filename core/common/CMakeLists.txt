@@ -14,9 +14,18 @@ set(COMMON_SOURCES
 
 if (BB_LINUX)
   list(APPEND COMMON_SOURCES src/monfs.cpp)
-elseif(BB_APPLE)
-  list(APPEND COMMON_SOURCES src/mac/monfs.cpp)
 endif(BB_LINUX)
+
+if(BB_APPLE)
+  list(APPEND COMMON_SOURCES src/mac/monfs.cpp)
+endif(BB_APPLE)
+
+if(BB_WINDOWS)
+  list(APPEND COMMON_SOURCES
+	src/win/monfs.cpp
+	src/win/getopt.cpp
+  )	
+endif(BB_WINDOWS)
 
 add_library(common STATIC
   ${COMMON_SOURCES}

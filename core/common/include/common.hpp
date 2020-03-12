@@ -17,6 +17,12 @@
 
 //#define BB_DOUBLE_LOCK_ASSERT
 
+#if defined(__clang__) || defined(__GNUC__)
+#define BB_FORMAT_LIKE_PRINTF(N, M) __attribute__ ((format (printf, 1, 2)))
+#else
+#define BB_FORMAT_LIKE_PRINTF(N, M)
+#endif
+
 namespace bb
 {
 
@@ -39,10 +45,10 @@ namespace bb
    */
   int ProcessStartupArguments(int argc, char* argv[]);
 
-  void Debug(const char* format, ...) __attribute__ ((format (printf, 1, 2)));
-  void Info(const char* format, ...) __attribute__ ((format (printf, 1, 2)));
-  void Warning(const char* format, ...) __attribute__ ((format (printf, 1, 2)));
-  void Error(const char* format, ...) __attribute__ ((format (printf, 1, 2)));
+  void Debug(const char* format, ...) BB_FORMAT_LIKE_PRINTF(1, 2);
+  void Info(const char* format, ...) BB_FORMAT_LIKE_PRINTF(1, 2);
+  void Warning(const char* format, ...) BB_FORMAT_LIKE_PRINTF(1, 2);
+  void Error(const char* format, ...) BB_FORMAT_LIKE_PRINTF(1, 2);
 
   template<typename data_t>
   data_t CheckValueBounds(data_t value, data_t lowerBound, data_t upperBound)
