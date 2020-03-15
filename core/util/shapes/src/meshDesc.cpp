@@ -1,4 +1,5 @@
 #include <meshDesc.hpp>
+#include <cstring>
 
 namespace bb
 {

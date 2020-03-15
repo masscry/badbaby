@@ -18,7 +18,7 @@
 //#define BB_DOUBLE_LOCK_ASSERT
 
 #if defined(__clang__) || defined(__GNUC__)
-#define BB_FORMAT_LIKE_PRINTF(N, M) __attribute__ ((format (printf, 1, 2)))
+#define BB_FORMAT_LIKE_PRINTF(N, M) __attribute__ ((format (printf, N, M)))
 #else
 #define BB_FORMAT_LIKE_PRINTF(N, M)
 #endif

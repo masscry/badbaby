@@ -157,7 +157,7 @@ namespace sub3000
       sincosf(data->angle, &shipDir.x, &shipDir.y);
 
       data->crossSection = static_cast<float>(M_PI) * data->width 
-        * glm::mix(data->length, data->width, abs(glm::dot(velDir, shipDir)));
+        * glm::mix(data->length, data->width, std::fabs(glm::dot(velDir, shipDir)));
     
       data->dragCoeff = 0.5f * velLen * 0.8f * data->crossSection;
 
@@ -179,7 +179,7 @@ namespace sub3000
       float aVelDir = 0.0f;
       if (aVelLen != 0.0f)
       {
-        aVelDir = data->aVel/abs(data->aVel);
+        aVelDir = data->aVel/std::fabs(data->aVel);
       }
 
       float rotDragCoeff = 0.5f * aVelLen * 0.8f 
