@@ -103,6 +103,7 @@ namespace
   void APIENTRY OnGLError(GLenum /*source*/, GLenum type, GLuint /*id*/, GLenum severity, GLsizei /*length*/, const GLchar* message, const void* /*userPtr*/)
   {
     bb::Debug("OpenGL: [%s] [%s]\n\t%s", ErrorSeverity(severity), ErrorTypeToString(type), message);
+    assert(severity < GL_DEBUG_SEVERITY_HIGH);
   }
 
 }

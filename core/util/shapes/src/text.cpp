@@ -316,6 +316,13 @@ namespace bb
     assert(this->font != nullptr);
     size_t textI = MakeText(*this->font, text, this->chSize, this->vertecies);
 
+    if (textI == 0)
+    {
+      Error("%s", "Empty Dynamic String");
+      assert(0);
+      return;
+    }
+
     if (this->totalI < textI)
     { // new bigger VBO needed
       Debug("Allocate New VBO (%lu)", textI);

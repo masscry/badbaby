@@ -43,7 +43,6 @@ namespace sub3000
 
       this->font = bb::font_t(menuConfig.Value("status.font", "mono.config"));
       this->text = bb::textDynamic_t(this->font, bb::vec2_t(12.0f, -24.0f));
-      this->text.Update("%s", "");
     }
 
     void status_t::OnUpdate(double)
