@@ -8,81 +8,6 @@
 #include <config.hpp>
 #include <role.hpp>
 
-namespace
-{
-#ifdef __APPLE__
-
-  void SetThisThreadName(const std::string& name)
-  {
-    // macOS threads can set names only to themselves
-    pthread_setname_np(name.c_str());
-  }
-#define HAS_SetThisThreadName
-#endif
-
-#ifdef __linux__
-  void SetThisThreadName(const std::string& name)
-  {
-    pthread_setname_np(pthread_self(), name.c_str());
-  }
-#define HAS_SetThisThreadName
-#endif
-
-#ifdef _WIN32
-  /** @see https://docs.microsoft.com/ru-ru/visualstudio/debugger/how-to-set-a-thread-name-in-native-code?view=vs-2019 */
-  /* Threre are two ways to implement this functionality:
-   *  1) SetThreadDescription available from Windows10
-   *  2) Throw special exception (available only in debugger)
-   *
-   * I copied (2), because it is still better, than have no thread name at all
-   * and there is no way I can be sure, that engine won't be used in older Windows.
-   *
-   * Log names depends on thread names, but actually - it is all just for debugging
-   *
-   */
-
-#include <Windows.h>
-
-#undef PostMessage
-
-  static const DWORD MS_VC_EXCEPTION = 0x406D1388;
-#pragma pack(push,8)
-  typedef struct tagTHREADNAME_INFO
-  {
-    DWORD dwType; // Must be 0x1000.
-    LPCSTR szName; // Pointer to name (in user addr space).
-    DWORD dwThreadID; // Thread ID (-1=caller thread).
-    DWORD dwFlags; // Reserved for future use, must be zero.
-  } THREADNAME_INFO;
-#pragma pack(pop)
-
-  void SetThisThreadName(const std::string& name) 
-  {
-    THREADNAME_INFO info;
-    info.dwType = 0x1000;
-    info.szName = name.c_str();
-    info.dwThreadID = -1;
-    info.dwFlags = 0;
-#pragma warning(push)
-#pragma warning(disable: 6320 6322)
-    __try 
-    {
-      RaiseException(MS_VC_EXCEPTION, 0, sizeof(info) / sizeof(ULONG_PTR), (ULONG_PTR*)& info);
-    }
-    __except (EXCEPTION_EXECUTE_HANDLER) 
-    {
-      ;
-    }
-#pragma warning(pop)
-  }
-#define HAS_SetThisThreadName
-#endif
-
-#ifndef HAS_SetThisThreadName
-#error "SetThisThreadName undefined for given platform!"
-#endif /* HAS_SetThisThreadName */
-}
-
 namespace bb
 {
 
@@ -124,6 +49,57 @@ namespace bb
     return false;
   }
 
+  void workerPool_t::DoProcessActors()
+  {
+    auto readLock = this->actorsGuard.GetReadLock();
+    assert(this->actors.size() <= maxActorsInWorkerPool);
+  
+    for (auto actorIt = this->actors.begin(), actorEnd = this->actors.end(); actorIt != actorEnd;)
+    {
+      auto actorProcessResult = msg::result_t::skipped;
+      auto& actor = *actorIt;
+      if (actor)
+      {
+        //
+        // Actor can use PostMessage from inside, so we need somehow
+        // release actorsGuard#readLock, but forbid others to mess with
+        // this actor while it processes data.
+        //
+        // We do this inside ProcessMessagesReadReleaseAquire, after
+        // actor's own lock is captured, actorsGuard#readLock can be
+        // temporaly released, until actor processing completes
+        //
+        actorProcessResult = actor->ProcessMessagesReadReleaseAquire(this->actorsGuard);
+      }
+      switch (actorProcessResult)
+      {
+      default:
+        /* programmer's mistake */
+        assert(0);
+      case msg::result_t::skipped:
+      case msg::result_t::complete:
+        ++actorIt; // just incrementing
+        break;
+      case msg::result_t::poisoned:
+      {
+        // this is only way to delete actor, code works in a way that
+        // only actor itself says when it can be killed.
+        this->actorsGuard.UnlockRead(); // must get stronger lock temporaly
+  
+        BB_DEFER(this->actorsGuard.LockRead()); // read lock will be aquired, when wlock is dies
+  
+        auto wlock = this->actorsGuard.GetWriteLock(); // wlock dies before BB_DEFER executes
+        actorIt = this->actors.erase(actorIt); // incrementing by deleting current, and taking next
+      }
+      break;
+      case msg::result_t::error:
+        bb::Error("Actor \"%s\" (%d) works with errors", actor->Name().c_str(), actor->ID());
+        ++actorIt; // just incrementing
+        break;
+      }
+    }
+  }
+
   void workerPool_t::WorkerThread(workerID_t id)
   {
     auto& info = this->infos[id];
@@ -138,57 +114,7 @@ namespace bb
         Info("%s", "Stop Requested");
         break;
       }
-      {
-        auto readLock = this->actorsGuard.GetReadLock();
-        assert(this->actors.size() <= maxActorsInWorkerPool);
-
-        for (auto actorIt = this->actors.begin(), actorEnd = this->actors.end(); actorIt != actorEnd;)
-        {
-          auto actorProcessResult = msg::result_t::skipped;
-          auto& actor = *actorIt;
-          if (actor)
-          {
-            //
-            // Actor can use PostMessage from inside, so we need somehow
-            // release actorsGuard#readLock, but forbid others to mess with
-            // this actor while it processes data.
-            //
-            // We do this inside ProcessMessagesReadReleaseAquire, after
-            // actor's own lock is captured, actorsGuard#readLock can be
-            // temporaly released, until actor processing completes
-            //
-            actorProcessResult = actor->ProcessMessagesReadReleaseAquire(this->actorsGuard);
-          }
-          switch (actorProcessResult)
-          {
-          default:
-            /* programmer's mistake */
-            assert(0);
-          case msg::result_t::skipped:
-          case msg::result_t::complete:
-            ++actorIt; // just incrementing
-            break;
-          case msg::result_t::poisoned:
-            {
-              // this is only way to delete actor, code works in a way that
-              // only actor itself says when it can be killed.
-              this->actorsGuard.UnlockRead(); // must get stronger lock temporaly
-
-              // read lock will be aquired, when wlock is dies
-              BB_DEFER(this->actorsGuard.LockRead());
-
-              // wlock dies before BB_DEFER executes
-              auto wlock = this->actorsGuard.GetWriteLock();
-              actorIt = this->actors.erase(actorIt); // incrementing by deleting current, and taking next
-            }
-            break;
-          case msg::result_t::error:
-            bb::Error("Actor \"%s\" (%d) works with errors", actor->Name().c_str(), actor->ID());
-            ++actorIt; // just incrementing
-            break;
-          }
-        }
-      }
+      DoProcessActors();
       info.notify.wait(lock, [&info, this](){ return (info.stop) || this->HasActorsInQueue(); });
     }
     Info("%s", "Worker Stopped");

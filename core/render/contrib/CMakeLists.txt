@@ -37,12 +37,6 @@ target_include_directories(glad PUBLIC
   ${CMAKE_CURRENT_BINARY_DIR}/GLAD/include
 )
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
-  set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build shader libs")
-else (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
-  set(BUILD_SHARED_LIBS ON CACHE BOOL "Build shader libs")
-endif (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
-
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "Do not build examples")
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "Do not build tests")
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "Do not build docs")

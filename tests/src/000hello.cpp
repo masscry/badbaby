@@ -43,9 +43,9 @@ int main(int argc, char* argv[])
     return -1;
   }
 
-  int actorID = workerPool_t::Instance().Register(std::unique_ptr<role_t>(new hello_t));
+  int actorID = workerPool_t::Instance().Register<hello_t>();
 
-  for (int i = 0; i < 20; ++i)
+  for (int i = 0; i < 5; ++i)
   {
     Debug("Say Hello!");
     workerPool_t::Instance().PostMessage(

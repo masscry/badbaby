@@ -73,6 +73,8 @@ namespace bb
 
   const std::string& GetThisThreadName();
 
+  void SetThisThreadName(const std::string& name);
+
   std::string GenerateUniqueName();
 
   std::string CurrentTime();
@@ -172,13 +174,13 @@ namespace bb
       ;
     }
 
-    callOnScopeExit(callOnScopeExit&& other)
+    callOnScopeExit(callOnScopeExit&& other) noexcept
     :func(std::move(other.func))
     {
       other.func = nullptr;
     }
 
-    callOnScopeExit& operator = (callOnScopeExit&& other)
+    callOnScopeExit& operator = (callOnScopeExit&& other) noexcept
     {
       if (this == &other)
       {

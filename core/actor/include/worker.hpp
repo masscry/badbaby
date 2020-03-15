@@ -43,8 +43,9 @@ namespace bb
     using deletedActorList_t = std::deque<uint16_t>; 
 
     void PrepareInfo(workerID_t id);
+    void DoProcessActors();
     void WorkerThread(workerID_t id);
-
+     
     vectorOfWorkers_t workers;
     vectorOfInfo_t    infos;
 
@@ -60,13 +61,25 @@ namespace bb
     workerPool_t& operator = (const workerPool_t&) = delete;
     workerPool_t& operator = (workerPool_t&&) = delete;
 
+    int Register(std::unique_ptr<role_t>&& role);
+
   public:
 
     static workerPool_t& Instance();
 
     bool HasActorsInQueue();
 
-    int Register(std::unique_ptr<role_t>&& role);
+    template<typename trole_t, typename... args_t>
+    int Register(args_t&&... args)
+    {
+      static_assert(std::is_base_of<bb::role_t, trole_t>::value,
+        "Can be used only with bb::role_t subclasses"
+      );
+      return this->Register(
+        std::unique_ptr<role_t>(new trole_t(std::forward<args_t>(args)...))
+      );
+    }
+
     int FindFirstByName(const std::string& name);
 
     int PostMessage(int actorID, msg_t&& message);

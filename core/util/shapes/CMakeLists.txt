@@ -1,4 +1,4 @@
-add_library(shapes 
+add_library(shapes STATIC
 # HEADERS
   include/shapes.hpp
   include/text.hpp

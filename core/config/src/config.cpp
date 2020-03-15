@@ -192,7 +192,7 @@ namespace bb
 
   void config_t::Load(const std::string& filename)
   {
-    std::ifstream input(filename);
+    std::ifstream input(filename, std::ios::in);
     std::string context;
 
     if (input)
@@ -211,7 +211,7 @@ namespace bb
 
   void config_t::Save(const std::string& filename) const
   {
-    std::ofstream output(filename);
+    std::ofstream output(filename, std::ios::out);
     if (output)
     {
       for (auto it = this->dict.begin(), e = this->dict.end(); it != e; ++it)

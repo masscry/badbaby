@@ -93,7 +93,7 @@ namespace bb
       ;
     }
 
-    ref_t(ref_t&& move)
+    ref_t(ref_t&& move) noexcept
     :val(std::move(move.val))
     {
       ;
@@ -113,7 +113,7 @@ namespace bb
       return !this->operator==(ref);
     }
 
-    ref_t& operator=(ref_t&& move)
+    ref_t& operator=(ref_t&& move) noexcept
     {
       if (this == &move)
       {

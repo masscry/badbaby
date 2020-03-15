@@ -181,9 +181,9 @@ namespace bb
     return result;
   }
 
-  char* ReadWholeFile(const char* filename, size_t* pSize)
+  char* ReadWholeFile(const char* filename, const char* openMode, size_t* pSize)
   {
-    FILE* input = fopen(filename, "rb");
+    FILE* input = fopen(filename, openMode);
     if (input == nullptr)
     {
       return nullptr;

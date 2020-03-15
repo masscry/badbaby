@@ -45,17 +45,6 @@ namespace bb
 
   using uniqueRole_t = std::unique_ptr<role_t>;
 
-  template<typename newRole_t, typename ... args_t>
-  uniqueRole_t MakeRole(args_t ... args)
-  {
-    static_assert(std::is_base_of<bb::role_t, newRole_t>::value,
-      "Can be used only with bb::role_t subclasses"
-    );
-    return uniqueRole_t(
-      new newRole_t(std::forward<args_t>(args)...)
-    );
-  }
-
 } // namespace bb
 
 #endif /* __BB_CORE_ACTOR_ROLE_HEADER__ */

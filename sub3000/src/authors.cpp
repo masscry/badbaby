@@ -84,7 +84,7 @@ namespace sub3000
 
 
     auto& pool = bb::workerPool_t::Instance();
-    this->model = pool.Register(std::unique_ptr<bb::role_t>(new sub3000::authorsModel_t()));
+    this->model = pool.Register<sub3000::authorsModel_t>();
     this->pContext->RegisterActorCallback(this->model, bb::cmfKeyboard);
   }
 

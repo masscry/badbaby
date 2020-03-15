@@ -1,4 +1,4 @@
-add_library(script
+add_library(script STATIC
 # HEADERS
   include/script.hpp
 

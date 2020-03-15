@@ -10,6 +10,8 @@ project(badbaby
   LANGUAGES C CXX
 )
 
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
+
 if (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
   if (CMAKE_VERSION VERSION_LESS 3.11)
     message(FATAL_ERROR
@@ -30,6 +32,12 @@ elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
   message(STATUS "Platform: Windows")
   set(BB_WINDOWS TRUE)
 endif()
+
+if (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+  option(BUILD_SHARED_LIBS "Build shared libs" OFF)
+else (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+  option(BUILD_SHARED_LIBS "Build shared libs" ON)
+endif (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
 
 find_package(Threads REQUIRED)
 

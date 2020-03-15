@@ -91,7 +91,7 @@ int main(int argc, char* argv[])
   auto& pool = bb::workerPool_t::Instance();
   {
     std::unique_lock<std::mutex> lock(g_mapGenLock);
-    g_mapGenActorID = pool.Register(std::unique_ptr<bb::role_t>(new sub3000::mapGen_t()));
+    g_mapGenActorID = pool.Register<sub3000::mapGen_t>();
   }
 
   bool loop = true;

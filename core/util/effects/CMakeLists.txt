@@ -1,4 +1,4 @@
-add_library(effects 
+add_library(effects STATIC
 # HEADERS
   include/blur.hpp
 

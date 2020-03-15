@@ -1,4 +1,4 @@
-add_library(simplex
+add_library(simplex STATIC
 # Headers
   include/simplex.hpp
 # Sources

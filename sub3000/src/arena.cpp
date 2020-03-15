@@ -150,9 +150,7 @@ namespace sub3000
 
       this->box = bb::postOffice_t::Instance().New("arenaScreen");
 
-      this->spaceActorID = bb::workerPool_t::Instance().Register(
-        std::unique_ptr<bb::role_t>(new sub3000::space_t())
-      );
+      this->spaceActorID = bb::workerPool_t::Instance().Register<sub3000::space_t>();
 
       bb::context_t::Instance().RegisterActorCallback(
         this->spaceActorID,

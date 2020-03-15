@@ -237,9 +237,7 @@ int main(int argc, char* argv[])
 
   auto& context = bb::context_t::Instance();
   auto& pool = bb::workerPool_t::Instance();
-  int menuActor = pool.Register(
-    bb::MakeRole<menu::model_t>()
-  );
+  int menuActor = pool.Register<menu::model_t>();
 
   context.RegisterActorCallback(menuActor, bb::cmfKeyboard);
 

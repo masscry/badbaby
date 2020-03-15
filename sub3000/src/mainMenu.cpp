@@ -198,7 +198,7 @@ namespace sub3000
     this->gameInfoNode.Translate(bb::vec3_t(100.0f, -100.0f, 0.0f));
 
     auto& pool = bb::workerPool_t::Instance();
-    this->menuModelID = pool.Register(std::unique_ptr<bb::role_t>(new sub3000::mainMenuModel_t(this->textList, *this->mailbox)));
+    this->menuModelID = pool.Register<sub3000::mainMenuModel_t>(this->textList, *this->mailbox);
     this->pContext->RegisterActorCallback(menuModelID, bb::cmfKeyboard);
   }
 

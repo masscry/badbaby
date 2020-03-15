@@ -167,8 +167,8 @@ namespace bb
 
   shader_t shader_t::LoadProgramFromFiles(const char* vpFilename, const char* fpFilename)
   {
-    std::ifstream vpFile(vpFilename);
-    std::ifstream fpFile(fpFilename);
+    std::ifstream vpFile(vpFilename, std::ios::in);
+    std::ifstream fpFile(fpFilename, std::ios::in);
 
     if (vpFile && fpFile)
     {

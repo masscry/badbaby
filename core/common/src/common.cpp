@@ -115,30 +115,24 @@ namespace bb
     return std::string("uid") + std::to_string(uidCounter++);
   }
 
-  const std::string& GetThisThreadName()
+  namespace
   {
-    static thread_local std::string cachedResult;
-    if (cachedResult.empty())
+    const char* GetBasename(const char* filename)
     {
-#ifndef _WIN32
-      // @see https://linux.die.net/man/3/pthread_getname_np (length is restricted to 16 characters, including the terminating null byte)
-      std::array<char, 16> result;
-      if (pthread_getname_np(pthread_self(), result.data(), result.size()) == 0)
-      {
-        cachedResult = std::string(result.data());
-      }
+#ifdef _WIN32
+      const char* p = strrchr(filename, '\\');
 #else
-      std::hash<std::thread::id> hasher;
-	  cachedResult = std::to_string(hasher(std::this_thread::get_id()));
+      const char* p = strrchr(filename, '/');
 #endif
+      return (p != nullptr)?(p + 1):(filename);
     }
-    return cachedResult;
   }
 
   int ProcessStartupArguments(int argc, char* argv[])
   {
-    int option;
+    SetThisThreadName(GetBasename(argv[0]));
 
+    int option;
     while ((option = getopt(argc, argv, "h")) != -1)
     {
       switch (option)

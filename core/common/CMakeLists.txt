@@ -10,6 +10,7 @@ set(COMMON_SOURCES
   src/targa.cpp
   src/image.cpp
   src/utf8.cpp
+  src/thread.cpp
 )
 
 if (BB_LINUX)

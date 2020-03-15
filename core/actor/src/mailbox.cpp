@@ -72,7 +72,11 @@ namespace bb
   void postOffice_t::Delete(uint32_t address)
   {
     std::lock_guard<std::mutex> lock(this->guard);
-    this->storage.erase(address);
+    auto postBox = this->storage.find(address);
+    if (postBox != this->storage.end())
+    {
+      this->storage.erase(postBox);
+    }
   }
 
   mailbox_t::shared_t postOffice_t::New(const std::string& address)
