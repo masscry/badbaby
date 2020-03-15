@@ -41,7 +41,7 @@ namespace bb
 
     const std::string& Name() const;
 
-    int ID() const;
+    actorPID_t ID() const;
 
     msg::result_t ProcessMessages();
 
@@ -66,13 +66,13 @@ namespace bb
     return this->name;
   }
 
-  inline int actor_t::ID() const
+  inline actorPID_t actor_t::ID() const
   {
     if (this->mailbox)
     {
       return this->mailbox->Address();
     }
-    return -1;
+    return INVALID_ACTOR;
   }
 
   inline void actor_t::PostMessage(msg_t&& msg)

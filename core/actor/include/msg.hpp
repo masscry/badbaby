@@ -19,7 +19,7 @@
 namespace bb
 {
 
-  using actorPID_t = int;
+  using actorPID_t = int64_t;
 
   const actorPID_t INVALID_ACTOR = -1;
 

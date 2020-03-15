@@ -15,7 +15,7 @@ namespace
     { // standard says, that isspace works for symbols between 0 and 255
       // otherwise - result implementation dependent
       // win32 crt raises assert here, so additional check here
-      result += ((smb <= 0xFF) && (std::isspace(smb) != 0));
+      result += ((smb <= 0xFF) && (std::isspace(static_cast<int>(smb)) != 0));
     }
     return result;
   }
@@ -76,7 +76,7 @@ namespace
 
     for (auto it: symbols)
     {
-      if ((it <= 0xFF) && (std::isspace(it) != 0))
+      if ((it <= 0xFF) && (std::isspace(static_cast<int>(it)) != 0))
       {
         switch (it)
         {

@@ -30,7 +30,7 @@ namespace bb
 
   size_t basicVertexBuffer_t::ByteSize() const
   {
-    return this->Size()*this->Dimensions()*this->TypeSize();
+    return this->Size()*static_cast<size_t>(this->Dimensions())*this->TypeSize();
   }
 
   basicVertexBuffer_t::~basicVertexBuffer_t()
@@ -359,7 +359,7 @@ namespace bb
       meshDescArrayHeader_t arrayHeader;
       arrayHeader.magic = MESH_DESC_ARRAY_MAGIC;
       arrayHeader.size = static_cast<uint32_t>(arrayBuffer->Size());
-      arrayHeader.dim = arrayBuffer->Dimensions();
+      arrayHeader.dim = static_cast<uint32_t>(arrayBuffer->Dimensions()); // dimension can't be < 0
       arrayHeader.type = arrayBuffer->Type();
       arrayHeader.normalized = arrayBuffer->Normalized();
       arrayHeader.byteSize = static_cast<uint32_t>(arrayBuffer->ByteSize() + sizeof(meshDescArrayHeader_t));
@@ -465,7 +465,7 @@ namespace bb
                new bb::defaultVertexBuffer_t(
                  arrayData.get(),
                  arrHeader.size,
-                 arrHeader.dim,
+                 static_cast<GLint>(arrHeader.dim), // OpenGL wants GLint as dimension
                  arrHeader.type,
                  static_cast<GLboolean>(arrHeader.normalized)
                )

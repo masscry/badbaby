@@ -161,13 +161,13 @@ namespace bb
       return nullptr;
     }
 
-    char* result = reinterpret_cast<char*>(malloc(inputFileSize+1));
+    char* result = reinterpret_cast<char*>(malloc(static_cast<size_t>(inputFileSize+1)));
     if (result == nullptr)
     {
       return nullptr;
     }
 
-    if (fread(result, 1, inputFileSize, input) != static_cast<size_t>(inputFileSize))
+    if (fread(result, 1, static_cast<size_t>(inputFileSize), input) != static_cast<size_t>(inputFileSize))
     {
       free(result);
       return nullptr;
@@ -176,7 +176,7 @@ namespace bb
     result[inputFileSize] = 0;
     if (pSize != nullptr)
     {
-      *pSize = inputFileSize + 1;
+      *pSize = static_cast<size_t>(inputFileSize + 1);
     }
     return result;
   }

@@ -65,7 +65,7 @@ namespace sub3000
       bb::camera_t camera;
       bb::mesh_t units;
       bb::mailbox_t::shared_t box;
-      int spaceActorID;
+      bb::actorPID_t spaceActorID;
 
       screen_t(const screen_t&) = delete;
       screen_t& operator=(const screen_t&) = delete;

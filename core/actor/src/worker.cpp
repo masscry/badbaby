@@ -93,7 +93,7 @@ namespace bb
       }
       break;
       case msg::result_t::error:
-        bb::Error("Actor \"%s\" (%d) works with errors", actor->Name().c_str(), actor->ID());
+        bb::Error("Actor \"%s\" (%ld) works with errors", actor->Name().c_str(), actor->ID());
         ++actorIt; // just incrementing
         break;
       }
@@ -173,7 +173,7 @@ namespace bb
     return self;
   }
 
-  int workerPool_t::Register(std::unique_ptr<role_t>&& role)
+  actorPID_t workerPool_t::Register(std::unique_ptr<role_t>&& role)
   {
     assert(role);
     std::string roleName = role->DefaultName();
@@ -186,14 +186,14 @@ namespace bb
     }
 
     std::unique_ptr<actor_t> newActor(new actor_t(std::move(role)));
-    int resultActorID = newActor->ID();
+    auto resultActorID = newActor->ID();
     this->actors.emplace_back(std::move(newActor));
     
-    bb::Info("Actor \"%s\" (%x) registered", roleName.c_str(), resultActorID);
+    bb::Info("Actor \"%s\" (%lx) registered", roleName.c_str(), resultActorID);
     return resultActorID;
   }
 
-  int workerPool_t::FindFirstByName(const std::string& name)
+  actorPID_t  workerPool_t::FindFirstByName(const std::string& name)
   {
     auto lock = this->actorsGuard.GetReadLock();
     for(auto& actIt: this->actors)
@@ -206,11 +206,25 @@ namespace bb
     return -1;
   }
 
-  int workerPool_t::PostMessage(int actorID, msg_t&& message)
+  static inline postAddress_t ActorIDToPostbox(actorPID_t pid)
+  { // postAddress_t - lower part of actorID
+    // when actorID == -1 - this is an programmer's mistake
+    assert(pid != INVALID_ACTOR);
+    return static_cast<postAddress_t>(pid);
+  }
+
+  int workerPool_t::PostMessage(actorPID_t actorID, msg_t&& message)
   {
-    if (bb::postOffice_t::Instance().Post(actorID, std::move(message)) != 0)
+    if (actorID == INVALID_ACTOR)
     {
-      bb::Error("Actor (%08x) is no longer exists!", actorID);
+      bb::Error("%s", "Can't send message to INVALID_ACTOR");
+      assert(0);
+      return -1;
+    }
+
+    if (bb::postOffice_t::Instance().Post(ActorIDToPostbox(actorID), std::move(message)) != 0)
+    {
+      bb::Error("Actor (%08lx) is no longer exists!", actorID);
       assert(0);
       return -1;
     }
@@ -221,7 +235,7 @@ namespace bb
     return 0;
   }
 
-  int workerPool_t::Unregister(int actorID)
+  int workerPool_t::Unregister(actorPID_t actorID)
   {
     return this->PostMessage(actorID,
       bb::IssuePoison()

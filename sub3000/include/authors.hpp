@@ -58,7 +58,7 @@ namespace sub3000
     bb::textStatic_t authorsText;
     bb::node_t       authorsNode;
 
-    int model;
+    bb::actorPID_t model;
 
     void OnPrepare() override;
     void OnUpdate(double delta) override;

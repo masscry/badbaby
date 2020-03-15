@@ -43,7 +43,7 @@ int main(int argc, char* argv[])
     return -1;
   }
 
-  int actorID = workerPool_t::Instance().Register<hello_t>();
+  auto actorID = workerPool_t::Instance().Register<hello_t>();
 
   for (int i = 0; i < 5; ++i)
   {

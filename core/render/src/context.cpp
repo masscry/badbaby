@@ -316,12 +316,12 @@ namespace bb
     }
   }
 
-  void context_t::RegisterActorCallback(int actorID, contextMsgFlag_t flags)
+  void context_t::RegisterActorCallback(actorPID_t actorID, contextMsgFlag_t flags)
   {
     this->actorCallbackList.emplace_back(std::make_pair(actorID, flags));
   }
 
-  void context_t::UnregisterActorCallbacks(int actorID)
+  void context_t::UnregisterActorCallbacks(actorPID_t actorID)
   {
     this->actorCallbackList.remove_if(
       [actorID](const pairOfFlags& pof) -> bool

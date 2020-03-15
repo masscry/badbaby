@@ -51,7 +51,7 @@ namespace bb
     return postOffice;
   }
 
-  mailbox_t::shared_t postOffice_t::New(uint32_t address)
+  mailbox_t::shared_t postOffice_t::New(postAddress_t address)
   {
     std::lock_guard<std::mutex> lock(this->guard);
 
@@ -69,7 +69,7 @@ namespace bb
     return result;
   }
 
-  void postOffice_t::Delete(uint32_t address)
+  void postOffice_t::Delete(postAddress_t address)
   {
     std::lock_guard<std::mutex> lock(this->guard);
     auto postBox = this->storage.find(address);
@@ -81,10 +81,10 @@ namespace bb
 
   mailbox_t::shared_t postOffice_t::New(const std::string& address)
   {
-    return this->New(static_cast<uint32_t>(std::hash<std::string>()(address)));
+    return this->New(static_cast<postAddress_t>(std::hash<std::string>()(address)));
   }
 
-  mailbox_t::mailbox_t(uint32_t address)
+  mailbox_t::mailbox_t(postAddress_t address)
   : address(address)
   {
     ;
@@ -97,10 +97,10 @@ namespace bb
 
   int postOffice_t::Post(const std::string& address, msg_t&& msg)
   {
-    return this->Post(static_cast<uint32_t>(std::hash<std::string>()(address)), std::move(msg));
+    return this->Post(static_cast<postAddress_t>(std::hash<std::string>()(address)), std::move(msg));
   }
 
-  int postOffice_t::Post(uint32_t address, msg_t&& msg)
+  int postOffice_t::Post(postAddress_t address, msg_t&& msg)
   {
     std::lock_guard<std::mutex> lock(this->guard);
     auto item = this->storage.find(address);

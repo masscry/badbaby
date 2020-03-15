@@ -29,11 +29,13 @@ namespace bb
     cmfKeyboard = 0x0001
   };
 
+  using actorPID_t = int64_t;
+
   class context_t final
   {
     static bool isAlreadyExists;
 
-    using pairOfFlags = std::pair<int, contextMsgFlag_t>;
+    using pairOfFlags = std::pair<actorPID_t, contextMsgFlag_t>;
     using actorCallbackList_t = std::list<pairOfFlags>;
 
     GLFWwindow*         wnd;
@@ -81,10 +83,10 @@ namespace bb
 
     void Title(const std::string& newTitle);
 
-    void RegisterActorCallback(int actorID, contextMsgFlag_t flags);
-    void UnregisterActorCallbacks(int actorID);
+    void RegisterActorCallback(actorPID_t actorID, contextMsgFlag_t flags);
+    void UnregisterActorCallbacks(actorPID_t actorID);
 
-    static void UnregisterActorCallbacksIfContextExists(int actorID)
+    static void UnregisterActorCallbacksIfContextExists(actorPID_t actorID)
     {
       if (context_t::IsAlreadyExists())
       {

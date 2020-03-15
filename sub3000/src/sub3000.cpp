@@ -15,7 +15,7 @@ namespace
   bb::mailbox_t::shared_t mail = bb::postOffice_t::Instance().New("sub3000");
 
   std::mutex g_mapGenLock;
-  int g_mapGenActorID = -1;
+  bb::actorPID_t g_mapGenActorID = -1;
 
 }
 
@@ -48,9 +48,9 @@ namespace sub3000
 
 }
 
-void ProcessGameAction(int src, sub3000::gameAction_t action)
+void ProcessGameAction(bb::actorPID_t src, sub3000::gameAction_t action)
 {
-  bb::Debug("GameAction: %u from %d", static_cast<uint32_t>(action), src);
+  bb::Debug("GameAction: %u from %ld", static_cast<uint32_t>(action), src);
   switch (action)
   {
   case sub3000::gameAction_t::newGame:
@@ -129,7 +129,7 @@ int main(int argc, char* argv[])
       if (auto action = bb::As<sub3000::action_t>(msgToMain))
       {
         auto gameAction = action->GameAction();
-        bb::Debug("Action: %s from %d", sub3000::GetTextForAction(gameAction), action->Source());
+        bb::Debug("Action: %s from %ld", sub3000::GetTextForAction(gameAction), action->Source());
         ProcessGameAction(
           action->Source(),
           gameAction

@@ -61,7 +61,7 @@ namespace bb
     workerPool_t& operator = (const workerPool_t&) = delete;
     workerPool_t& operator = (workerPool_t&&) = delete;
 
-    int Register(std::unique_ptr<role_t>&& role);
+    actorPID_t Register(std::unique_ptr<role_t>&& role);
 
   public:
 
@@ -70,7 +70,7 @@ namespace bb
     bool HasActorsInQueue();
 
     template<typename trole_t, typename... args_t>
-    int Register(args_t&&... args)
+    actorPID_t Register(args_t&&... args)
     {
       static_assert(std::is_base_of<bb::role_t, trole_t>::value,
         "Can be used only with bb::role_t subclasses"
@@ -80,10 +80,10 @@ namespace bb
       );
     }
 
-    int FindFirstByName(const std::string& name);
+    actorPID_t FindFirstByName(const std::string& name);
 
-    int PostMessage(int actorID, msg_t&& message);
-    int Unregister(int actorID);
+    int PostMessage(actorPID_t  actorID, msg_t&& message);
+    int Unregister(actorPID_t  actorID);
 
   };
 

@@ -29,7 +29,7 @@ namespace sub3000
 
     double DeltaTime() const;
 
-    step_t(int src, double dt);
+    step_t(bb::actorPID_t src, double dt);
 
     step_t(const step_t&) = default;
     step_t& operator= (const step_t&) = default;
@@ -86,7 +86,7 @@ namespace sub3000
     return this->dt;
   }
 
-  inline step_t::step_t(int src, double dt)
+  inline step_t::step_t(bb::actorPID_t src, double dt)
   : bb::msg::basic_t(src),
     dt(dt)
   {
