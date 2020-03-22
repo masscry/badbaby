@@ -38,7 +38,7 @@ namespace sub3000
     auto& pool = bb::workerPool_t::Instance();
     pool.PostMessage(
       g_mapGenActorID,
-      bb::Issue<sub3000::generate_t>(
+      bb::Issue<bb::ext::generate_t>(
         sendResultToID,
         width, height, radius
       )
@@ -91,7 +91,7 @@ int main(int argc, char* argv[])
   auto& pool = bb::workerPool_t::Instance();
   {
     std::unique_lock<std::mutex> lock(g_mapGenLock);
-    g_mapGenActorID = pool.Register<sub3000::mapGen_t>();
+    g_mapGenActorID = pool.Register<bb::ext::mapGen_t>();
   }
 
   bool loop = true;

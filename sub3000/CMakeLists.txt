@@ -8,7 +8,6 @@ add_executable(sub3000
   include/mainMenu.hpp
   include/actionTable.hpp
   include/authors.hpp
-  include/mapGen.hpp
   include/arena.hpp
   include/space.hpp
 
@@ -19,7 +18,6 @@ add_executable(sub3000
   src/mainMenu.cpp
   src/actionTable.cpp
   src/authors.cpp
-  src/mapGen.cpp
   src/arena.cpp
   src/space.cpp
 )
@@ -37,6 +35,7 @@ target_link_libraries(sub3000
     simplex
     shapes
     effects
+    mapgen
 )
 
 set_target_properties(sub3000 PROPERTIES

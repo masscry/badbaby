@@ -92,7 +92,7 @@ namespace sub3000
       return bb::msg::result_t::complete;
     }
 
-    if (auto done = bb::msg::As<sub3000::done_t>(msg))
+    if (auto done = bb::msg::As<bb::ext::done_t>(msg))
     {
       bb::Debug("Map Generation Done: %d %d",
         done->HeightMap().width,
