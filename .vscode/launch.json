@@ -22,7 +22,7 @@
           "ignoreFailures": true
         }
       ],
-      "preLaunchTask": "Build 000hello (Debug)"
+      "preLaunchTask": "Build All (Debug)"
     },
     {
       "name": "Launch 001Render (Debug)",
@@ -42,7 +42,7 @@
           "ignoreFailures": true
         }
       ],
-      "preLaunchTask": "Build 001render (Debug)"
+      "preLaunchTask": "Build All (Debug)"
     },
     {
       "name": "Launch 002Config (Debug)",
@@ -62,7 +62,7 @@
           "ignoreFailures": true
         }
       ],
-      "preLaunchTask": "Build 002config (Debug)"
+      "preLaunchTask": "Build All (Debug)"
     },
     {
       "name": "Launch 003Font (Debug)",
@@ -82,7 +82,7 @@
           "ignoreFailures": true
         }
       ],
-      "preLaunchTask": "Build 003font (Debug)"
+      "preLaunchTask": "Build All (Debug)"
     },
     {
       "name": "Launch 004Camera (Debug)",
@@ -102,7 +102,7 @@
           "ignoreFailures": true
         }
       ],
-      "preLaunchTask": "Build 004camera (Debug)"
+      "preLaunchTask": "Build All (Debug)"
     },
     {
       "name": "Launch 005Splash (Debug)",
@@ -122,7 +122,7 @@
           "ignoreFailures": true
         }
       ],
-      "preLaunchTask": "Build 005splash (Debug)"
+      "preLaunchTask": "Build All (Debug)"
     },
     {
       "name": "Launch 006simplex (Debug)",
@@ -142,7 +142,7 @@
           "ignoreFailures": true
         }
       ],
-      "preLaunchTask": "Build 006simplex (Debug)"
+      "preLaunchTask": "Build All (Debug)"
     },
     {
       "name": "Launch 007menu (Debug)",
@@ -162,7 +162,7 @@
           "ignoreFailures": true
         }
       ],
-      "preLaunchTask": "Build 007menu (Debug)"
+      "preLaunchTask": "Build All (Debug)"
     },
     {
       "name": "Launch Painter (Debug)",
@@ -182,7 +182,7 @@
           "ignoreFailures": true
         }
       ],
-      "preLaunchTask": "Build painter (Debug)"
+      "preLaunchTask": "Build All (Debug)"
     },
     {
       "name": "Launch Submarine-3000 (Debug)",
@@ -202,7 +202,7 @@
           "ignoreFailures": true
         }
       ],
-      "preLaunchTask": "Build Submarine-3000 (Debug)"
+      "preLaunchTask": "Build All (Debug)"
     }
   ]
 }
