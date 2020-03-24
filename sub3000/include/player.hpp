@@ -80,7 +80,7 @@ namespace sub3000
       const data_t& Data() const;
 
       template<typename... args_t>
-      status_t(args_t ... args);
+      status_t(args_t&& ... args);
 
       status_t(const status_t&) = default;
       status_t& operator=(const status_t&) = default;
@@ -91,7 +91,7 @@ namespace sub3000
     };
 
     template<typename... args_t>
-    inline status_t::status_t(args_t ... args)
+    inline status_t::status_t(args_t&& ... args)
     : bb::msg::basic_t(-1),
       data(std::forward<args_t>(args)...)
     {

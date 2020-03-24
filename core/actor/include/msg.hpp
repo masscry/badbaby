@@ -209,7 +209,7 @@ namespace bb
   }
 
   template<typename msgType_t, typename... args_t>
-  msg_t Issue(args_t ... args)
+  msg_t Issue(args_t&& ... args)
   {
     static_assert(std::is_base_of<bb::msg::basic_t, msgType_t>::value,
       "Can be used only with bb::msg::basic_t subclasses"
