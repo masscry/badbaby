@@ -26,8 +26,20 @@ namespace bb
       uint16_t width;
       uint16_t height;
       float radius;
+      float falloff;
+      int rounds;
 
     public:
+
+      int Rounds() const
+      {
+        return this->rounds;
+      }
+
+      float Falloff() const
+      {
+        return this->falloff;
+      }
 
       int64_t Seed() const
       {
@@ -57,12 +69,14 @@ namespace bb
         );
       }
 
-      generate_t(actorPID_t src, uint16_t width, uint16_t height, float radius, int64_t seed)
+      generate_t(actorPID_t src, uint16_t width, uint16_t height, float radius, int64_t seed, float falloff, int rounds)
       : msg::basic_t(src),
         seed(seed),
         width(width),
         height(height),
-        radius(radius)
+        radius(radius),
+        falloff(falloff),
+        rounds(rounds)
       {
         ;
       }

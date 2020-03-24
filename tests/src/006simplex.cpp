@@ -109,6 +109,8 @@ int main(int argc, char* argv[])
         uint16_t maxHeight = static_cast<uint16_t>(config.Value("map.height", 2048.0));
         float mapRadius = static_cast<float>(config.Value("map.radius", 10.0));
         int64_t mapSeed = static_cast<int64_t>(config.Value("map.seed", 0.0));
+        float mapFalloff = static_cast<float>(config.Value("map.falloff", 0.2));
+        int mapRounds = static_cast<int>(config.Value("map.rounds", 1));
 
         uint16_t cWidth = 128;
         uint16_t cHeight = 128;
@@ -122,7 +124,9 @@ int main(int argc, char* argv[])
               cWidth,
               cHeight,
               mapRadius,
-              mapSeed
+              mapSeed,
+              mapFalloff,
+              mapRounds
             )
           );
           if (cWidth <= maxWidth)

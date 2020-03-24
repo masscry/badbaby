@@ -31,7 +31,9 @@ namespace bb
         heightMap.height = genParams->Height();
         heightMap.data.reset(new float[heightMap.width*heightMap.height]);
 
-        float radius = genParams->Radius();
+        double radius = genParams->Radius();
+
+        int maxRounds = genParams->Rounds();
 
         for (size_t row = 0; row < heightMap.height; ++row)
         {
@@ -39,13 +41,41 @@ namespace bb
           for (size_t col = 0; col < heightMap.width; ++col)
           {
             double phi = (col/static_cast<double>(heightMap.width))*M_PI*2.0f;
-            heightMap.data[row * heightMap.width + col] = static_cast<float>(simplex(
-              radius*sin(theta)*cos(phi),
-              radius*sin(theta)*sin(phi),
-              radius*cos(theta)
-            ));
+            glm::dvec3 coords(sin(theta)*cos(phi), sin(theta)*sin(phi), cos(theta));
+            heightMap.data[row * heightMap.width + col] = 0.0f;
+            double falloff = 1.0;
+            for (int round = 0; round < maxRounds; ++round)
+            {
+              double roundPart = (round+1)/static_cast<double>(maxRounds);
+              heightMap.data[row * heightMap.width + col] += simplex(
+                coords * radius*roundPart
+              ) * falloff;
+              falloff *= genParams->Falloff();
+            }
           }
         }
+
+        float minPixel = std::numeric_limits<float>::max();
+        float maxPixel = -std::numeric_limits<float>::max();
+
+        for (size_t pixel = 0; pixel < heightMap.height * heightMap.width; ++pixel)
+        {
+          minPixel = std::min(heightMap.data[pixel], minPixel);
+          maxPixel = std::max(heightMap.data[pixel], maxPixel);
+        }
+
+        float lenPixel = maxPixel - minPixel;
+
+        for (size_t pixel = 0; pixel < heightMap.height * heightMap.width; ++pixel)
+        {
+          heightMap.data[pixel] += minPixel;
+        }
+
+        for (size_t pixel = 0; pixel < heightMap.height * heightMap.width; ++pixel)
+        {
+          heightMap.data[pixel] /= lenPixel;
+        }
+
         workerPool_t::Instance().PostMessage(
           genParams->Source(),
           Issue<done_t>(actor.ID(), std::move(heightMap))

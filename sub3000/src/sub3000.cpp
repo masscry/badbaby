@@ -40,7 +40,7 @@ namespace sub3000
       g_mapGenActorID,
       bb::Issue<bb::ext::generate_t>(
         sendResultToID,
-        width, height, radius, 0
+        width, height, radius, 0, 0.2f, 1
       )
     );
     return true;
