@@ -22,44 +22,15 @@ namespace bb
 
     class generate_t: public msg::basic_t
     {
+    public:
       int64_t seed;
       uint16_t width;
       uint16_t height;
-      float radius;
+      float radiusStart;
+      float radiusFinish;
+      int radiusRounds;
       float falloff;
-      int rounds;
-
-    public:
-
-      int Rounds() const
-      {
-        return this->rounds;
-      }
-
-      float Falloff() const
-      {
-        return this->falloff;
-      }
-
-      int64_t Seed() const
-      {
-        return this->seed;
-      }
-
-      uint16_t Width() const
-      {
-        return this->width;
-      }
-
-      uint16_t Height() const
-      {
-        return this->height;
-      }
-
-      float Radius() const
-      {
-        return this->radius;
-      }
+      float power;
 
       vec2_t Dimension() const
       {
@@ -69,14 +40,16 @@ namespace bb
         );
       }
 
-      generate_t(actorPID_t src, uint16_t width, uint16_t height, float radius, int64_t seed, float falloff, int rounds)
+      generate_t(actorPID_t src, uint16_t width, uint16_t height, float start, float finish, int64_t seed, float falloff, int rounds, float power)
       : msg::basic_t(src),
         seed(seed),
         width(width),
         height(height),
-        radius(radius),
+        radiusStart(start),
+        radiusFinish(finish),
+        radiusRounds(rounds),
         falloff(falloff),
-        rounds(rounds)
+        power(power)
       {
         ;
       }

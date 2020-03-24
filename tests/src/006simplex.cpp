@@ -60,6 +60,8 @@ int main(int argc, char* argv[])
 
   auto fsmon = bb::fs::monitor_t::Create<updateConfig_t>();
   fsmon.Watch("006simplex.config");
+  fsmon.Watch("006simplex_vp.glsl");
+  fsmon.Watch("006simplex_fp.glsl");
 
   mailbox->Put(bb::Issue<newConfig_t>());
 
@@ -103,14 +105,22 @@ int main(int argc, char* argv[])
     {
       if (auto newConfigMsg = bb::As<newConfig_t>(msg))
       {
+        renderProgram = bb::shader_t::LoadProgramFromFiles(
+          "006simplex_vp.glsl",
+          "006simplex_fp.glsl"
+        );
+
         auto config = bb::config_t("006simplex.config");
 
         uint16_t maxWidth = static_cast<uint16_t>(config.Value("map.width", 2048.0));
         uint16_t maxHeight = static_cast<uint16_t>(config.Value("map.height", 2048.0));
-        float mapRadius = static_cast<float>(config.Value("map.radius", 10.0));
+
         int64_t mapSeed = static_cast<int64_t>(config.Value("map.seed", 0.0));
+        float mapRadiusStart = static_cast<float>(config.Value("map.radius.start", 1.0));
+        float mapRadiusFinish = static_cast<float>(config.Value("map.radius.finish", 10.0));
+        int mapRadiusRounds = static_cast<int>(config.Value("map.radius.rounds", 10.0));
         float mapFalloff = static_cast<float>(config.Value("map.falloff", 0.2));
-        int mapRounds = static_cast<int>(config.Value("map.rounds", 1));
+        float mapPower = static_cast<float>(config.Value("map.power", 2.0));
 
         uint16_t cWidth = 128;
         uint16_t cHeight = 128;
@@ -123,10 +133,12 @@ int main(int argc, char* argv[])
               mailbox->Address(),
               cWidth,
               cHeight,
-              mapRadius,
+              mapRadiusStart,
+              mapRadiusFinish,
               mapSeed,
               mapFalloff,
-              mapRounds
+              mapRadiusRounds,
+              mapPower
             )
           );
           if (cWidth <= maxWidth)

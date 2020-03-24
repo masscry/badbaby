@@ -11,6 +11,11 @@ uniform float time;
 
 void main()
 {
-  float fdepth = texture(mainTex, vec2(fragUV.x, fragUV.y) ).r;
-  pixColor = vec4(mix(vec3(0.0, 0.5, 0.0), vec3(0.0, 0.0, 0.2), 1.0 - fdepth), 1.0f);
+  float fdepth = texture(mainTex,
+    vec2(fragUV.x + time/60.0f, fragUV.y)
+  ).r;
+  pixColor = vec4(
+    mix(vec3(0.6, 0.6, 0.0), vec3(0.0, 0.0, 0.3), 1.0 - fdepth),
+    1.0f
+  );
 }
