@@ -19,7 +19,7 @@ namespace bb
 
       if (auto genParams = msg::As<generate_t>(msg))
       {
-        auto simplex = simplex_t(dist(mt));
+        auto simplex = simplex_t(genParams->Seed());
 
         heightMap_t heightMap;
         if ((genParams->Width() * genParams->Height() == 0) || (genParams->Radius() == 0.0f))
@@ -33,15 +33,17 @@ namespace bb
 
         float radius = genParams->Radius();
 
-        for (int row = 0; row < heightMap.height; ++row)
+        for (size_t row = 0; row < heightMap.height; ++row)
         {
-          double rowZ = row/static_cast<double>(heightMap.height)*10.0;
-          for (int col = 0; col < heightMap.width; ++col)
+          double theta = (row/static_cast<double>(heightMap.height))*M_PI;
+          for (size_t col = 0; col < heightMap.width; ++col)
           {
-            double angle = (col/static_cast<double>(heightMap.width))*glm::two_pi<double>();
-            heightMap.data[static_cast<size_t>(row*heightMap.width + col)] = static_cast<float>(
-              1.0 - simplex(glm::dvec3(cos(angle)*radius, sin(angle)*radius, rowZ))
-            );
+            double phi = (col/static_cast<double>(heightMap.width))*M_PI*2.0f;
+            heightMap.data[row * heightMap.width + col] = static_cast<float>(simplex(
+              radius*sin(theta)*cos(phi),
+              radius*sin(theta)*sin(phi),
+              radius*cos(theta)
+            ));
           }
         }
         workerPool_t::Instance().PostMessage(
@@ -57,9 +59,6 @@ namespace bb
     }
 
     mapGen_t::mapGen_t()
-    : rd(),
-      mt(rd()),
-      dist()
     {
       ;
     }

@@ -68,7 +68,7 @@ add_executable(006simplex
   src/006simplex.cpp
 )
 
-target_link_libraries(006simplex PRIVATE config render simplex shapes)
+target_link_libraries(006simplex PRIVATE config render simplex shapes mapgen )
 
 set_target_properties(006simplex PROPERTIES
 	VS_DEBUGGER_WORKING_DIRECTORY

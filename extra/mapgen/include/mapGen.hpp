@@ -22,11 +22,17 @@ namespace bb
 
     class generate_t: public msg::basic_t
     {
+      int64_t seed;
       uint16_t width;
       uint16_t height;
       float radius;
 
     public:
+
+      int64_t Seed() const
+      {
+        return this->seed;
+      }
 
       uint16_t Width() const
       {
@@ -51,11 +57,12 @@ namespace bb
         );
       }
 
-      generate_t(actorPID_t src, uint16_t width, uint16_t height, float radius)
+      generate_t(actorPID_t src, uint16_t width, uint16_t height, float radius, int64_t seed)
       : msg::basic_t(src),
+        seed(seed),
         width(width),
         height(height),
-        radius(radius) 
+        radius(radius)
       {
         ;
       }
@@ -115,10 +122,6 @@ namespace bb
 
     class mapGen_t final: public role_t
     {
-      std::random_device rd;
-      std::mt19937 mt;
-      std::uniform_int_distribution<long> dist;
-
       msg::result_t OnProcessMessage(const actor_t&, const msg::basic_t& msg) override;
     public:
 
