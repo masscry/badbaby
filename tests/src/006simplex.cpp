@@ -122,11 +122,21 @@ int main(int argc, char* argv[])
         float mapFalloff = static_cast<float>(config.Value("map.falloff", 0.2));
         float mapPower = static_cast<float>(config.Value("map.power", 2.0));
 
-        uint16_t cWidth = 128;
-        uint16_t cHeight = 128;
+        uint16_t cWidth = 64;
+        uint16_t cHeight = 64;
 
-        while ((cWidth <= maxWidth) || (cHeight <= maxHeight))
+        do
         {
+          if (cWidth < maxWidth)
+          {
+            cWidth <<= 1;
+          }
+          if (cHeight < maxHeight)
+          {
+            cHeight <<= 1;
+          }
+          bb::Debug("[%u; %u]", cWidth, cHeight);
+
           bb::workerPool_t::Instance().PostMessage(
             mapGenActor,
             bb::Issue<bb::ext::generate_t>(
@@ -141,15 +151,7 @@ int main(int argc, char* argv[])
               mapPower
             )
           );
-          if (cWidth <= maxWidth)
-          {
-            cWidth <<= 1;
-          }
-          if (cHeight <= maxHeight)
-          {
-            cHeight <<= 1;
-          }
-        }
+        } while ((cWidth < maxWidth) || (cHeight < maxHeight));
       }
       if (auto mapDataMsg = bb::As<bb::ext::done_t>(msg))
       {
