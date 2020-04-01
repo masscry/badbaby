@@ -28,7 +28,7 @@ namespace bb
       uint16_t height;
       float radiusStart;
       float radiusFinish;
-      int radiusRounds;
+      size_t radiusRounds;
       float falloff;
       float power;
 
@@ -40,7 +40,7 @@ namespace bb
         );
       }
 
-      generate_t(actorPID_t src, uint16_t width, uint16_t height, float start, float finish, int64_t seed, float falloff, int rounds, float power)
+      generate_t(actorPID_t src, uint16_t width, uint16_t height, float start, float finish, int64_t seed, float falloff, size_t rounds, float power)
       : msg::basic_t(src),
         seed(seed),
         width(width),
@@ -72,6 +72,14 @@ namespace bb
         height(0)
       {
         ;
+      }
+
+      heightMap_t(uint16_t width, uint16_t height)
+      : width(width),
+        height(height)
+      {
+        assert((this->width * this->height) != 0);
+        this->data.reset(new float[this->width*this->height]);
       }
 
       heightMap_t(const heightMap_t&) = delete;

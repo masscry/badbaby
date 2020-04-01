@@ -1,6 +1,7 @@
 #include <mapGen.hpp>
 #include <simplex.hpp>
 #include <worker.hpp>
+#include <common.hpp>
 
 #include <cassert>
 #include <cmath>
@@ -21,7 +22,6 @@ namespace bb
       {
         auto simplex = simplex_t(genParams->seed);
 
-        heightMap_t heightMap;
         if ((genParams->width * genParams->height == 0) 
           || (genParams->radiusStart == 0.0f) 
           || (genParams->radiusFinish == 0.0f) 
@@ -30,15 +30,14 @@ namespace bb
           throw std::runtime_error("One of map dimensions equals zero!");
         }
 
-        heightMap.width = genParams->width;
-        heightMap.height = genParams->height;
-        heightMap.data.reset(new float[heightMap.width*heightMap.height]);
+        heightMap_t heightMap(genParams->width, genParams->height);
 
         double radiusStart = genParams->radiusStart;
         double radiusFinish = genParams->radiusFinish;
-        int maxRadiusRounds = genParams->radiusRounds;
-        double mapPower = genParams->power;
+        auto maxRadiusRounds = genParams->radiusRounds;
 
+        std::vector<double> octave(maxRadiusRounds);
+ 
         for (size_t row = 0; row < heightMap.height; ++row)
         {
           double theta = (row/static_cast<double>(heightMap.height))*M_PI;
@@ -46,14 +45,19 @@ namespace bb
           {
             double phi = (col/static_cast<double>(heightMap.width))*M_PI*2.0f;
             glm::dvec3 coords(sin(theta)*cos(phi), sin(theta)*sin(phi), cos(theta));
-            heightMap.data[row * heightMap.width + col] = 0.0f;
-            double falloff = 1.0;
-            for (int round = 0; round < maxRadiusRounds; ++round)
+
+            for (auto round = 0u; round < maxRadiusRounds; ++round)
             {
-              double roundRadius = glm::mix(radiusStart, radiusFinish, round/static_cast<double>(maxRadiusRounds));
-              heightMap.data[row * heightMap.width + col] += pow(1.0-fabs(simplex(coords * roundRadius)), mapPower) * falloff;
-              falloff *= genParams->falloff;
+              auto radius = glm::mix(radiusStart, radiusFinish, round/static_cast<double>(maxRadiusRounds));
+              octave[round] = simplex(coords * radius) * pow(genParams->falloff, round);
+              octave[round] = pow(fabs(octave[round]), genParams->power)*bb::signum(octave[round]);
             }
+
+            for (auto octaveVal: octave)
+            {
+              heightMap.data[row * heightMap.width + col] += octaveVal;
+            }
+
           }
         }
 

@@ -11,6 +11,7 @@
 #include <cstdio>
 #include <memory>
 
+#include <type_traits>
 #include <functional>
 #include <mutex>
 #include <condition_variable>
@@ -78,6 +79,24 @@ namespace bb
   std::string GenerateUniqueName();
 
   std::string CurrentTime();
+
+  template<typename type_t>
+  inline constexpr type_t signum(type_t value, std::false_type)
+  {
+    return type_t(0) < value;
+  }
+
+  template<typename type_t>
+  inline constexpr type_t signum(type_t value, std::true_type)
+  {
+    return (type_t(0) < value) - (value < type_t(0));
+  }
+
+  template<typename type_t>
+  inline constexpr type_t signum(type_t value)
+  {
+    return bb::signum(value, std::is_signed<type_t>());
+  }
 
   #ifdef BB_DOUBLE_LOCK_ASSERT
     #define READ_MODE ("R")

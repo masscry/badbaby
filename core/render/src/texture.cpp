@@ -46,23 +46,21 @@ namespace bb
 
   texture_t& texture_t::operator=(texture_t&& move)
   {
-    if (this == &move)
+    if (this != &move)
     {
-      return *this;
-    }
+      if (this->self != 0)
+      {
+        glDeleteTextures(1, &this->self);
+      }
 
-    if (this->self != 0)
-    {
-      glDeleteTextures(1, &this->self);
+      this->self = move.self;
+      move.self = 0;
     }
-
-    this->self = move.self;
-    move.self = 0;
     return *this;
   }
 
   texture_t::texture_t()
-  :self(0)
+  : self(0)
   {
     ;
   }
@@ -73,6 +71,7 @@ namespace bb
     {
       glDeleteTextures(1, &this->self);
     }
+    this->self = 0;
   }
 
   texture_t::texture_t(int width, int height)

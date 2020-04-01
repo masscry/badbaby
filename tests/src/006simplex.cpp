@@ -25,15 +25,43 @@ public:
   }
 };
 
+class newShader_t: public bb::msg::basic_t
+{
+public:
+  newShader_t()
+  : bb::msg::basic_t(-1)
+  {
+    ;
+  }
+};
+
 class updateConfig_t: public bb::fs::processor_t
 {
 public:
 
-  int OnChange(const char*, bb::fs::event_t)
+  int OnChange(const char* fname, bb::fs::event_t)
   {
-    bb::postOffice_t::Instance().Post("simplex",
-      bb::Issue<newConfig_t>()
-    );
+    if (strcmp(fname, "006simplex.config") == 0)
+    {
+      bb::postOffice_t::Instance().Post("simplex",
+        bb::Issue<newConfig_t>()
+      );
+      return 0;
+    }
+    if (strcmp(fname, "006simplex_fp.glsl") == 0)
+    {
+      bb::postOffice_t::Instance().Post("simplex",
+        bb::Issue<newShader_t>()
+      );
+      return 0;
+    }
+    if (strcmp(fname, "006simplex_vp.glsl") == 0)
+    {
+      bb::postOffice_t::Instance().Post("simplex",
+        bb::Issue<newShader_t>()
+      );
+      return 0;
+    }
     return 0;
   }
 
@@ -59,9 +87,7 @@ int main(int argc, char* argv[])
   BB_DEFER(bb::workerPool_t::Instance().Unregister(mapGenActor));
 
   auto fsmon = bb::fs::monitor_t::Create<updateConfig_t>();
-  fsmon.Watch("006simplex.config");
-  fsmon.Watch("006simplex_vp.glsl");
-  fsmon.Watch("006simplex_fp.glsl");
+  fsmon.Watch("./");
 
   mailbox->Put(bb::Issue<newConfig_t>());
 
@@ -98,29 +124,36 @@ int main(int argc, char* argv[])
 
   for(;;)
   {
+    auto nowTick = glfwGetTime();
+    auto delta = nowTick - lastTick;
+    lastTick = nowTick;
+
     fsmon.Check();
 
     bb::msg_t msg;
     if (mailbox->Poll(&msg))
     {
-      if (auto newConfigMsg = bb::As<newConfig_t>(msg))
+      if (auto newShaderMsg = bb::As<newShader_t>(msg))
       {
         renderProgram = bb::shader_t::LoadProgramFromFiles(
           "006simplex_vp.glsl",
           "006simplex_fp.glsl"
         );
+      }
 
+      if (auto newConfigMsg = bb::As<newConfig_t>(msg))
+      {
         auto config = bb::config_t("006simplex.config");
 
-        uint16_t maxWidth = static_cast<uint16_t>(config.Value("map.width", 2048.0));
-        uint16_t maxHeight = static_cast<uint16_t>(config.Value("map.height", 2048.0));
+        auto maxWidth = static_cast<uint16_t>(config.Value("map.width", 2048.0));
+        auto maxHeight = static_cast<uint16_t>(config.Value("map.height", 2048.0));
 
-        int64_t mapSeed = static_cast<int64_t>(config.Value("map.seed", 0.0));
-        float mapRadiusStart = static_cast<float>(config.Value("map.radius.start", 1.0));
-        float mapRadiusFinish = static_cast<float>(config.Value("map.radius.finish", 10.0));
-        int mapRadiusRounds = static_cast<int>(config.Value("map.radius.rounds", 10.0));
-        float mapFalloff = static_cast<float>(config.Value("map.falloff", 0.2));
-        float mapPower = static_cast<float>(config.Value("map.power", 2.0));
+        auto mapSeed = static_cast<int64_t>(config.Value("map.seed", 0.0));
+        auto mapRadiusStart = static_cast<float>(config.Value("map.radius.start", 1.0));
+        auto mapRadiusFinish = static_cast<float>(config.Value("map.radius.finish", 10.0));
+        auto mapRadiusRounds = static_cast<size_t>(config.Value("map.radius.rounds", 10.0));
+        auto mapFalloff = static_cast<float>(config.Value("map.falloff", 0.2));
+        auto mapPower = static_cast<float>(config.Value("map.power", 2.0));
 
         uint16_t cWidth = 64;
         uint16_t cHeight = 64;
@@ -153,6 +186,7 @@ int main(int argc, char* argv[])
           );
         } while ((cWidth < maxWidth) || (cHeight < maxHeight));
       }
+
       if (auto mapDataMsg = bb::As<bb::ext::done_t>(msg))
       {
         texWidth = mapDataMsg->HeightMap().width;
@@ -162,29 +196,31 @@ int main(int argc, char* argv[])
         tex.SetFilter(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
       }
     }
+    else
+    {
+      bb::framebuffer_t::Bind(context.Canvas());
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    auto nowTick = glfwGetTime();
-    auto delta = nowTick - lastTick;
-    lastTick = nowTick;
+      bb::shader_t::Bind(renderProgram);
+      worldCamera.Update();
+      renderProgram.SetBlock(bindCameraPoint, worldCamera.UniformBlock());
+      renderProgram.SetFloat(
+        "time", static_cast<float>(nowTick)
+      );
 
-    bb::framebuffer_t::Bind(context.Canvas());
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    bb::shader_t::Bind(renderProgram);
-    worldCamera.Update();
-    renderProgram.SetBlock(bindCameraPoint, worldCamera.UniformBlock());
-    renderProgram.SetFloat(
-      "time", static_cast<float>(nowTick)
-    );
-
-    bb::texture_t::Bind(tex);
-    plane.Render();
+      bb::texture_t::Bind(tex);
+      plane.Render();
+    }
 
     if (!context.Update())
     {
       break;
     }
-    context.Title(std::to_string(1.0/delta) + "["+ std::to_string(texWidth) + ";" + std::to_string(texHeight) + "]");
+
+    context.Title(
+      std::to_string((int)round(1.0/delta)) 
+      + " ["+ std::to_string(texWidth) + ";" + std::to_string(texHeight) + "]"
+    );
 
     glm::vec3 offset(
       -(context.IsKeyDown(GLFW_KEY_D)-context.IsKeyDown(GLFW_KEY_A))*delta*10,
