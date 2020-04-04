@@ -27,12 +27,12 @@ namespace bb
 
       std::vector<double> octave(maxRadiusRounds);
 
-      for (size_t row = 0; row < heightMap.height; ++row)
+      for (size_t row = 0; row < heightMap.Height(); ++row)
       {
-        double theta = (row / static_cast<double>(heightMap.height)) * M_PI;
-        for (size_t col = 0; col < heightMap.width; ++col)
+        double theta = (row / static_cast<double>(heightMap.Height())) * M_PI;
+        for (size_t col = 0; col < heightMap.Width(); ++col)
         {
-          double phi = (col / static_cast<double>(heightMap.width)) * M_PI * 2.0f;
+          double phi = (col / static_cast<double>(heightMap.Width())) * M_PI * 2.0f;
           glm::dvec3 coords(sin(theta) * cos(phi), sin(theta) * sin(phi), cos(theta));
 
           for (auto round = 0u; round < maxRadiusRounds; ++round)
@@ -44,27 +44,18 @@ namespace bb
 
           for (auto octaveVal : octave)
           {
-            heightMap.data[row * heightMap.width + col] += octaveVal;
+            heightMap.Data(col, row) += octaveVal;
           }
         }
       }
 
-      float minPixel = std::numeric_limits<float>::max();
-      float maxPixel = -std::numeric_limits<float>::max();
-
-      for (size_t pixel = 0; pixel < heightMap.height * heightMap.width; ++pixel)
-      {
-        minPixel = std::min(heightMap.data[pixel], minPixel);
-        maxPixel = std::max(heightMap.data[pixel], maxPixel);
-      }
+      float minPixel = heightMap.Min();
+      float maxPixel = heightMap.Max();
 
       float lenPixel = maxPixel - minPixel;
 
-      for (size_t pixel = 0; pixel < heightMap.height * heightMap.width; ++pixel)
-      {
-        heightMap.data[pixel] -= minPixel;
-        heightMap.data[pixel] /= lenPixel;
-      }
+      heightMap -= minPixel;
+      heightMap /= lenPixel;
 
       return heightMap;
     }

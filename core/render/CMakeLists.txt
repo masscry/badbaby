@@ -10,6 +10,7 @@ add_library(render STATIC
   include/font.hpp
   include/ubo.hpp
   include/camera.hpp
+  include/algebra.hpp
 
 # SOURCES
   src/framebuffer.cpp

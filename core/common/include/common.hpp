@@ -26,7 +26,6 @@
 
 #ifndef _GNU_SOURCE
 extern "C" int vasprintf(char** strp, const char* fmt, va_list ap);
-extern "C" void sincosf(float x, float* sin, float* cos);
 #endif /* _WIN32 */
 
 namespace bb

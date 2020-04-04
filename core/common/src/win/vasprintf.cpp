@@ -33,9 +33,3 @@ extern "C" int vasprintf(char** strp, const char* fmt, va_list ap)
   *strp = resultStr;
   return result;
 }
-
-extern "C" void sincosf(float x, float* sin, float* cos)
-{
-  *sin = sinf(x);
-  *cos = cosf(x);
-}

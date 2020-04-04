@@ -9,10 +9,6 @@
 
 #include <glm/glm.hpp>
 
-#ifdef __APPLE__
-#define sincosf __sincosf
-#endif
-
 namespace bb
 {
 
@@ -48,8 +44,7 @@ namespace bb
     uint16_t index = 0;
     while(sides-->0)
     {
-      glm::vec2 point;
-      sincosf(angle, &point.x, &point.y);
+      glm::vec2 point = bb::Dir(angle);
       point.x += center.x;
       point.y += center.y;
 

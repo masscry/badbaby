@@ -91,7 +91,7 @@ int main(int argc, char* argv[])
 
   mailbox->Put(bb::Issue<newConfig_t>());
 
-  auto plane = bb::GeneratePlane(glm::vec2(100.0f, 100.0f), glm::vec3(0.0f));
+  auto plane = bb::GeneratePlane(glm::vec2(100.0f, 100.0f), glm::vec3(0.0f), bb::vec2_t(0.5f));
 
   auto renderProgram = bb::shader_t::LoadProgramFromFiles(
     "006simplex_vp.glsl",
@@ -189,9 +189,9 @@ int main(int argc, char* argv[])
 
       if (auto mapDataMsg = bb::As<bb::ext::done_t>(msg))
       {
-        texWidth = mapDataMsg->HeightMap().width;
-        texHeight = mapDataMsg->HeightMap().height;
-        tex = bb::texture_t(mapDataMsg->HeightMap().width, mapDataMsg->HeightMap().height, mapDataMsg->HeightMap().data.get());
+        texWidth = mapDataMsg->HeightMap().Width();
+        texHeight = mapDataMsg->HeightMap().Height();
+        tex = bb::texture_t(mapDataMsg->HeightMap().Width(), mapDataMsg->HeightMap().Height(), mapDataMsg->HeightMap().Data());
         tex.GenerateMipmaps();
         tex.SetFilter(GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR);
       }

@@ -18,6 +18,7 @@
 
 #include <control.hpp>
 #include <player.hpp>
+#include <mapGen.hpp>
 
 namespace sub3000
 {
@@ -43,7 +44,12 @@ namespace sub3000
   class state_t final: public bb::msg::basic_t
   {
     bb::linePoints_t units;
+    bb::vec2_t pos;
+    float angle;
   public:
+
+    bb::vec2_t& Pos();
+    float& Angle();
 
     bb::linePoints_t& Units();
 
@@ -67,6 +73,8 @@ namespace sub3000
     player::data_t player;
 
     bb::linePoints_t units;
+
+    bb::ext::heightMap_t heightMap;
 
     bb::msg::result_t OnProcessMessage(const bb::actor_t&, const bb::msg::basic_t& msg) override;
 
@@ -96,6 +104,16 @@ namespace sub3000
   inline const char* space_t::DefaultName() const
   {
     return "space";
+  }
+
+  inline bb::vec2_t& state_t::Pos()
+  {
+    return this->pos;
+  }
+
+  inline float& state_t::Angle()
+  {
+    return this->angle;
   }
 
   inline bb::linePoints_t& state_t::Units()

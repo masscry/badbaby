@@ -14,10 +14,10 @@ namespace
 {
 
   const glm::vec2 vPos[4] = {
-    { -0.5f, -0.5f },
-    { +0.5f, -0.5f },
-    { +0.5f, +0.5f },
-    { -0.5f, +0.5f}
+    { 0.0f, 0.0f },
+    { 1.0f, 0.0f },
+    { 1.0f, 1.0f },
+    { 0.0f, 1.0f }
   };
 
   const glm::vec2 vUV[4] = {
@@ -36,13 +36,13 @@ namespace
 namespace bb
 {
 
-  mesh_t GeneratePlane(glm::vec2 size, glm::vec3 pos)
+  mesh_t GeneratePlane(glm::vec2 size, glm::vec3 pos, glm::vec2 origin)
   {
     glm::vec3 xPos[4] = {
-      glm::vec3(vPos[0]*size, 0.0f),
-      glm::vec3(vPos[1]*size, 0.0f),
-      glm::vec3(vPos[2]*size, 0.0f),
-      glm::vec3(vPos[3]*size, 0.0f)
+      glm::vec3((vPos[0]-origin)*size, 0.0f),
+      glm::vec3((vPos[1]-origin)*size, 0.0f),
+      glm::vec3((vPos[2]-origin)*size, 0.0f),
+      glm::vec3((vPos[3]-origin)*size, 0.0f)
     };
 
     xPos[0] += pos;
@@ -76,10 +76,10 @@ namespace bb
       float zPos = static_cast<float>(i)*deltaZ + startZ;
 
       glm::vec3 xPos[4] = {
-        glm::vec3(vPos[0]*size, zPos),
-        glm::vec3(vPos[1]*size, zPos),
-        glm::vec3(vPos[2]*size, zPos),
-        glm::vec3(vPos[3]*size, zPos)
+        glm::vec3((vPos[0]-vec2_t(0.5f))*size, zPos),
+        glm::vec3((vPos[1]-vec2_t(0.5f))*size, zPos),
+        glm::vec3((vPos[2]-vec2_t(0.5f))*size, zPos),
+        glm::vec3((vPos[3]-vec2_t(0.5f))*size, zPos)
       };
 
       uint16_t indecies[6] = {

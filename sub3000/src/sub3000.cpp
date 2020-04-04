@@ -27,7 +27,7 @@ namespace sub3000
     mail->Put(std::move(msg));
   }
 
-  bool RequestGenerateMap(uint16_t width, uint16_t height, float radius, int sendResultToID)
+  bool RequestGenerateMap(bb::actorPID_t sendResultToID)
   {
     std::unique_lock<std::mutex> lock(g_mapGenLock);
     if (g_mapGenActorID == -1)
@@ -35,12 +35,31 @@ namespace sub3000
       return false;
     }
 
+    auto config = bb::config_t("genmap.config");
+
+    auto maxWidth = static_cast<uint16_t>(config.Value("map.width", 2048.0));
+    auto maxHeight = static_cast<uint16_t>(config.Value("map.height", 2048.0));
+
+    auto mapSeed = static_cast<int64_t>(config.Value("map.seed", 0.0));
+    auto mapRadiusStart = static_cast<float>(config.Value("map.radius.start", 1.0));
+    auto mapRadiusFinish = static_cast<float>(config.Value("map.radius.finish", 10.0));
+    auto mapRadiusRounds = static_cast<size_t>(config.Value("map.radius.rounds", 10.0));
+    auto mapFalloff = static_cast<float>(config.Value("map.falloff", 0.2));
+    auto mapPower = static_cast<float>(config.Value("map.power", 2.0));
+
     auto& pool = bb::workerPool_t::Instance();
     pool.PostMessage(
       g_mapGenActorID,
       bb::Issue<bb::ext::generate_t>(
         sendResultToID,
-        width, height, 1.0f, radius, 0, 0.8f, 10u, 2.0f
+        maxWidth,
+        maxHeight,
+        mapRadiusStart,
+        mapRadiusFinish,
+        mapSeed,
+        mapFalloff,
+        mapRadiusRounds,
+        mapPower
       )
     );
     return true;

@@ -14,6 +14,8 @@
 #include <memory>
 #include <random>
 
+#include <heightMap.hpp>
+
 namespace bb
 {
 
@@ -61,38 +63,15 @@ namespace bb
       ~generate_t() override = default;
     };
 
-    struct heightMap_t final
-    {
-      std::unique_ptr<float[]> data;
-      uint16_t width;
-      uint16_t height;
-
-      heightMap_t()
-      : width(0),
-        height(0)
-      {
-        ;
-      }
-
-      heightMap_t(uint16_t width, uint16_t height)
-      : width(width),
-        height(height)
-      {
-        assert((this->width * this->height) != 0);
-        this->data.reset(new float[this->width*this->height]);
-      }
-
-      heightMap_t(const heightMap_t&) = delete;
-      heightMap_t& operator=(const heightMap_t&) = delete;
-
-      heightMap_t(heightMap_t&&) = default;
-      heightMap_t& operator=(heightMap_t&&) = default;
-    };
-
     class done_t: public msg::basic_t
     {
       heightMap_t heightMap;
     public:
+
+      heightMap_t& HeightMap()
+      {
+        return this->heightMap;
+      }
 
       const heightMap_t& HeightMap() const
       {

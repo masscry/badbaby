@@ -6,6 +6,8 @@
  */
 
 #include <msg.hpp>
+#include <heightMap.hpp>
+#include <control.hpp>
 
 namespace sub3000
 {
@@ -38,6 +40,8 @@ namespace sub3000
       float dragCoeff;
       float crossSection;
 
+      bb::vec2_t Dir() const;
+
       data_t();
 
       data_t(const data_t&) = default;
@@ -47,6 +51,12 @@ namespace sub3000
       ~data_t() = default;
 
     };
+
+    inline bb::vec2_t data_t::Dir() const
+    {
+      return bb::Dir(this->angle);
+    }
+
 
     inline data_t::data_t()
     : pos(0.0f),
@@ -108,7 +118,7 @@ namespace sub3000
       return this->data;
     }
 
-    void Update(data_t* data, float dt);
+    void Update(data_t* data, const bb::ext::heightMap_t& hmap, float dt);
 
     int Control(data_t* data, const bb::msg::keyEvent_t& key);
 

@@ -14,9 +14,7 @@
 
 #include <scene.hpp>
 
-#ifdef __APPLE__
-#define sincosf __sincosf
-#endif /* __APPLE__ */
+#include <mapGen.hpp>
 
 namespace sub3000
 {
@@ -51,7 +49,7 @@ namespace sub3000
     while (this->cumDT > SPACE_TIME_STEP)
     {
       this->cumDT -= SPACE_TIME_STEP;
-      player::Update(&this->player, static_cast<float>(SPACE_TIME_STEP));
+      player::Update(&this->player, this->heightMap, static_cast<float>(SPACE_TIME_STEP));
     }
 
     while (this->newPointDT > NEW_POINT_TIME)
@@ -63,7 +61,7 @@ namespace sub3000
         this->units.pop_front();
       }
       this->units.emplace_back(
-        -this->player.pos
+        this->player.pos
       );
     }
   }
@@ -87,7 +85,6 @@ namespace sub3000
             this->player
           )
         );
-
       }
       return bb::msg::result_t::complete;
     }
@@ -95,6 +92,16 @@ namespace sub3000
     if (auto key = bb::msg::As<bb::msg::keyEvent_t>(msg))
     {
       player::Control(&this->player, *key);
+      return bb::msg::result_t::complete;
+    }
+
+    if (auto mapReady = bb::msg::As<bb::ext::done_t>(msg))
+    {
+      this->heightMap = mapReady->HeightMap();
+      bb::postOffice_t::Instance().Post(
+        "arenaScreen",
+        bb::Issue<bb::ext::done_t>(*mapReady)
+      );
       return bb::msg::result_t::complete;
     }
 
@@ -117,27 +124,23 @@ namespace sub3000
     this->player.maxAngleChange =  static_cast<float>(config.Value("player.max.change.angle", 0.3f));
     this->player.width = static_cast<float>(config.Value("player.width", 1.0f));
     this->player.length =  static_cast<float>(config.Value("player.length", 1.0f));
+
+    this->player.pos = glm::vec2(0.0f);
+    this->player.angle = 0.0f;
   }
 
   state_t::state_t(bb::vec2_t pos, float angle, const bb::linePoints_t& units)
+  : units(units),
+    pos(pos),
+    angle(angle)
   {
-    glm::mat3 toLocal(1.0f);
-
-    toLocal = glm::rotate(toLocal, angle);
-    toLocal = glm::translate(toLocal, pos);
-
-    for (const auto& unit: units)
-    {
-      this->units.emplace_back(
-        toLocal*glm::vec3(unit, 1.0f)
-      );
-    }
+    ;
   }
 
   namespace player
   {
 
-    void Update(data_t* data, float dt)
+    void Update(data_t* data, const bb::ext::heightMap_t&, float dt)
     {
       if (data == nullptr)
       { // programmer's mistake
@@ -153,8 +156,7 @@ namespace sub3000
       }
 
       // shipDir - direction in which linear force applied
-      bb::vec2_t shipDir;
-      sincosf(data->angle, &shipDir.x, &shipDir.y);
+      auto shipDir = data->Dir();
 
       data->crossSection = static_cast<float>(M_PI) * data->width 
         * glm::mix(data->length, data->width, std::fabs(glm::dot(velDir, shipDir)));
@@ -168,11 +170,10 @@ namespace sub3000
 
       // rudderDir.y - part of force applied to linear velocity
       // rudderDir.x - part of force applied to rotation
-      bb::vec2_t rudderDir;
-      sincosf(data->rudderPos, &rudderDir.x, &rudderDir.y);
+      bb::vec2_t rudderDir = bb::Dir(data->rudderPos);
 
       // linear force = engineForce + dragForce
-      bb::vec2_t linForce = shipDir * data->engineOutput * rudderDir.y
+      bb::vec2_t linForce = shipDir * data->engineOutput * rudderDir.y 
         + dragForce;
 
       float aVelLen = data->aVel*data->aVel;

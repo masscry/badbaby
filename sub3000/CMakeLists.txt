@@ -20,6 +20,9 @@ add_executable(sub3000
   src/authors.cpp
   src/arena.cpp
   src/space.cpp
+
+  src/arena/screen_t.cpp
+  src/arena/status_t.cpp
 )
 
 target_include_directories(sub3000

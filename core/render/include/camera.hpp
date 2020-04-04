@@ -9,20 +9,11 @@
 #ifndef __BB_CORE_RENDER_CAMERA_HEADER__
 #define __BB_CORE_RENDER_CAMERA_HEADER__
 
-#include <glm/mat4x4.hpp>
-#include <glm/vec3.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include <algebra.hpp>
 #include <ubo.hpp>
 
 namespace bb
 {
-
-  using mat4_t = glm::mat4;
-
-  using vec2_t = glm::vec2;
-  using vec3_t = glm::vec3;
-  using vec4_t = glm::vec4;
-
   class camera_t final
   {
     struct data_t {
