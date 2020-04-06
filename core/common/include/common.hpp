@@ -26,7 +26,7 @@
 
 #ifndef _GNU_SOURCE
 extern "C" int vasprintf(char** strp, const char* fmt, va_list ap);
-#endif /* _WIN32 */
+#endif /* _GNU_SOURCE */
 
 namespace bb
 {

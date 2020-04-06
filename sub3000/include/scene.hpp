@@ -10,6 +10,7 @@ namespace sub3000
 
   enum class sceneID_t
   {
+    undef = -1,
     splash = 0,
     mainMenu,
     authors,
@@ -17,6 +18,8 @@ namespace sub3000
     radarScreen,
     radarStatus,
   };
+
+  sceneID_t StringToSceneID(const std::string& str);
 
   class scene_t
   {

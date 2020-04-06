@@ -57,7 +57,8 @@ namespace sub3000
         ),
         0.0f
       ),
-      bb::vec2_t(0.5f)
+      bb::vec2_t(0.5f),
+      false
     );
 
     this->radarStatus.Prepare();
@@ -74,7 +75,8 @@ namespace sub3000
         ),
         0.0f
       ),
-      bb::vec2_t(0.5f)
+      bb::vec2_t(0.5f),
+      false
     );
 
     this->camera = bb::camera_t::Orthogonal(

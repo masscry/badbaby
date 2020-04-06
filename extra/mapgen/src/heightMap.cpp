@@ -132,12 +132,45 @@ namespace bb
       return *this;
     }
 
-    inline float modulo(float x, float y)
+    float heightMap_t::DxDy(vec2_t pos, vec2_t dir) const
     {
-      return fmodf(fmodf(x, y) + y, y);
+      if (!this->IsGood())
+      { // programmer's mistake
+        assert(0);
+        return 0.0f;
+      }
+
+      float here = this->Data(pos);
+      float there = this->Data(pos + dir);
+      return there - here;
     }
 
-    bool heightMap_t::RayCast(vec2_t pos, vec2_t dir, float height, float dist, vec2_t* pISec)
+    float heightMap_t::Data(vec2_t pos) const
+    {
+      if (!this->IsGood())
+      { // programmer's mistake
+        assert(0);
+        return 0.0f;
+      }
+
+      pos -= vec2_t(0.5f);
+
+      auto posInCell = modulo(pos, vec2_t(1.0f));
+      auto topLeftX = static_cast<size_t>(modulo(pos.x, this->Width()));
+      auto topLeftY = static_cast<size_t>(modulo(pos.y, this->Height()));
+
+      float hmatrix[2][2] = {
+        { this->Data(topLeftX, topLeftY),   this->Data(topLeftX+1, topLeftY)   },
+        { this->Data(topLeftX, topLeftY+1), this->Data(topLeftX+1, topLeftY+1) }
+      };
+
+      return hmatrix[0][0]*(1.0f-posInCell.x)*(1.0f-posInCell.y)
+        + hmatrix[0][1]*posInCell.x*(1.0f-posInCell.y)
+        + hmatrix[1][0]*(1.0f-posInCell.x)*posInCell.y
+        + hmatrix[1][1]*posInCell.x*posInCell.y;
+    }
+
+    bool heightMap_t::RayCast(vec2_t pos, vec2_t dir, float height, float step, float dist, vec2_t* pISec)
     {
       if (!this->IsGood())
       { // programmer's mistake
@@ -145,39 +178,13 @@ namespace bb
         return false;
       }
 
-      auto posOnMapX = static_cast<size_t>(modulo(pos.x, this->Width()));
-      auto posOnMapY = static_cast<size_t>(modulo(pos.y, this->Height()));
+      vec2_t start = pos;
+      float startVal = this->Data(start);
 
-      float hereHeight = this->Data(posOnMapX, posOnMapY);
-      if (hereHeight > height)
-      {
-        if (pISec != nullptr)
-        {
-          *pISec = pos;
-        }
-        return true;
-      }
+      vec2_t finish = pos + dir * dist;
+      float finishVal = this->Data(finish);
 
-      vec2_t cursor = pos;
-      float distHeight = hereHeight;
-      do 
-      {
-        cursor += dir * dist;
-
-        if (glm::length(cursor - pos) > 10.0f)
-        {
-          return false;
-        }
-
-        posOnMapX = static_cast<size_t>(modulo(cursor.x, this->Width()));
-        posOnMapY = static_cast<size_t>(modulo(cursor.y, this->Height()));
-        distHeight = this->Data(posOnMapX, posOnMapY);
-      } while (distHeight <= height);
-
-      if (pISec != nullptr)
-      {
-        *pISec = cursor;
-      }
+      *pISec = finish;
       return true;
     }
 

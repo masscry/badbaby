@@ -47,6 +47,19 @@ namespace bb
   }
 #endif
 
+  inline float modulo(float x, float y)
+  {
+    return fmodf(fmodf(x, y) + y, y);
+  }
+
+  inline vec2_t modulo(vec2_t v, vec2_t m)
+  {
+    return vec2_t(
+      modulo(v.x, m.x),
+      modulo(v.y, m.y)
+    );
+  }
+
 }
 
 #endif /* __BB_RENDER_ALGEBRA_HEADER__ */

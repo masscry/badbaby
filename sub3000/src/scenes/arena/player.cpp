@@ -18,127 +18,25 @@
 
 namespace sub3000
 {
-
-  namespace engine 
-  {
   
-    modeList_t::modeList_t(const bb::config_t& config)
-    {
-      this->output[mode_t::full_ahead] = static_cast<float>(config.Value("engine.full_ahead", 0.5));
-      this->output[mode_t::half_ahead] = static_cast<float>(config.Value("engine.half_ahead", 0.25));
-      this->output[mode_t::slow_ahead] = static_cast<float>(config.Value("engine.slow_ahead", 0.125));
-      this->output[mode_t::dead_slow_ahead] = static_cast<float>(config.Value("engine.dead_slow_ahead", 0.05));
-      this->output[mode_t::stop] = 0.0f;
-      this->output[mode_t::dead_slow_astern] = static_cast<float>(config.Value("engine.slow_astern", -0.025));
-      this->output[mode_t::slow_astern] = static_cast<float>(config.Value("engine.slow_astern", -0.05));
-      this->output[mode_t::half_astern] = static_cast<float>(config.Value("engine.half_astern", -0.125));
-      this->output[mode_t::full_astern] = static_cast<float>(config.Value("engine.full_astern", -0.25));
-    }
-
-  } // namespace engine
-
-
-  const double SPACE_TIME_STEP = 1.0/30.0;
-
-  const double NEW_POINT_TIME = 1.0;
-
-  void space_t::Step(double dt)
-  {
-    this->cumDT += dt;
-    this->newPointDT += dt;
-    while (this->cumDT > SPACE_TIME_STEP)
-    {
-      this->cumDT -= SPACE_TIME_STEP;
-      player::Update(&this->player, this->heightMap, static_cast<float>(SPACE_TIME_STEP));
-    }
-
-    while (this->newPointDT > NEW_POINT_TIME)
-    {
-      this->newPointDT -= NEW_POINT_TIME;
-
-      if (this->units.size() > 1000)
-      {
-        this->units.pop_front();
-      }
-      this->units.emplace_back(
-        this->player.pos
-      );
-    }
-  }
-
-  bb::msg::result_t space_t::OnProcessMessage(const bb::actor_t&, const bb::msg::basic_t& msg)
-  {
-    if (auto step = bb::msg::As<step_t>(msg))
-    {
-      this->Step(step->DeltaTime());
-
-      if (step->Source() != bb::INVALID_ACTOR)
-      {
-        bb::workerPool_t::Instance().PostMessage(
-          step->Source(),
-          bb::Issue<state_t>(this->player.pos, this->player.angle, this->units)
-        );
-
-        bb::postOffice_t::Instance().Post(
-          "arenaStatus",
-          bb::Issue<player::status_t>(
-            this->player
-          )
-        );
-      }
-      return bb::msg::result_t::complete;
-    }
-
-    if (auto key = bb::msg::As<bb::msg::keyEvent_t>(msg))
-    {
-      player::Control(&this->player, *key);
-      return bb::msg::result_t::complete;
-    }
-
-    if (auto mapReady = bb::msg::As<bb::ext::done_t>(msg))
-    {
-      this->heightMap = mapReady->HeightMap();
-      bb::postOffice_t::Instance().Post(
-        "arenaScreen",
-        bb::Issue<bb::ext::done_t>(*mapReady)
-      );
-      return bb::msg::result_t::complete;
-    }
-
-    bb::Error("Unknown message: %s", typeid(msg).name());
-    assert(0);
-    return bb::msg::result_t::error;
-  }
-
-  space_t::space_t()
-  : cumDT(0.0),
-    newPointDT(0.0)
-  {
-    bb::config_t config;
-    config.Load("./arena.config");
-
-    this->player.mass = static_cast<float>(config.Value("player.mass", 1.0f));
-    this->player.rotMoment = static_cast<float>(config.Value("player.moment", 1.0f));
-    this->player.engineModeList = engine::modeList_t(config);
-    this->player.maxOutputChange =  static_cast<float>(config.Value("player.max.change.output", 0.1f));
-    this->player.maxAngleChange =  static_cast<float>(config.Value("player.max.change.angle", 0.3f));
-    this->player.width = static_cast<float>(config.Value("player.width", 1.0f));
-    this->player.length =  static_cast<float>(config.Value("player.length", 1.0f));
-
-    this->player.pos = glm::vec2(0.0f);
-    this->player.angle = 0.0f;
-  }
-
-  state_t::state_t(bb::vec2_t pos, float angle, const bb::linePoints_t& units)
-  : units(units),
-    pos(pos),
-    angle(angle)
-  {
-    ;
-  }
-
   namespace player
   {
+
+    bb::vec2_t ControlDir()
+    {
+      auto& context = bb::context_t::Instance();
+      bb::vec2_t result = {
+        context.IsKeyDown(GLFW_KEY_D) - context.IsKeyDown(GLFW_KEY_A),
+        context.IsKeyDown(GLFW_KEY_S) - context.IsKeyDown(GLFW_KEY_W)
+      };
+
+      auto len = glm::length(result);
+      if (len != 0.0f)
+      {
+        return result/len;
+      }
+      return bb::vec2_t(0.0f);
+    }
 
     void Update(data_t* data, const bb::ext::heightMap_t&, float dt)
     {
@@ -147,6 +45,10 @@ namespace sub3000
         assert(0);
         return;
       }
+
+      data->pos += ControlDir()*dt*10.0f;
+
+      /*
 
       float velLen = glm::dot(data->vel, data->vel); // two times velocity
       bb::vec2_t velDir(0.0f);
@@ -224,6 +126,9 @@ namespace sub3000
         -data->maxAngleChange,
          data->maxAngleChange
       )*dt;
+
+      */
+
     }
 
     int Control(data_t* data, const bb::msg::keyEvent_t& key)
@@ -239,6 +144,8 @@ namespace sub3000
         return 0;
       }
 
+      /*
+
       int control = (key.Key() == GLFW_KEY_DOWN) - (key.Key() == GLFW_KEY_UP);
       int newOutput = control + data->engine;
       if ((newOutput >= engine::full_ahead) && (newOutput <= engine::full_astern))
@@ -252,6 +159,9 @@ namespace sub3000
       {
         data->rudder = static_cast<rudder::mode_t>(newRudder);
       }
+
+      */
+
       if (key.Key() == GLFW_KEY_ESCAPE)
       {
         sub3000::PostChangeScene(sub3000::sceneID_t::mainMenu);

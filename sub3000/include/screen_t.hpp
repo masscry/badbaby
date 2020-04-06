@@ -27,7 +27,11 @@ namespace sub3000
     {
       bb::framebuffer_t fb;
       bb::shader_t shader;
+
+
+      bb::camera_t radarCamera;
       bb::mesh_t radar;
+
       bb::camera_t camera;
       bb::mesh_t units;
       bb::mailbox_t::shared_t box;

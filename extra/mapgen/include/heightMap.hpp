@@ -26,6 +26,9 @@ namespace bb
 
     public:
 
+      float Data(vec2_t pos) const;
+      float DxDy(vec2_t pos, vec2_t dir) const;
+
       uint16_t Width() const;
       uint16_t Height() const;
 
@@ -35,7 +38,7 @@ namespace bb
       float& Data(size_t x, size_t y);
       float Data(size_t x, size_t y) const;
 
-      bool RayCast(vec2_t pos, vec2_t dir, float height, float dist, vec2_t* pISec);
+      bool RayCast(vec2_t pos, vec2_t dir, float height, float step, float dist, vec2_t* pISec);
 
       float Max() const;
       float Min() const;

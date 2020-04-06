@@ -101,17 +101,27 @@ int main(int argc, char* argv[])
     return -1;
   }
 
-  auto& context = bb::context_t::Instance();
-
-  sub3000::PushScene(sub3000::GetScene(sub3000::sceneID_t::splash));
-  sub3000::deltaTime_t dt;
-  bb::msg_t msgToMain;
-
   auto& pool = bb::workerPool_t::Instance();
   {
     std::unique_lock<std::mutex> lock(g_mapGenLock);
     g_mapGenActorID = pool.Register<bb::ext::mapGen_t>();
   }
+
+  auto& context = bb::context_t::Instance();
+
+  bb::config_t defaultConfig = bb::config_t("default.config");
+  auto sceneName = defaultConfig.Value("scene", "Splash");
+  auto sceneID = sub3000::StringToSceneID(sceneName);
+
+  if (sceneID == sub3000::sceneID_t::undef)
+  {
+    bb::Error("Unknown Scene: \"%s\". Abort!", sceneName.c_str());
+    return -1;
+  }
+
+  sub3000::PushScene(sub3000::GetScene(sceneID));
+  sub3000::deltaTime_t dt;
+  bb::msg_t msgToMain;
 
   bool loop = true;
   while(loop)

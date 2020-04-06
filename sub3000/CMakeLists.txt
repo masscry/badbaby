@@ -14,15 +14,17 @@ add_executable(sub3000
 # Sources
   src/sub3000.cpp
   src/scene.cpp
-  src/splash.cpp
-  src/mainMenu.cpp
   src/actionTable.cpp
-  src/authors.cpp
-  src/arena.cpp
-  src/space.cpp
 
-  src/arena/screen_t.cpp
-  src/arena/status_t.cpp
+  src/scenes/mainMenu.cpp
+  src/scenes/splash.cpp
+  src/scenes/authors.cpp
+  src/scenes/arena.cpp
+
+  src/scenes/arena/player.cpp
+  src/scenes/arena/space.cpp
+  src/scenes/arena/screen_t.cpp
+  src/scenes/arena/status_t.cpp
 )
 
 target_include_directories(sub3000

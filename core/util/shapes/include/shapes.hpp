@@ -52,7 +52,7 @@ namespace bb
     return (this->totalVerts != 0) && (this->vao.Good());
   }
 
-  mesh_t GeneratePlane(glm::vec2 size, glm::vec3 pos, glm::vec2 origin);
+  mesh_t GeneratePlane(glm::vec2 size, glm::vec3 pos, glm::vec2 origin, bool flipY);
 
   mesh_t GeneratePlaneStack(glm::vec2 size, uint32_t stackDepth, float startZ, float endZ);
 

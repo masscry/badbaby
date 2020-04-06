@@ -4,6 +4,7 @@
 layout(location = 0) out vec4 outColor;
 
 in vec2 fragUV;
+in float depth;
 
 uniform sampler2D mainTex;
 uniform float time;
@@ -16,9 +17,7 @@ const float border = 0.4;
 
 void main()
 {
-  float fdepth = texture(mainTex,
-    vec2(fragUV.x + time/60.0f, fragUV.y)
-  ).r;
+  float fdepth = texture(mainTex, fragUV).r;
 
   vec3 waterColor = mix(black, water, (1.0f - fdepth)/border);
   vec3 landColor = mix(black, land, (1.0f - fdepth)/(1.0f-border));

@@ -91,7 +91,7 @@ int main(int argc, char* argv[])
 
   mailbox->Put(bb::Issue<newConfig_t>());
 
-  auto plane = bb::GeneratePlane(glm::vec2(100.0f, 100.0f), glm::vec3(0.0f), bb::vec2_t(0.5f));
+  auto plane = bb::GeneratePlane(glm::vec2(100.0f, 100.0f), glm::vec3(0.0f), bb::vec2_t(0.5f), false);
 
   auto renderProgram = bb::shader_t::LoadProgramFromFiles(
     "006simplex_vp.glsl",

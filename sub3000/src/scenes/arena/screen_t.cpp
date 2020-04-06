@@ -31,8 +31,12 @@ namespace sub3000
         bb::meshDesc_t::Load(input)
       );
 
-      this->camera = bb::camera_t::Orthogonal(
+      this->radarCamera = bb::camera_t::Orthogonal(
         -1.0f, 1.0f, 1.0f, -1.0f
+      );
+
+      this->camera = bb::camera_t::Orthogonal(
+        -10.0f, 10.0f, 10.0f, -10.0f
       );
 
       this->fb = bb::framebuffer_t(512, 512);
@@ -59,9 +63,10 @@ namespace sub3000
       );
 
       this->debugMapMesh = bb::GeneratePlane(
-        bb::vec2_t(1.0f, 0.5f),
+        bb::vec2_t(512.0f, 256.0f),
         bb::vec3_t(0.0f),
-        bb::vec2_t(0.0f)
+        bb::vec2_t(0.0f),
+        true
       );
 
     }
@@ -69,7 +74,7 @@ namespace sub3000
     void screen_t::UpdateUnits(const bb::linePoints_t& units)
     {
       this->units = bb::GenerateMesh(
-        bb::DefinePoints(0.02f, units)
+        bb::DefinePoints(0.1f, units)
       );
     }
 
@@ -88,13 +93,13 @@ namespace sub3000
           this->UpdateUnits(state->Units());
         }
 
-        this->camera.View() = glm::rotate(
-          glm::translate(
+        this->camera.View() = glm::translate(
+          glm::rotate(
             glm::mat4(1.0f),
-            glm::vec3(-state->Pos(), 0.0f)
+            -state->Angle(),
+            glm::vec3(0.0f, 0.0f, 1.0f)
           ),
-          -state->Angle(),
-          glm::vec3(0.0f, 0.0f, 1.0f)
+          glm::vec3(-state->Pos(), 0.0f)
         );
 
       }
@@ -106,15 +111,18 @@ namespace sub3000
           mapReady->HeightMap().Height(),
           mapReady->HeightMap().Data()
         );
+        this->debugMapTex.SetFilter(GL_LINEAR, GL_LINEAR);
       }
     }
 
     void screen_t::OnRender()
     {
       camera.Update();
+      radarCamera.Update();
 
       bb::framebuffer_t::Bind(this->fb);
 
+      glDisable(GL_CULL_FACE);
       glDisable(GL_DEPTH_TEST);
       glBlendFunc(
         GL_ONE, GL_ONE_MINUS_SRC_ALPHA
@@ -140,7 +148,12 @@ namespace sub3000
       {
         this->units.Render();
       }
-//      this->radar.Render();
+
+      this->shader.SetBlock(
+        this->shader.UniformBlockIndex("camera"),
+        this->radarCamera.UniformBlock()
+      );
+      this->radar.Render();
     }
 
     void screen_t::OnCleanup()

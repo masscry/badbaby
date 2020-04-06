@@ -50,8 +50,8 @@ find_package(Threads REQUIRED)
 add_library(badbaby INTERFACE)
 
 target_compile_options(badbaby INTERFACE
-  $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra -Wconversion -Werror -fdiagnostics-color=always>
-  $<$<CXX_COMPILER_ID:Clang>:-Wall -Wextra -Wconversion -Werror -fcolor-diagnostics>
+  $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra -Wconversion -fdiagnostics-color=always>
+  $<$<CXX_COMPILER_ID:Clang>:-Wall -Wextra -Wconversion -fcolor-diagnostics>
 )
 
 if (BB_WINDOWS)
