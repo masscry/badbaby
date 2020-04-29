@@ -40,7 +40,7 @@ namespace sub3000
 
   const double SPACE_TIME_STEP = 1.0/30.0;
 
-  const double NEW_POINT_TIME = 1.0;
+  const double NEW_POINT_TIME = 0.05;
 
   void space_t::Step(double dt)
   {
@@ -56,26 +56,32 @@ namespace sub3000
     {
       this->newPointDT -= NEW_POINT_TIME;
 
-      if (this->heightMap.IsGood())
+      if (this->distMap.IsGood())
       {
-        this->units.clear();
+        if (this->units.size() >= 45)
+        {
+          this->units.pop_front();
+        }
 
         auto start = glfwGetTime();
-        for (float angle = -180.0f, finish = 180.0f; angle < finish; angle += 1.0f )
-        {
-          bb::vec2_t isec;
+        auto dir = bb::Dir(glm::radians(this->player.radarAngle)-this->player.angle);
 
-          for (float height = 0.4f; height <= 0.50f; height += 0.01)
-          {
-            if (this->heightMap.RayCast(this->player.pos, bb::Dir(this->player.angle + angle), height, 1.0f, 10.0f, &isec))
-            {
-              this->units.emplace_back(
-                isec
-              );
-            }
-          }
+        bb::vec3_t isec;
+
+        if (this->distMap.CastRay(
+            bb::vec3_t(this->player.pos - bb::vec2_t(0.5f), this->player.depth),
+            bb::vec3_t(dir, 0.0f),
+            &isec, -1.0f
+            )
+          )
+        {
+          this->units.emplace_back(bb::vec2_t(isec) + bb::vec2_t(0.5f));
         }
+
+        this->player.radarAngle = fmodf(this->player.radarAngle + 2.0f, 359.0f);
+
         auto finish = glfwGetTime();
+
         bb::context_t::Instance().Title(
           std::to_string(
             finish - start
@@ -95,7 +101,14 @@ namespace sub3000
       {
         bb::workerPool_t::Instance().PostMessage(
           step->Source(),
-          bb::Issue<state_t>(this->player.pos, this->player.angle, this->units)
+          bb::Issue<state_t>(
+            this->player.pos,
+            this->player.angle,
+            this->player.depth,
+            this->units,
+            this->player.radarAngle,
+            this->player.vel
+          )
         );
 
         bb::postOffice_t::Instance().Post(
@@ -114,13 +127,17 @@ namespace sub3000
       return bb::msg::result_t::complete;
     }
 
-    if (auto mapReady = bb::msg::As<bb::ext::done_t>(msg))
+    if (auto mapReady = bb::msg::As<bb::ext::hmDone_t>(msg))
     {
       this->heightMap = mapReady->HeightMap();
+      this->heightMap.Dump("hmap");
+
+      this->distMap = mapReady->DistanceMap();
+      this->distMap.Dump("dmap");
 
       bb::postOffice_t::Instance().Post(
         "arenaScreen",
-        bb::Issue<bb::ext::done_t>(*mapReady)
+        bb::Issue<bb::ext::hmDone_t>(*mapReady)
       );
       return bb::msg::result_t::complete;
     }

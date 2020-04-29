@@ -92,7 +92,7 @@ namespace sub3000
       return bb::msg::result_t::complete;
     }
 
-    if (auto done = bb::msg::As<bb::ext::done_t>(msg))
+    if (auto done = bb::msg::As<bb::ext::hmDone_t>(msg))
     {
       bb::Debug("Map Generation Done: %d %d",
         done->HeightMap().Width(),
@@ -248,24 +248,24 @@ namespace sub3000
 
       if (this->selectedMenuLine == line)
       {
-        itemColor.r = 1.0f;
-        itemColor.g = 0.4f;
-        itemColor.b = 0.4f;
+        itemColor.x = 1.0f;
+        itemColor.y = 0.4f;
+        itemColor.z = 0.4f;
       }
       else
       {
-        itemColor.r = 0.4f;
-        itemColor.g = 0.4f;
-        itemColor.b = 0.4f;
+        itemColor.x = 0.4f;
+        itemColor.y = 0.4f;
+        itemColor.z = 0.4f;
       }
       
-      this->shader.SetVector3f(this->glyphColorBindPoint, 1, &itemColor.r);
+      this->shader.SetVector3f(this->glyphColorBindPoint, 1, &itemColor.x);
       this->shader.SetMatrix(this->modelBindPoint, &item.node.Model()[0][0]);
       item.text.Render();
       ++line;
     }
 
-    this->shader.SetVector3f(this->glyphColorBindPoint, 1, &infoNodeColor.r);
+    this->shader.SetVector3f(this->glyphColorBindPoint, 1, &infoNodeColor.x);
     this->shader.SetMatrix(this->modelBindPoint, &this->gameInfoNode.Model()[0][0]);
     this->gameInfoText.Render();
 

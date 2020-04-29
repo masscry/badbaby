@@ -11,9 +11,11 @@ uniform camera
 };
 
 out vec2 fragUV;
+out vec2 projView;
 
 void main()
 {
   fragUV = uv;
   gl_Position = proj * view * vec4(pos, 1.0f);
+  projView = gl_Position.xy;
 }

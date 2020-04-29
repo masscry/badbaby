@@ -18,17 +18,24 @@ namespace sub3000
   {
     bb::linePoints_t units;
     bb::vec2_t pos;
+    bb::vec2_t vel;
     float angle;
+    float depth;
+    float radarAngle;
   public:
+
+    bb::vec2_t& Vel();
 
     bb::vec2_t& Pos();
     float& Angle();
+    float& Depth();
+    float& RadarAngle();
 
     bb::linePoints_t& Units();
 
     const bb::linePoints_t& Units() const;
 
-    state_t(bb::vec2_t pos, float angle, const bb::linePoints_t& units);
+    state_t(bb::vec2_t pos, float angle, float depth, const bb::linePoints_t& units, float radarAngle, bb::vec2_t vel);
 
     state_t(const state_t&) = default;
     state_t& operator=(const state_t&) = default;
@@ -39,12 +46,25 @@ namespace sub3000
     ~state_t() override = default;
   };
 
-    inline state_t::state_t(bb::vec2_t pos, float angle, const bb::linePoints_t& units)
+  inline state_t::state_t(bb::vec2_t pos, float angle, float depth, const bb::linePoints_t& units, float radarAngle, bb::vec2_t vel)
   : units(units),
     pos(pos),
-    angle(angle)
+    vel(vel),
+    angle(angle),
+    depth(depth),
+    radarAngle(radarAngle)
   {
     ;
+  }
+
+  inline bb::vec2_t& state_t::Vel()
+  {
+    return this->vel;
+  }
+
+  inline float& state_t::Depth()
+  {
+    return this->depth;
   }
 
   inline bb::vec2_t& state_t::Pos()
@@ -65,6 +85,11 @@ namespace sub3000
   inline const bb::linePoints_t& state_t::Units() const
   {
     return this->units;
+  }
+
+  inline float& state_t::RadarAngle()
+  {
+    return this->radarAngle;
   }
 
 }

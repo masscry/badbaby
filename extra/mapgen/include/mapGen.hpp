@@ -15,6 +15,7 @@
 #include <random>
 
 #include <heightMap.hpp>
+#include <distanceMap.hpp>
 
 namespace bb
 {
@@ -26,8 +27,8 @@ namespace bb
     {
     public:
       int64_t seed;
-      uint16_t width;
-      uint16_t height;
+      size_t width;
+      size_t height;
       float radiusStart;
       float radiusFinish;
       size_t radiusRounds;
@@ -42,7 +43,7 @@ namespace bb
         );
       }
 
-      generate_t(actorPID_t src, uint16_t width, uint16_t height, float start, float finish, int64_t seed, float falloff, size_t rounds, float power)
+      generate_t(actorPID_t src, size_t width, size_t height, float start, float finish, int64_t seed, float falloff, size_t rounds, float power)
       : msg::basic_t(src),
         seed(seed),
         width(width),
@@ -63,14 +64,25 @@ namespace bb
       ~generate_t() override = default;
     };
 
-    class done_t: public msg::basic_t
+    class hmDone_t: public msg::basic_t
     {
       heightMap_t heightMap;
+      distanceMap_t distMap;
     public:
+
+      distanceMap_t& DistanceMap()
+      {
+        return this->distMap;
+      }
 
       heightMap_t& HeightMap()
       {
         return this->heightMap;
+      }
+
+      const distanceMap_t& DistanceMap() const
+      {
+        return this->distMap;
       }
 
       const heightMap_t& HeightMap() const
@@ -78,19 +90,20 @@ namespace bb
         return this->heightMap;
       }
 
-      done_t(actorPID_t src, heightMap_t&& heightMap)
+      hmDone_t(actorPID_t src, heightMap_t&& heightMap, distanceMap_t&& distMap)
       : msg::basic_t(src),
-        heightMap(std::move(heightMap))
+        heightMap(std::move(heightMap)),
+        distMap(std::move(distMap))
       {
         ;
       }
 
-      done_t(const done_t&) = default;
-      done_t& operator=(const done_t&) = default;
-      done_t(done_t&&) = default;
-      done_t& operator=(done_t&&) = default;
+      hmDone_t(const hmDone_t&) = default;
+      hmDone_t& operator=(const hmDone_t&) = default;
+      hmDone_t(hmDone_t&&) = default;
+      hmDone_t& operator=(hmDone_t&&) = default;
 
-      ~done_t() override = default;
+      ~hmDone_t() override = default;
 
     };
 

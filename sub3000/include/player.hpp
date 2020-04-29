@@ -40,6 +40,11 @@ namespace sub3000
       float dragCoeff;
       float crossSection;
 
+      bool clip;
+      float radarAngle;
+
+      float depth;
+
       bb::vec2_t Dir() const;
 
       data_t();
@@ -54,9 +59,8 @@ namespace sub3000
 
     inline bb::vec2_t data_t::Dir() const
     {
-      return bb::Dir(this->angle);
+      return bb::Dir(-this->angle);
     }
-
 
     inline data_t::data_t()
     : pos(0.0f),
@@ -74,7 +78,10 @@ namespace sub3000
       width(1.0f),
       length(1.0f),
       dragCoeff(0.0f),
-      crossSection(0.0f)
+      crossSection(0.0f),
+      clip(true),
+      radarAngle(0.0f),
+      depth(28.0f)
     {
       ;
     }

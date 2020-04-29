@@ -6,6 +6,8 @@
 
 #include <limits>
 
+#include <common.hpp>
+
 namespace bb
 {
 
@@ -132,28 +134,13 @@ namespace bb
       return *this;
     }
 
-    float heightMap_t::DxDy(vec2_t pos, vec2_t dir) const
+    float heightMap_t::Sample(vec2_t pos) const
     {
       if (!this->IsGood())
       { // programmer's mistake
         assert(0);
         return 0.0f;
       }
-
-      float here = this->Data(pos);
-      float there = this->Data(pos + dir);
-      return there - here;
-    }
-
-    float heightMap_t::Data(vec2_t pos) const
-    {
-      if (!this->IsGood())
-      { // programmer's mistake
-        assert(0);
-        return 0.0f;
-      }
-
-      pos -= vec2_t(0.5f);
 
       auto posInCell = modulo(pos, vec2_t(1.0f));
       auto topLeftX = static_cast<size_t>(modulo(pos.x, this->Width()));
@@ -170,24 +157,34 @@ namespace bb
         + hmatrix[1][1]*posInCell.x*posInCell.y;
     }
 
-    bool heightMap_t::RayCast(vec2_t pos, vec2_t dir, float height, float step, float dist, vec2_t* pISec)
+    int heightMap_t::Dump(const std::string& fname) const
     {
-      if (!this->IsGood())
-      { // programmer's mistake
-        assert(0);
-        return false;
+      FILE* output = fopen((fname + ".pgm").c_str(), "w");
+      if (output == nullptr)
+      {
+        return -1;
       }
+      BB_DEFER(fclose(output));
 
-      vec2_t start = pos;
-      float startVal = this->Data(start);
+      fprintf(output, "P2\n%u %u\n%u\n", this->Width(), this->Height(), 255);
 
-      vec2_t finish = pos + dir * dist;
-      float finishVal = this->Data(finish);
-
-      *pISec = finish;
-      return true;
+      for (size_t y = 0; y < this->Height(); ++y)
+      {
+        for (size_t x = 0; x < this->Width(); ++x)
+        {
+          fprintf(output, "%u ", (static_cast<uint32_t>(this->Data(x, y)*0xFF) & 0xFF));
+        }
+        fprintf(output, "\n");
+      }
+      return 0;
     }
 
+    void heightMap_t::Clear()
+    {
+      this->data.reset();
+      this->width = 0;
+      this->height = 0;
+    }
 
   } // namespace ext
   

@@ -11,6 +11,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <utility>
 
 #include <algebra.hpp>
 
@@ -26,19 +27,31 @@ namespace bb
 
     public:
 
-      float Data(vec2_t pos) const;
-      float DxDy(vec2_t pos, vec2_t dir) const;
+      void Clear();
+
+      float& operator[](size_t pos);
+      float operator[](size_t pos) const;
+
+      float Sample(vec2_t pos) const;
+
+      template<typename... args_t>
+      float Sample(args_t&&... args) const
+      {
+        return this->Sample(vec2_t(std::forward<args_t>(args)...));
+      }
+
+      float Sample(vec3_t pos) const;
 
       uint16_t Width() const;
       uint16_t Height() const;
+
+      int Dump(const std::string& fname) const;
 
       float* Data();
       const float* Data() const;
 
       float& Data(size_t x, size_t y);
       float Data(size_t x, size_t y) const;
-
-      bool RayCast(vec2_t pos, vec2_t dir, float height, float step, float dist, vec2_t* pISec);
 
       float Max() const;
       float Min() const;
@@ -59,6 +72,22 @@ namespace bb
       heightMap_t(heightMap_t&&) = default;
       heightMap_t& operator=(heightMap_t&&) = default;
     };
+
+    inline float heightMap_t::Sample(vec3_t pos) const
+    {
+      float result = this->Sample(vec2_t(pos));
+      return pos.z - result;
+    }
+
+    inline float& heightMap_t::operator[](size_t pos)
+    {
+      return this->data[pos];
+    }
+
+    inline float heightMap_t::operator[](size_t pos) const
+    {
+      return this->data[pos];
+    }
 
     inline uint16_t heightMap_t::Width() const
     {
@@ -87,7 +116,7 @@ namespace bb
 
     inline float heightMap_t::Data(size_t x, size_t y) const
     {
-      return this->data[y * this->width + x];
+      return (const_cast<heightMap_t*>(this))->Data(x, y);
     }
 
     inline bool heightMap_t::IsGood() const

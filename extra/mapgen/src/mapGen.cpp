@@ -17,9 +17,10 @@ namespace bb
 
     heightMap_t MakeHMapUsingOctaves(const generate_t& params)
     {
+      assert((params.width < 0x10000) && (params.height < 0x10000));
       auto simplex = simplex_t(params.seed);
 
-      heightMap_t heightMap(params.width, params.height);
+      heightMap_t heightMap(params.width & 0xFFFF, params.height & 0xFFFF);
 
       double radiusStart = params.radiusStart;
       double radiusFinish = params.radiusFinish;
@@ -27,14 +28,24 @@ namespace bb
 
       std::vector<double> octave(maxRadiusRounds);
 
-      for (size_t row = 0; row < heightMap.Height(); ++row)
-      {
-        double theta = (row / static_cast<double>(heightMap.Height())) * M_PI;
-        for (size_t col = 0; col < heightMap.Width(); ++col)
-        {
-          double phi = (col / static_cast<double>(heightMap.Width())) * M_PI * 2.0f;
-          glm::dvec3 coords(sin(theta) * cos(phi), sin(theta) * sin(phi), cos(theta));
+      auto resolution = params.Dimension();
 
+      size_t cursor = 0;
+
+      for(size_t y = 0; y < params.height; ++y)
+      {
+        double sinTheta;
+        double cosTheta;
+        sincos((y/resolution.y)*M_PI, &sinTheta, &cosTheta);
+
+        for (size_t x = 0; x < params.width; ++x)
+        {
+          double phi = -M_PI + (x/resolution.x)*M_PI*2.0;
+          double sinPhi;
+          double cosPhi;
+          sincos(phi, &sinPhi, &cosPhi);
+
+          glm::dvec3 coords(sinTheta*cosPhi, sinTheta*sinPhi, cosTheta);
           for (auto round = 0u; round < maxRadiusRounds; ++round)
           {
             auto radius = glm::mix(radiusStart, radiusFinish, round / static_cast<double>(maxRadiusRounds));
@@ -44,8 +55,9 @@ namespace bb
 
           for (auto octaveVal : octave)
           {
-            heightMap.Data(col, row) += octaveVal;
+            heightMap[cursor] += octaveVal;
           }
+          ++cursor;
         }
       }
 
@@ -62,7 +74,6 @@ namespace bb
 
     msg::result_t mapGen_t::OnProcessMessage(const actor_t &actor, const msg::basic_t &msg)
     {
-
       if (auto genParams = msg::As<generate_t>(msg))
       {
         if ((genParams->width * genParams->height == 0) || (genParams->radiusStart == 0.0f) || (genParams->radiusFinish == 0.0f) || (genParams->radiusRounds == 0))
@@ -71,10 +82,11 @@ namespace bb
         }
 
         auto heightMap = MakeHMapUsingOctaves(*genParams);
+        auto distMap = bb::ext::distanceMap_t(heightMap, 64);
 
         workerPool_t::Instance().PostMessage(
             genParams->Source(),
-            Issue<done_t>(actor.ID(), std::move(heightMap)));
+            Issue<hmDone_t>(actor.ID(), std::move(heightMap), std::move(distMap)));
         return msg::result_t::complete;
       }
 

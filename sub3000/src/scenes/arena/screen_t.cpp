@@ -12,20 +12,22 @@ namespace sub3000
 
     void screen_t::OnPrepare()
     {
-      bb::config_t menuConfig;
-      menuConfig.Load("./arena.config");
+      bb::config_t screenConfig;
+      screenConfig.Load("./arena.config");
 
       this->shader = bb::shader_t::LoadProgramFromFiles(
-        menuConfig.Value("radar.shader.vp", "radar.vp.glsl").c_str(),
-        menuConfig.Value("radar.shader.fp", "radar.fp.glsl").c_str()
+        screenConfig.Value("radar.shader.vp", "radar.vp.glsl").c_str(),
+        screenConfig.Value("radar.shader.fp", "radar.fp.glsl").c_str()
       );
 
-      FILE* input = fopen(menuConfig.Value("radar.mesh", "radar.msh").c_str(), "rb");
+      FILE* input = fopen(screenConfig.Value("radar.mesh", "radar.msh").c_str(), "rb");
       if (input == nullptr)
       { // resource not found!
         assert(0);
       }
       BB_DEFER(fclose(input));
+
+      this->pointSize = static_cast<float>(screenConfig.Value("radar.pointSize", 0.2f));
 
       this->radar = bb::GenerateMesh(
         bb::meshDesc_t::Load(input)
@@ -35,8 +37,13 @@ namespace sub3000
         -1.0f, 1.0f, 1.0f, -1.0f
       );
 
+      this->worldScale = static_cast<float>(screenConfig.Value("radar.scale", 10.0));
+
       this->camera = bb::camera_t::Orthogonal(
-        -10.0f, 10.0f, 10.0f, -10.0f
+        -this->worldScale/4.0f,
+         this->worldScale/4.0f,
+         this->worldScale/4.0f,
+        -this->worldScale/4.0f
       );
 
       this->fb = bb::framebuffer_t(512, 512);
@@ -71,10 +78,16 @@ namespace sub3000
 
     }
 
-    void screen_t::UpdateUnits(const bb::linePoints_t& units)
+    void screen_t::UpdateUnits(const bb::linePoints_t& units, float radarAngle)
     {
-      this->units = bb::GenerateMesh(
-        bb::DefinePoints(0.1f, units)
+      this->units = bb::GenerateMesh(bb::DefinePoints(this->pointSize, units));
+
+      this->radarLine = bb::GenerateLine(
+        0.02f,
+        bb::linePoints_t{
+          {0.0f, 0.0f},
+          bb::Dir(glm::radians(radarAngle))
+        }
       );
     }
 
@@ -90,8 +103,17 @@ namespace sub3000
       {
         if (!state->Units().empty())
         {
-          this->UpdateUnits(state->Units());
+          this->UpdateUnits(state->Units(), state->RadarAngle());
         }
+
+        float newScale = glm::mix(this->worldScale/4.0f, this->worldScale, glm::length(state->Vel()));
+
+        this->camera = bb::camera_t::Orthogonal(
+          -newScale, 
+           newScale,
+           newScale,
+          -newScale
+        );
 
         this->camera.View() = glm::translate(
           glm::rotate(
@@ -101,10 +123,10 @@ namespace sub3000
           ),
           glm::vec3(-state->Pos(), 0.0f)
         );
-
+        this->depth = state->Depth();
       }
 
-      if (auto mapReady = bb::As<bb::ext::done_t>(msg))
+      if (auto mapReady = bb::As<bb::ext::hmDone_t>(msg))
       {
         this->debugMapTex = bb::texture_t(
           mapReady->HeightMap().Width(), 
@@ -112,6 +134,7 @@ namespace sub3000
           mapReady->HeightMap().Data()
         );
         this->debugMapTex.SetFilter(GL_LINEAR, GL_LINEAR);
+        this->depthSteps = mapReady->DistanceMap().Depth();
       }
     }
 
@@ -136,6 +159,15 @@ namespace sub3000
         this->debugMapShader.UniformBlockIndex("camera"),
         this->camera.UniformBlock()
       );
+      this->debugMapShader.SetFloat(
+        "border",
+        this->depth/(this->depthSteps-1)
+      );
+      this->debugMapShader.SetFloat(
+        "depthSteps",
+        this->depthSteps
+      );
+
       this->debugMapMesh.Render();
 
       bb::shader_t::Bind(this->shader);
@@ -154,6 +186,7 @@ namespace sub3000
         this->radarCamera.UniformBlock()
       );
       this->radar.Render();
+      this->radarLine.Render();
     }
 
     void screen_t::OnCleanup()

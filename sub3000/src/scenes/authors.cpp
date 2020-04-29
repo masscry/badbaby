@@ -107,7 +107,7 @@ namespace sub3000
       this->camera.UniformBlock()
     );
 
-    this->shader.SetVector3f(this->glyphColorBindPoint, 1, &authorsColor.r);
+    this->shader.SetVector3f(this->glyphColorBindPoint, 1, &authorsColor.x);
     this->shader.SetMatrix(this->modelBindPoint, &this->authorsNode.Model()[0][0]);
     this->authorsText.Render();
   }

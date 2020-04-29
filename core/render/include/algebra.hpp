@@ -60,6 +60,15 @@ namespace bb
     );
   }
 
+  inline vec3_t modulo(vec3_t v, vec3_t m)
+  {
+    return vec3_t(
+      modulo(v.x, m.x),
+      modulo(v.y, m.y),
+      modulo(v.z, m.z)
+    );
+  }
+
 }
 
 #endif /* __BB_RENDER_ALGEBRA_HEADER__ */

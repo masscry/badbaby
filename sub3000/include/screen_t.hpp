@@ -28,18 +28,23 @@ namespace sub3000
       bb::framebuffer_t fb;
       bb::shader_t shader;
 
-
       bb::camera_t radarCamera;
       bb::mesh_t radar;
 
       bb::camera_t camera;
       bb::mesh_t units;
+      bb::mesh_t radarLine;
       bb::mailbox_t::shared_t box;
       bb::actorPID_t spaceActorID;
 
       bb::shader_t debugMapShader;
       bb::mesh_t debugMapMesh;
       bb::texture_t debugMapTex;
+
+      float depth;
+      float depthSteps;
+      float pointSize;
+      float worldScale;
 
       screen_t(const screen_t&) = delete;
       screen_t& operator=(const screen_t&) = delete;
@@ -51,7 +56,7 @@ namespace sub3000
 
     public:
 
-      void UpdateUnits(const bb::linePoints_t& units);
+      void UpdateUnits(const bb::linePoints_t& units, float radarAngle);
 
       bb::framebuffer_t& Framebuffer();
       const bb::framebuffer_t& Framebuffer() const;

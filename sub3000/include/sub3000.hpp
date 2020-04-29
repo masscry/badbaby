@@ -171,8 +171,8 @@ namespace sub3000
       ~rmWatch_t() override = default;
     };
 
-
   }
+
 
   class exit_t final: public bb::msg::basic_t
   {

@@ -137,6 +137,12 @@ int main(int argc, char* argv[])
 
     if (mail->Poll(&msgToMain))
     {
+      if (auto newWinTitle = bb::As<bb::msg::updateTitle_t>(msgToMain))
+      {
+        context.Title(newWinTitle->Title());
+        continue;
+      }
+
       if (auto changeScene = bb::As<sub3000::changeScene_t>(msgToMain))
       {
         sub3000::PopScene();

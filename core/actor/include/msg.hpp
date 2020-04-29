@@ -81,6 +81,72 @@ namespace bb
       ~poison_t() override = default;
     };
 
+    class basicExecTask_t: public basic_t
+    {
+    public:
+
+      virtual msg::result_t Execute() const = 0;
+
+      basicExecTask_t(const basicExecTask_t&) = default;
+      basicExecTask_t& operator= (const basicExecTask_t&) = default;
+
+      basicExecTask_t(basicExecTask_t&&) = default;
+      basicExecTask_t& operator=(basicExecTask_t&&) = default;
+
+      ~basicExecTask_t() override = default;
+    };
+
+    template<typename func_t>
+    class execTask_t final: public basicExecTask_t
+    {
+      func_t func;
+    public:
+
+      msg::result_t Execute() const override;
+
+      execTask_t(func_t func);
+
+      execTask_t(const execTask_t&) = default;
+      execTask_t& operator= (const execTask_t&) = default;
+
+      execTask_t(execTask_t&&) = default;
+      execTask_t& operator=(execTask_t&&) = default;
+
+      ~execTask_t() override = default;
+    };
+
+    template<typename func_t>
+    inline msg::result_t execTask_t<func_t>::Execute() const
+    {
+      return this->func();
+    }
+
+    template<typename func_t>
+    inline execTask_t<func_t>::execTask_t(func_t func)
+    : func(func)
+    {
+      ;
+    }
+
+    class updateTitle_t final: public basic_t
+    {
+      std::string title;
+    public:
+
+      const std::string& Title() const
+      {
+        return this->title;
+      }
+
+      updateTitle_t(std::string&& title)
+      : title(std::move(title))
+      {
+        ;
+      }
+      ~updateTitle_t() override = default;
+
+    };
+
     class setName_t final: public basic_t
     {
       std::string name;

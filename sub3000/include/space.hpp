@@ -52,6 +52,7 @@ namespace sub3000
     bb::linePoints_t units;
 
     bb::ext::heightMap_t heightMap;
+    bb::ext::distanceMap_t distMap;
 
     bb::msg::result_t OnProcessMessage(const bb::actor_t&, const bb::msg::basic_t& msg) override;
 

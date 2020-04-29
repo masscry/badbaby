@@ -187,7 +187,7 @@ int main(int argc, char* argv[])
         } while ((cWidth < maxWidth) || (cHeight < maxHeight));
       }
 
-      if (auto mapDataMsg = bb::As<bb::ext::done_t>(msg))
+      if (auto mapDataMsg = bb::As<bb::ext::hmDone_t>(msg))
       {
         texWidth = mapDataMsg->HeightMap().Width();
         texHeight = mapDataMsg->HeightMap().Height();

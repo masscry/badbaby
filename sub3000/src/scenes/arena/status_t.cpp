@@ -38,6 +38,7 @@ namespace sub3000
         {
           this->text.Update(
             "POS:\t[%+6.3f;%+6.3f]\n"
+            "DEPTH:\t%+6.3f\n"
             "ENGINE:\t%s\n"
             "OUTPUT:\t%+6.3f\n"
             "SPEED:\t[%+6.3f;%+6.3f]\n"
@@ -46,6 +47,7 @@ namespace sub3000
             "ANGLE:\t%+6.3f\n"
             "DRAG:\t%+6.3f",
             status->Data().pos.x, status->Data().pos.y,
+            status->Data().depth,
             engine::ToString(status->Data().engine),
             status->Data().engineOutput,
             status->Data().vel.x, status->Data().vel.y,
