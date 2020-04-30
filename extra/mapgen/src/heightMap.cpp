@@ -186,6 +186,47 @@ namespace bb
       this->height = 0;
     }
 
+    int heightMap_t::Serialize(bb::ext::binstore_t& output)
+    {
+      if ((!output.IsGood()) || (!this->IsGood()))
+      {
+        return -1;
+      }
+
+      if (output.Write(this->width) != 0)
+      {
+        return -1;
+      }
+      if (output.Write(this->height) != 0)
+      {
+        return -1;
+      }
+
+      for (size_t index = 0; index < this->DataSize(); ++index)
+      {
+        if (output.Write(this->data[index]) != 0)
+        {
+          return -1;
+        }
+      }
+      return 0;
+    }
+
+    heightMap_t::heightMap_t(bb::ext::binstore_t& input)
+    : width(0),
+      height(0)
+    {
+      if (input.IsGood()&&(input.Read(this->width) == 0)&&(input.Read(this->height)==0))
+      {
+        this->data.reset(new float[this->width*this->height]);
+        for (size_t index = 0; index < this->DataSize(); ++index)
+        {
+          input.Read(this->data[index]);
+        }
+      }
+    }
+
+
   } // namespace ext
   
 } // namespace bb

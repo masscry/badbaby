@@ -509,5 +509,72 @@ namespace bb
       return false;
     }
 
+    namespace
+    {
+      struct distanceMapHeader_t
+      {
+        uint16_t width;
+        uint16_t height;
+        uint16_t depth;
+        uint16_t hasHeightMap;
+      };
+
+    }
+
+    int distanceMap_t::Serialize(binstore_t& output)
+    {
+      if ((!output.IsGood()) || (!this->IsGood()))
+      {
+        return -1;
+      }
+
+      distanceMapHeader_t head;
+      head.width = this->Width();
+      head.height = this->Height();
+      head.depth = this->Depth();
+      head.hasHeightMap = this->hmap.IsGood();
+
+      if (output.Write(head) != 0)
+      {
+        return -1;
+      }
+      for (size_t index = 0; index < this->DataSize(); ++index)
+      {
+        if (output.Write(this->data[index]) != 0)
+        {
+          return -1;
+        }
+      }
+      if (this->hmap.IsGood())
+      {
+        return this->hmap.Serialize(output);
+      }
+      return 0;
+    }
+
+    distanceMap_t::distanceMap_t(binstore_t& input)
+    : width(0),
+      height(0),
+      depth(0)
+    {
+      distanceMapHeader_t head;
+      if (input.IsGood() && (input.Read(head) == 0))
+      {
+        this->width = head.width;
+        this->height = head.height;
+        this->depth = head.depth;
+        this->data.reset(new float[this->width*this->height*this->depth]);
+
+        for (size_t index = 0; index < this->DataSize(); ++index)
+        {
+          input.Read(this->data[index]);
+        }
+        if (head.hasHeightMap != false)
+        {
+          this->hmap = heightMap_t(input);
+        }
+      }
+    }
+
   } // namespace ext
 } // namespace bb

@@ -10,6 +10,7 @@
 #define __BB_EXTRA_DISTANCE_MAP_HEADER__
 
 #include <heightMap.hpp>
+#include <binstore.hpp>
 
 namespace bb
 {
@@ -27,6 +28,8 @@ namespace bb
       bool Improve(vec3_t start, vec3_t finish, vec3_t* isec) const;
 
     public:
+
+      const heightMap_t& HeightMap() const;
 
       bb::vec3_t Dimensions() const;
 
@@ -64,6 +67,10 @@ namespace bb
 
       int Dump(const std::string& fname) const;
 
+      int Serialize(binstore_t& output);
+
+      distanceMap_t(binstore_t& input);
+
       distanceMap_t();
       distanceMap_t(glm::ivec3 dim);
       distanceMap_t(const heightMap_t& hmap, size_t depth);
@@ -74,6 +81,11 @@ namespace bb
       distanceMap_t(distanceMap_t&&) = default;
       distanceMap_t& operator=(distanceMap_t&&) = default;
     };
+
+    inline const heightMap_t& distanceMap_t::HeightMap() const
+    {
+      return this->hmap;
+    }
 
     inline size_t distanceMap_t::DataSize() const
     {

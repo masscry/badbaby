@@ -14,6 +14,7 @@
 #include <utility>
 
 #include <algebra.hpp>
+#include <binstore.hpp>
 
 namespace bb
 {
@@ -42,6 +43,8 @@ namespace bb
 
       float Sample(vec3_t pos) const;
 
+      size_t DataSize() const;
+
       uint16_t Width() const;
       uint16_t Height() const;
 
@@ -62,6 +65,10 @@ namespace bb
       heightMap_t& operator /= (float val);
 
       bool IsGood() const;
+
+      int Serialize(bb::ext::binstore_t& output);
+
+      heightMap_t(bb::ext::binstore_t& input);
 
       heightMap_t();
       heightMap_t(uint16_t width, uint16_t height);
@@ -87,6 +94,11 @@ namespace bb
     inline float heightMap_t::operator[](size_t pos) const
     {
       return this->data[pos];
+    }
+
+    inline size_t heightMap_t::DataSize() const
+    {
+      return this->Width() * this->Height();
     }
 
     inline uint16_t heightMap_t::Width() const

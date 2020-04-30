@@ -14,4 +14,5 @@ target_link_libraries(mapgen PUBLIC
   actor
   simplex
   render
+  binstore
 )
