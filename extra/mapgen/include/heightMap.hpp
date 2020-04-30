@@ -41,8 +41,6 @@ namespace bb
         return this->Sample(vec2_t(std::forward<args_t>(args)...));
       }
 
-      float Sample(vec3_t pos) const;
-
       size_t DataSize() const;
 
       uint16_t Width() const;
@@ -79,12 +77,6 @@ namespace bb
       heightMap_t(heightMap_t&&) = default;
       heightMap_t& operator=(heightMap_t&&) = default;
     };
-
-    inline float heightMap_t::Sample(vec3_t pos) const
-    {
-      float result = this->Sample(vec2_t(pos));
-      return pos.z - result;
-    }
 
     inline float& heightMap_t::operator[](size_t pos)
     {

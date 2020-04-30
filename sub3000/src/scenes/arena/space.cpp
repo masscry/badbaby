@@ -130,10 +130,13 @@ namespace sub3000
     if (auto mapReady = bb::msg::As<bb::ext::hmDone_t>(msg))
     {
       this->heightMap = mapReady->HeightMap();
-      this->heightMap.Dump("hmap");
-
       this->distMap = mapReady->DistanceMap();
-      this->distMap.Dump("dmap");
+
+      if (!bb::ext::binstore_t::Read("world.bbw").IsGood())
+      {
+        auto worldWriter = bb::ext::binstore_t::Create("world.bbw");
+        this->distMap.Serialize(worldWriter);
+      }
 
       bb::postOffice_t::Instance().Post(
         "arenaScreen",

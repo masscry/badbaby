@@ -74,8 +74,8 @@ namespace bb
 
     }
 
-    distanceMap_t::distanceMap_t(const heightMap_t& hmap, size_t depth)
-    : hmap(hmap),
+    distanceMap_t::distanceMap_t(const heightMap_t& hmapSrc, size_t depth)
+    : hmap(hmapSrc),
       width(hmap.Width()),
       height(hmap.Height()),
       depth(depth & 0xFFFF)
@@ -97,8 +97,6 @@ namespace bb
       auto hmapMax = hmap.Max();
 
       auto hmapStep = (hmapMax - hmapMin)/(depth-1);
-
-      this->hmap *= static_cast<float>(depth-1);
 
       bb::Debug("Height Map Step: %f", hmapStep);
 
@@ -122,7 +120,7 @@ namespace bb
       {
         for (size_t x = 0; x < this->Width(); ++x)
         {
-          auto height = hmap.Data(x, y);
+          auto height = this->hmap.Data(x, y);
           for (size_t z = 0; z < this->Depth(); ++z)
           {
             auto hbias = fabsf(z*hmapStep - height);
@@ -376,16 +374,29 @@ namespace bb
       return 0;
     }
 
+    float distanceMap_t::SampleHeightMap(vec3_t pos) const
+    {
+      if (this->hmap.IsGood())
+      {
+        return pos.z - this->hmap.Sample(pos.x, pos.y)*(this->Depth()-1);
+      }
+      else
+      {
+        assert(0);
+        return 0.0f;
+      }
+    }
+
     bool distanceMap_t::Improve(vec3_t start, vec3_t finish, vec3_t* isec) const
     {
-      auto startSample = this->hmap.Sample(start);
-      auto finishSample = this->hmap.Sample(finish);
+      auto startSample = start.z - this->SampleHeightMap(start);
+      auto finishSample = finish.z - this->SampleHeightMap(finish);
       size_t rounds = 5;
 
       while ((startSample > 0.0f) && (finishSample <= 0.0f))
       {
         auto center = (start + finish)/2.0f;
-        auto centerSample = this->hmap.Sample(center);
+        auto centerSample = this->SampleHeightMap(center);
 
         --rounds;
         if (rounds == 0)
@@ -442,7 +453,7 @@ namespace bb
       float hereSample;
       if (this->hmap.IsGood())
       {
-        hereSample = this->hmap.Sample(pos);
+        hereSample = this->SampleHeightMap(pos);
       }
       else
       {
@@ -483,7 +494,7 @@ namespace bb
 
         if (this->hmap.IsGood())
         {
-          hereSample = this->hmap.Sample(cursor);
+          hereSample = this->SampleHeightMap(cursor);
         }
         else
         {

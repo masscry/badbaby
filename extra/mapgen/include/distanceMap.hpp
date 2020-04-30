@@ -27,6 +27,8 @@ namespace bb
 
       bool Improve(vec3_t start, vec3_t finish, vec3_t* isec) const;
 
+      float SampleHeightMap(vec3_t pos) const;
+
     public:
 
       const heightMap_t& HeightMap() const;

@@ -46,6 +46,11 @@ namespace bb
 
     public:
 
+      operator bool() const
+      {
+        return this->IsGood();
+      }
+
       uint32_t Tag() const;
 
       int SetTag(uint32_t tag);

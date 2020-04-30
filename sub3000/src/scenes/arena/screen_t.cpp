@@ -57,12 +57,31 @@ namespace sub3000
         bb::cmfKeyboard
       );
 
-      if (!sub3000::RequestGenerateMap(this->spaceActorID))
+      if (auto worldMapFile = bb::ext::binstore_t::Read("world.bbw"))
       {
-        assert(0);
-        bb::Error("%s", "Map Gen Failed!");
-        sub3000::PostExit();
+        auto worldMap = bb::ext::distanceMap_t(worldMapFile);
+        if (worldMap.IsGood())
+        {
+          bb::workerPool_t::Instance().PostMessage(
+            this->spaceActorID,
+            bb::Issue<bb::ext::hmDone_t>(
+              -1, 
+              bb::ext::heightMap_t(worldMap.HeightMap()),
+              std::move(worldMap)
+            )
+          );
+        }
       }
+      else
+      {
+        if (!sub3000::RequestGenerateMap(this->spaceActorID))
+        {
+          assert(0);
+          bb::Error("%s", "Map Gen Failed!");
+          sub3000::PostExit();
+        }
+      }
+
 
       this->debugMapShader = bb::shader_t::LoadProgramFromFiles(
         "hmap-debug.vp.glsl",
