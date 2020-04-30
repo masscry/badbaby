@@ -49,6 +49,10 @@ add_subdirectory(glfw)
 
 add_subdirectory(glm)
 
+target_compile_definitions(glm INTERFACE
+  GLM_FORCE_XYZW_ONLY
+)
+
 if(BB_WINDOWS)
 	add_subdirectory(win-iconv)
 endif(BB_WINDOWS)
