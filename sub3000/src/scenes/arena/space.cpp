@@ -58,7 +58,7 @@ namespace sub3000
 
       if (this->distMap.IsGood())
       {
-        if (this->units.size() >= 45)
+        if (this->units.size() >= 720)
         {
           this->units.pop_front();
         }
@@ -105,7 +105,7 @@ namespace sub3000
             this->player.pos,
             this->player.angle,
             this->player.depth,
-            this->units,
+            std::move(this->units),
             this->player.radarAngle,
             this->player.vel
           )

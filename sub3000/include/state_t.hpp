@@ -35,7 +35,7 @@ namespace sub3000
 
     const bb::linePoints_t& Units() const;
 
-    state_t(bb::vec2_t pos, float angle, float depth, const bb::linePoints_t& units, float radarAngle, bb::vec2_t vel);
+    state_t(bb::vec2_t pos, float angle, float depth, bb::linePoints_t&& units, float radarAngle, bb::vec2_t vel);
 
     state_t(const state_t&) = default;
     state_t& operator=(const state_t&) = default;
@@ -46,8 +46,8 @@ namespace sub3000
     ~state_t() override = default;
   };
 
-  inline state_t::state_t(bb::vec2_t pos, float angle, float depth, const bb::linePoints_t& units, float radarAngle, bb::vec2_t vel)
-  : units(units),
+  inline state_t::state_t(bb::vec2_t pos, float angle, float depth, bb::linePoints_t&& units, float radarAngle, bb::vec2_t vel)
+  : units(std::move(units)),
     pos(pos),
     vel(vel),
     angle(angle),

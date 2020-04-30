@@ -97,10 +97,25 @@ namespace sub3000
 
     }
 
-    void screen_t::UpdateUnits(const bb::linePoints_t& units, float radarAngle)
+    template<typename data_t>
+    std::vector<data_t> Linearize(const std::deque<data_t>& items)
     {
-      this->units = bb::GenerateMesh(bb::DefinePoints(this->pointSize, units));
+      std::vector<data_t> result;
+      result.reserve(items.size());
 
+      for(auto item: items)
+      {
+        result.emplace_back(item);
+        result.emplace_back(item);
+        result.emplace_back(item);
+        result.emplace_back(item);
+        result.emplace_back(item);
+      }
+      return result;
+    }
+
+    void screen_t::UpdateUnits(bb::linePoints_t&& units, float radarAngle, double dt)
+    {
       this->radarLine = bb::GenerateLine(
         0.02f,
         bb::linePoints_t{
@@ -108,6 +123,49 @@ namespace sub3000
           bb::Dir(glm::radians(radarAngle))
         }
       );
+
+      for (auto& item: this->unitLife)
+      {
+        item += dt;
+      }
+
+      auto cursorLife = this->unitLife.begin();
+      auto cursorUnit = this->unitPoints.begin();
+      for (size_t index = 0, lastIndex = this->unitLife.size(); index < lastIndex; ++index)
+      {
+        if (*cursorLife > 10.0f)
+        {
+          cursorLife = this->unitLife.erase(cursorLife);
+          cursorUnit = this->unitPoints.erase(cursorUnit);
+          --lastIndex;
+        }
+        else
+        {
+          ++cursorLife;
+          ++cursorUnit;
+        }
+      }
+
+      auto camProjView = this->camera.Projection() * this->camera.View();
+
+      for (auto item: units)
+      {
+        auto tmpItem = glm::vec4(item, 0.0f, 1.0f);
+
+        tmpItem = camProjView * tmpItem;
+
+        this->unitPoints.emplace_back(glm::vec2(tmpItem.x, -tmpItem.y));
+        this->unitLife.emplace_back(0.0f);
+      }
+
+      if (!this->unitPoints.empty())
+      {
+        auto mesh = bb::DefinePoints(this->pointSize * 0.1f, this->unitPoints);
+        mesh.Buffers().emplace_back(
+          bb::MakeVertexBuffer(Linearize(this->unitLife))
+        );
+        this->units = bb::GenerateMesh(mesh);
+      }
     }
 
     void screen_t::OnUpdate(double dt)
@@ -120,13 +178,14 @@ namespace sub3000
       auto msg = this->box->Wait();
       if (auto state = bb::As<state_t>(msg))
       {
-        if (!state->Units().empty())
-        {
-          this->UpdateUnits(state->Units(), state->RadarAngle());
-        }
+        this->UpdateUnits(
+          std::move(state->Units()),
+          state->RadarAngle(),
+          dt
+        );
 
-        float newScale = glm::mix(this->worldScale/4.0f, this->worldScale, glm::length(state->Vel()));
-
+        float newScale = this->worldScale/4.0f;
+        
         this->camera = bb::camera_t::Orthogonal(
           -newScale, 
            newScale,
@@ -172,6 +231,8 @@ namespace sub3000
 
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+      /*
+
       bb::shader_t::Bind(this->debugMapShader);
       bb::texture_t::Bind(this->debugMapTex);
       this->debugMapShader.SetBlock(
@@ -189,22 +250,24 @@ namespace sub3000
 
       this->debugMapMesh.Render();
 
+      */
+
       bb::shader_t::Bind(this->shader);
       this->shader.SetBlock(
         this->shader.UniformBlockIndex("camera"),
         this->camera.UniformBlock()
       );
 
-      if (this->units.Good())
-      {
-        this->units.Render();
-      }
-
       this->shader.SetBlock(
         this->shader.UniformBlockIndex("camera"),
         this->radarCamera.UniformBlock()
       );
+
       this->radar.Render();
+      if (this->units.Good())
+      {
+        this->units.Render();
+      }
       this->radarLine.Render();
     }
 

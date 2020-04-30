@@ -17,6 +17,8 @@
 #include <camera.hpp>
 #include <mailbox.hpp>
 
+#include <vector>
+
 namespace sub3000
 {
 
@@ -41,6 +43,9 @@ namespace sub3000
       bb::mesh_t debugMapMesh;
       bb::texture_t debugMapTex;
 
+      bb::linePoints_t unitPoints;
+      std::deque<float> unitLife;
+
       float depth;
       float depthSteps;
       float pointSize;
@@ -56,7 +61,7 @@ namespace sub3000
 
     public:
 
-      void UpdateUnits(const bb::linePoints_t& units, float radarAngle);
+      void UpdateUnits(bb::linePoints_t&& units, float radarAngle, double dt);
 
       bb::framebuffer_t& Framebuffer();
       const bb::framebuffer_t& Framebuffer() const;
