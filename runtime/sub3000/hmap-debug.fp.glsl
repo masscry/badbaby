@@ -17,7 +17,7 @@ uniform float border;
 
 void main()
 {
-  float fdepth = round(texture(mainTex, fragUV).r*depthSteps)/depthSteps;
+  float fdepth = texture(mainTex, fragUV).r; // round(texture(mainTex, fragUV).r*depthSteps)/depthSteps;
 
   vec3 waterColor = mix(black, water, fdepth/border);
   vec3 landColor = mix(black, land, fdepth/(1.0f-border));
