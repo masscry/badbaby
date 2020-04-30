@@ -13,6 +13,7 @@ target_link_libraries(${TEST_NAME}
 		simplex
 		mapgen
 		script
+		binstore
 )
 
 set_target_properties(${TEST_NAME} PROPERTIES
@@ -31,3 +32,4 @@ SETUP_TEST(006simplex)
 SETUP_TEST(007menu)
 SETUP_TEST(008script)
 SETUP_TEST(009field)
+SETUP_TEST(010bin)
