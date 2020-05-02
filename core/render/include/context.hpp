@@ -76,7 +76,11 @@ namespace bb
     bool Update();
 
     bool IsKeyDown(uint16_t key) const;
+
+    void SetStickyMouse(bool enable) const;
+
     glm::dvec2 MousePos() const;
+    bool IsButtonPressed(int button) const;
 
     void RelativeCursor(bool enable);
     bool IsCursorInside() const;
@@ -127,6 +131,20 @@ namespace bb
   inline bool context_t::IsKeyDown(uint16_t key) const
   {
     return glfwGetKey(this->wnd, key) != GLFW_RELEASE;
+  }
+
+  inline bool context_t::IsButtonPressed(int button) const
+  {
+    return glfwGetMouseButton(this->wnd, button) != GLFW_RELEASE;
+  }
+
+  inline void context_t::SetStickyMouse(bool enable) const
+  {
+    glfwSetInputMode(
+      this->wnd,
+      GLFW_STICKY_MOUSE_BUTTONS,
+      (enable)?(GLFW_TRUE):(GLFW_FALSE)
+    );
   }
 
   inline glm::dvec2 context_t::MousePos() const

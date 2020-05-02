@@ -205,6 +205,26 @@
       "preLaunchTask": "Build All (Debug)"
     },
     {
+      "name": "Launch 011automata (Debug)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/.debug/bin/011automata",
+      "args": [ ],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}/runtime/tests",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      "preLaunchTask": "Build All (Debug)"
+    },
+    {
       "name": "Launch Painter (Debug)",
       "type": "cppdbg",
       "request": "launch",
