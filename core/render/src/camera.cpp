@@ -63,7 +63,7 @@ namespace bb
   camera_t camera_t::Orthogonal(float left, float right, float bottom, float top)
   {
     camera_t result(
-      glm::ortho(left, right, bottom, top),
+      glm::ortho(left, right, bottom, top, -1000.0f, 1000.0f),
       glm::mat4(1.0f),
       uniformBlock_t::CreateUniformBlock(sizeof(data_t))
     );

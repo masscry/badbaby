@@ -22,6 +22,7 @@ namespace bb
     std::vector<glm::vec2> points;
     std::vector<float> distance;
     std::vector<uint16_t> indecies;
+    auto breakIndex = bb::breakingIndex<uint16_t>();
 
     sides = bb::CheckValueBounds(sides, static_cast<uint32_t>(3), static_cast<uint32_t>(std::numeric_limits<uint16_t>::max()/2));
     radius = bb::CheckValueBounds(radius, 0.0f, 1000.0f);
@@ -60,6 +61,7 @@ namespace bb
     }
     indecies.push_back(0);
     indecies.push_back(1);
+    indecies.push_back(breakIndex);
 
     bb::Debug(
       "Circle:\n\tPoints: %lu\n\tIndecies: %lu",
@@ -71,7 +73,7 @@ namespace bb
 
     result.Buffers().emplace_back(MakeVertexBuffer(std::move(points)));
     result.Buffers().emplace_back(MakeVertexBuffer(std::move(distance)));
-    result.Indecies() = std::move(indecies);
+    result.Indecies() = MakeIndexBuffer(std::move(indecies));
     result.SetDrawMode(GL_TRIANGLE_STRIP);
     return result;
   }

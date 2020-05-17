@@ -6,6 +6,7 @@
 #include <utility>
 #include <memory>
 #include <limits>
+#include <cinttypes>
 
 #include <glm/glm.hpp>
 
@@ -15,6 +16,12 @@ namespace bb
   void mesh_t::Render()
   {
     bb::vao_t::Bind(this->vao);
+
+    if ((this->breakIndex & MF_BREAK) != 0)
+    {
+      glEnable(GL_PRIMITIVE_RESTART);
+      glPrimitiveRestartIndex(this->breakIndex);
+    }
 
     for (auto i = 0u; i < this->activeBuffers; ++i)
     {
@@ -30,12 +37,19 @@ namespace bb
     {
       glDisableVertexAttribArray(i);
     }
+
+    if ((this->breakIndex & MF_BREAK) != 0)
+    {
+      glDisable(GL_PRIMITIVE_RESTART);
+    }
   }
 
   mesh_t::mesh_t()
   : totalVerts(0),
     drawMode(GL_TRIANGLES),
-    activeBuffers(2)
+    activeBuffers(2),
+    flags(MF_NONE),
+    breakIndex(0)
   {
     ;
   }
@@ -44,9 +58,17 @@ namespace bb
   : vao(std::move(vao)),
     totalVerts(totalVerts),
     drawMode(drawMode),
-    activeBuffers(activeBuffers)
+    activeBuffers(activeBuffers),
+    flags(MF_NONE),
+    breakIndex(0)
   {
     ;
+  }
+
+  void mesh_t::Breaking(bool enable, uint32_t index)
+  {
+    this->flags = (this->flags & ~MF_BREAK) | (-enable & MF_BREAK);
+    this->breakIndex = index;
   }
 
   mesh_t GenerateMesh(const meshDesc_t& meshDesc)
@@ -58,13 +80,13 @@ namespace bb
       return bb::mesh_t();
     }
 
-    auto maxIndex = MaximumIndex(meshDesc.Indecies());
+    auto maxIndex = meshDesc.Indecies()->MaximumIndex();
 
     for (auto& dataBuffer: meshDesc.Buffers())
     {
       if (dataBuffer->Size() < maxIndex)
       {
-        bb::Error("Data buffer smaller than available indecies (%lu < %u)", dataBuffer->Size(), maxIndex);
+        bb::Error("Data buffer smaller than available indecies (%lu < " BBsize_t ")", dataBuffer->Size(), maxIndex);
         assert(0);
         return bb::mesh_t();
       }
@@ -92,18 +114,32 @@ namespace bb
     }
 
     auto indexVBO = bb::vbo_t::CreateElementArrayBuffer(
-      meshDesc.Indecies(),
+      meshDesc.Indecies()->Data(),
+      meshDesc.Indecies()->ByteSize(),
       false
     );
 
     meshVAO.BindIndecies(indexVBO);
 
-    return bb::mesh_t(
+    auto mesh = bb::mesh_t(
       std::move(meshVAO),
-      meshDesc.Indecies().size(),
+      meshDesc.Indecies()->Size(),
       meshDesc.DrawMode(),
       static_cast<GLuint>(meshDesc.Buffers().size())
     );
+
+    switch(meshDesc.DrawMode())
+    {
+      case GL_LINE_STRIP:
+      case GL_TRIANGLE_STRIP:
+      case GL_TRIANGLE_FAN:
+        mesh.Breaking(true, bb::breakingIndex<uint16_t>());
+        break;
+      default:
+        mesh.Breaking(false, 0);
+    }
+
+    return mesh;
   }
 
 }

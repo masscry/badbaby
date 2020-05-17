@@ -107,6 +107,8 @@ namespace bb
 
     };
 
+    heightMap_t MakeHMapUsingOctaves(const generate_t& params);
+
     class mapGen_t final: public role_t
     {
       msg::result_t OnProcessMessage(const actor_t&, const msg::basic_t& msg) override;

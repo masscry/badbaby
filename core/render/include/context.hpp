@@ -23,6 +23,8 @@
 namespace bb
 {
 
+  size_t TypeSize(GLenum type);
+
   enum contextMsgFlag_t: uint32_t 
   {
     cmfNone     = 0x0000,

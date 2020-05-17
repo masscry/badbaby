@@ -489,7 +489,7 @@ mesh_t BuildMesh(const array2D_t<int>& world)
     MakeVertexBuffer(std::move(col))
   );
 
-  meshDesc.Indecies() = std::move(indxs);
+  meshDesc.Indecies() = MakeIndexBuffer(std::move(indxs));
 
   meshDesc.SetDrawMode(GL_POINTS);
 

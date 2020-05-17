@@ -23,6 +23,7 @@ namespace bb
     std::vector<glm::vec2> points;
     std::vector<float> distance;
     std::vector<uint16_t> indecies;
+    auto breakIndex = bb::breakingIndex<uint16_t>();
 
     width = bb::CheckValueBounds(width, 0.01f, 100.0f);
 
@@ -65,10 +66,7 @@ namespace bb
 
       item = nextItem;
       ++nextItem;
-      if (nextItem != end)
-      {
-        indecies.push_back(BREAKING_INDEX);
-      }
+      indecies.push_back(breakIndex);
     }
 
     bb::meshDesc_t result;
@@ -79,7 +77,7 @@ namespace bb
     result.Buffers().emplace_back(
       MakeVertexBuffer(std::move(distance))
     );
-    result.Indecies() = std::move(indecies);
+    result.Indecies() = MakeIndexBuffer(std::move(indecies));
     result.SetDrawMode(GL_TRIANGLE_STRIP);
     return result;
   }
@@ -103,6 +101,7 @@ namespace bb
     std::vector<glm::vec2> vpos;
     std::vector<float> distance;
     std::vector<uint16_t> indecies;
+    auto breakIndex = bb::breakingIndex<uint16_t>();
 
     width = bb::CheckValueBounds(width, 0.01f, 100.0f);
 
@@ -139,7 +138,7 @@ namespace bb
       {
         indecies.emplace_back(cIndex + pointIndecies[i]);
       }
-      indecies.emplace_back(0xFFFF);
+      indecies.emplace_back(breakIndex);
     }
 
     bb::meshDesc_t result;
@@ -150,7 +149,7 @@ namespace bb
     result.Buffers().emplace_back(
       MakeVertexBuffer(std::move(distance))
     );
-    result.Indecies() = std::move(indecies);
+    result.Indecies() = MakeIndexBuffer(std::move(indecies));
     result.SetDrawMode(GL_TRIANGLE_FAN);
     return result;
   }

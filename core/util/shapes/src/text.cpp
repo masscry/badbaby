@@ -47,13 +47,14 @@ namespace
     auto totalSpaces = GetTotalSpaceCount(symbols);
 
     auto totalSymbols = symbols.size() - totalSpaces;
+    auto breakIndex = bb::breakingIndex<uint16_t>();
 
-    assert(totalSymbols*4 < bb::BREAKING_INDEX); // in debug we assert this issue
-    if (totalSymbols*4 >= bb::BREAKING_INDEX)
+    assert(totalSymbols*4 < breakIndex); // in debug we assert this issue
+    if (totalSymbols*4 >= breakIndex)
     { // we are using uint16_t for vert indecies
       // need to check if given text is to long for
       // in release we truncate tail
-      symbols.resize(bb::BREAKING_INDEX);
+      symbols.resize(breakIndex/4);
     }
 
     if (output.vPos.size() < totalSymbols*4)
@@ -177,12 +178,14 @@ namespace
   {
     auto symbols = bb::utf8extract(text.c_str());
 
-    assert(symbols.size()*4 < bb::BREAKING_INDEX); // in debug we assert this issue
-    if (symbols.size()*4 >= bb::BREAKING_INDEX)
+    auto breakIndex = bb::breakingIndex<uint16_t>();
+
+    assert(symbols.size()*4 < breakIndex); // in debug we assert this issue
+    if (symbols.size()*4 >= breakIndex)
     { // we are using uint16_t for vert indecies
       // need to check if given text is to long for
       // in release we truncate tail
-      symbols.resize(bb::BREAKING_INDEX);
+      symbols.resize(breakIndex/4);
     }
 
     if (output.vPos.size() < symbols.size()*4)

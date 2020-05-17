@@ -9,10 +9,11 @@
 #define __BB_COMMON_HEADER__
 
 #include <cstdio>
-#include <memory>
 
 #include <type_traits>
+#include <limits>
 #include <functional>
+#include <memory>
 #include <mutex>
 #include <condition_variable>
 
@@ -37,7 +38,11 @@ namespace bb
     return N;
   }
 
-  const uint16_t BREAKING_INDEX = 0xFFFF;
+  template<typename T>
+  constexpr T breakingIndex()
+  {
+    return std::numeric_limits<T>::max();
+  }
 
   /**
    * @brief Process common startup arguments.
@@ -288,5 +293,14 @@ namespace bb
 #define BB_CALL_SCOPE_NAME_2(PREFIX, INDEX) BB_CALL_SCOPE_NAME_1(PREFIX, INDEX)
 #define BB_CALL_SCOPE_NAME_3(PREFIX) BB_CALL_SCOPE_NAME_2(PREFIX, __COUNTER__)
 #define BB_DEFER(CODE) auto BB_CALL_SCOPE_NAME_3(_bb_defer_) = bb::callOnScopeExit([&](){ CODE; })
+
+#if defined(__LP64__) && defined(__linux__)
+#define BBsize_t "%zu"
+#define BBssize_t "%zd"
+#endif
+
+#ifndef BBsize_t
+#error "Unsupported platform! Must defined BBsize_t for size_t types"
+#endif /* BBsize_t */
 
 #endif /* __BB_COMMON_HEADER__ */
