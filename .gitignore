@@ -17,3 +17,4 @@ runtime/sub3000/*.pgm
 runtime/tests/*.pgm
 runtime/sub3000/world.bbw
 runtime/tests/test.bbf
+runtime/orthofight/*.log

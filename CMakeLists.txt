@@ -73,6 +73,7 @@ add_subdirectory(extra)
 add_subdirectory(tests)
 add_subdirectory(sub3000)
 add_subdirectory(painter)
+add_subdirectory(orthofight)
 
 install(DIRECTORY runtime/sub3000
   DESTINATION share
