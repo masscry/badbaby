@@ -62,7 +62,7 @@ const char* vpShader = R"shader(
   #version 330 core
 
   layout(location = 0) in vec2 pos;
-  layout(location = 1) in float dist;
+  layout(location = 1) in vec2 dist;
 
   uniform camera
   {
@@ -70,7 +70,7 @@ const char* vpShader = R"shader(
     mat4 view;
   };
 
-  out float fragPos;
+  out vec2 fragPos;
 
   void main()
   {
@@ -79,19 +79,20 @@ const char* vpShader = R"shader(
   }
 )shader";
 
-const char* fpShader = R"shader(
+const char* fpShader =
+  R"shader(
   // Fragment shader
   #version 330 core
 
   layout(location = 0) out vec4 pixColor;
 
-  in float fragPos;
+  in vec2 fragPos;
 
   const vec4 lineColor = vec4(0.1f, 1.3f, 0.1f, 1.0f);
 
   void main()
   {
-    float fragDist = 1.0-2.0*abs(fragPos - 0.5);
+    float fragDist = length(vec2(1.0)-2.0*abs(fragPos - vec2(0.5f)));
     pixColor = mix(vec4(0.0f), lineColor, fragDist);
   }
 )shader";
@@ -322,7 +323,16 @@ int main(int argc, char* argv[])
   );
 
   auto& context = bb::context_t::Instance();
-  lineShader = bb::shader_t(vpShader, fpShader);
+
+  try
+  {
+    lineShader = bb::shader_t(vpShader, fpShader);
+  }
+  catch (const std::runtime_error& shaderError)
+  {
+    fprintf(stderr, "%s. Abort.\n", shaderError.what());
+    return -1;
+  }
 
   if (UpdateScene(argv[1]) != 0)
   {

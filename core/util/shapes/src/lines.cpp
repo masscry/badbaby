@@ -21,7 +21,7 @@ namespace bb
   meshDesc_t DefineLine(glm::vec3 offset, float width, const linePoints_t& linePoints)
   {
     std::vector<glm::vec2> points;
-    std::vector<float> distance;
+    std::vector<glm::vec2> distance;
     std::vector<uint16_t> indecies;
     auto breakIndex = bb::breakingIndex<uint16_t>();
 
@@ -42,6 +42,10 @@ namespace bb
     auto off2d = glm::vec2(offset.x, offset.y);
     auto item = linePoints.begin();
     auto end = linePoints.end();
+
+    const glm::vec2 dist1(1.0f);
+    const glm::vec2 dist0(0.0f);
+
     while (std::next(item) != end)
     {
       auto nextItem = std::next(item);
@@ -54,10 +58,10 @@ namespace bb
       points.push_back(*nextItem + tangent + off2d);
       points.push_back(*nextItem - tangent + off2d);
 
-      distance.emplace_back(0.0f);
-      distance.emplace_back(1.0f);
-      distance.emplace_back(0.0f);
-      distance.emplace_back(1.0f);
+      distance.emplace_back(dist0);
+      distance.emplace_back(dist1);
+      distance.emplace_back(dist0);
+      distance.emplace_back(dist1);
 
       indecies.push_back(index++);
       indecies.push_back(index++);
@@ -85,60 +89,64 @@ namespace bb
   namespace
   {
     //
-    // 1---2
-    // |\ /|
-    // | 0 |
-    // |/ \|
-    // 4---3
+    // 0---1
+    // |  /|
+    // | / |
+    // |/  |
+    // 3---2
     //
-    const uint16_t pointIndecies[6] = {
-      0, 1, 2, 3, 4, 1
+    const uint16_t pointIndecies[] = 
+    {
+      0, 1, 3, 1, 2, 3
     };
+
+    const glm::vec2 topleft(0.0f, 0.0f);
+    const glm::vec2 topright(0.0f, 1.0f);
+    const glm::vec2 bottomleft(1.0f, 0.0f);
+    const glm::vec2 bottomright(1.0f, 1.0f);
+
   }
 
   meshDesc_t DefinePoints(float width, const linePoints_t& points)
   {
     std::vector<glm::vec2> vpos;
-    std::vector<float> distance;
+    std::vector<glm::vec2> distance;
     std::vector<uint16_t> indecies;
-    auto breakIndex = bb::breakingIndex<uint16_t>();
 
     width = bb::CheckValueBounds(width, 0.01f, 100.0f);
 
     size_t totalPoints = points.size();
 
-    if ((totalPoints == 0) || (totalPoints*5 >= std::numeric_limits<uint16_t>::max()))
+    if ((totalPoints == 0) || (totalPoints*9 >= std::numeric_limits<uint16_t>::max()))
     { // Programmer's error!
       // Can't be so few or so many points
       assert(0);
       return bb::meshDesc_t();
     }
 
-    vpos.reserve(points.size()*5);
-    distance.reserve(points.size()*5);
-    indecies.reserve(points.size()*7);
+    vpos.reserve(points.size()*9);
+    distance.reserve(points.size()*9);
+    indecies.reserve(points.size()*11);
+
 
     for (auto cpos: points)
     {
       uint16_t cIndex = static_cast<uint16_t>(vpos.size());
 
-      vpos.emplace_back(cpos);
       vpos.emplace_back(cpos.x - width, cpos.y - width);
       vpos.emplace_back(cpos.x + width, cpos.y - width);
       vpos.emplace_back(cpos.x + width, cpos.y + width);
       vpos.emplace_back(cpos.x - width, cpos.y + width);
 
-      distance.emplace_back(0.5f);
-      distance.emplace_back(0.0f);
-      distance.emplace_back(0.0f);
-      distance.emplace_back(0.0f);
-      distance.emplace_back(0.0f);
+      distance.emplace_back(topleft);
+      distance.emplace_back(topright);
+      distance.emplace_back(bottomright);
+      distance.emplace_back(bottomleft);
 
       for (size_t i = 0; i < countof(pointIndecies); ++i)
       {
         indecies.emplace_back(cIndex + pointIndecies[i]);
       }
-      indecies.emplace_back(breakIndex);
     }
 
     bb::meshDesc_t result;
@@ -150,7 +158,7 @@ namespace bb
       MakeVertexBuffer(std::move(distance))
     );
     result.Indecies() = MakeIndexBuffer(std::move(indecies));
-    result.SetDrawMode(GL_TRIANGLE_FAN);
+    result.SetDrawMode(GL_TRIANGLES);
     return result;
   }
 

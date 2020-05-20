@@ -20,7 +20,7 @@ namespace bb
   meshDesc_t DefineCircle(glm::vec3 center, uint32_t sides, float radius, float width)
   {
     std::vector<glm::vec2> points;
-    std::vector<float> distance;
+    std::vector<glm::vec2> distance;
     std::vector<uint16_t> indecies;
     auto breakIndex = bb::breakingIndex<uint16_t>();
 
@@ -43,6 +43,10 @@ namespace bb
     const float outerRing = radius + width/2.0f;
     const float innerRing = radius - width/2.0f;
     uint16_t index = 0;
+
+    const glm::vec2 innerDist(1.0f, 1.0f);
+    const glm::vec2 outerDist(0.0f, 0.0f);
+
     while(sides-->0)
     {
       glm::vec2 point = bb::Dir(angle);
@@ -52,8 +56,8 @@ namespace bb
       points.push_back(point * outerRing);
       points.push_back(point * innerRing);
 
-      distance.push_back(0.0f);
-      distance.push_back(1.0f);
+      distance.push_back(outerDist);
+      distance.push_back(innerDist);
 
       indecies.push_back(index++);
       indecies.push_back(index++);
