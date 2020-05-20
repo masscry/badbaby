@@ -18,6 +18,9 @@
 
 #include <control.hpp>
 #include <player.hpp>
+#include <mapGen.hpp>
+
+#include <state_t.hpp>
 
 namespace sub3000
 {
@@ -29,7 +32,7 @@ namespace sub3000
 
     double DeltaTime() const;
 
-    step_t(int src, double dt);
+    step_t(bb::actorPID_t src, double dt);
 
     step_t(const step_t&) = default;
     step_t& operator= (const step_t&) = default;
@@ -40,26 +43,6 @@ namespace sub3000
     ~step_t() override = default;
   };
 
-  class state_t final: public bb::msg::basic_t
-  {
-    bb::linePoints_t units;
-  public:
-
-    bb::linePoints_t& Units();
-
-    const bb::linePoints_t& Units() const;
-
-    state_t(bb::vec2_t pos, float angle, const bb::linePoints_t& units);
-
-    state_t(const state_t&) = default;
-    state_t& operator=(const state_t&) = default;
-
-    state_t(state_t&&) = default;
-    state_t& operator=(state_t&&) = default;
-
-    ~state_t() override = default;
-  };
-
   class space_t final: public bb::role_t
   {
     double cumDT;
@@ -67,6 +50,9 @@ namespace sub3000
     player::data_t player;
 
     bb::linePoints_t units;
+
+    bb::ext::heightMap_t heightMap;
+    bb::ext::distanceMap_t distMap;
 
     bb::msg::result_t OnProcessMessage(const bb::actor_t&, const bb::msg::basic_t& msg) override;
 
@@ -86,7 +72,7 @@ namespace sub3000
     return this->dt;
   }
 
-  inline step_t::step_t(int src, double dt)
+  inline step_t::step_t(bb::actorPID_t src, double dt)
   : bb::msg::basic_t(src),
     dt(dt)
   {
@@ -96,16 +82,6 @@ namespace sub3000
   inline const char* space_t::DefaultName() const
   {
     return "space";
-  }
-
-  inline bb::linePoints_t& state_t::Units()
-  {
-    return this->units;
-  }
-
-  inline const bb::linePoints_t& state_t::Units() const
-  {
-    return this->units;
   }
 
 } // namespace sub3000

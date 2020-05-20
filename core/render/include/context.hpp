@@ -23,17 +23,21 @@
 namespace bb
 {
 
+  size_t TypeSize(GLenum type);
+
   enum contextMsgFlag_t: uint32_t 
   {
     cmfNone     = 0x0000,
     cmfKeyboard = 0x0001
   };
 
+  using actorPID_t = int64_t;
+
   class context_t final
   {
     static bool isAlreadyExists;
 
-    using pairOfFlags = std::pair<int, contextMsgFlag_t>;
+    using pairOfFlags = std::pair<actorPID_t, contextMsgFlag_t>;
     using actorCallbackList_t = std::list<pairOfFlags>;
 
     GLFWwindow*         wnd;
@@ -74,17 +78,21 @@ namespace bb
     bool Update();
 
     bool IsKeyDown(uint16_t key) const;
+
+    void SetStickyMouse(bool enable) const;
+
     glm::dvec2 MousePos() const;
+    bool IsButtonPressed(int button) const;
 
     void RelativeCursor(bool enable);
     bool IsCursorInside() const;
 
     void Title(const std::string& newTitle);
 
-    void RegisterActorCallback(int actorID, contextMsgFlag_t flags);
-    void UnregisterActorCallbacks(int actorID);
+    void RegisterActorCallback(actorPID_t actorID, contextMsgFlag_t flags);
+    void UnregisterActorCallbacks(actorPID_t actorID);
 
-    static void UnregisterActorCallbacksIfContextExists(int actorID)
+    static void UnregisterActorCallbacksIfContextExists(actorPID_t actorID)
     {
       if (context_t::IsAlreadyExists())
       {
@@ -125,6 +133,20 @@ namespace bb
   inline bool context_t::IsKeyDown(uint16_t key) const
   {
     return glfwGetKey(this->wnd, key) != GLFW_RELEASE;
+  }
+
+  inline bool context_t::IsButtonPressed(int button) const
+  {
+    return glfwGetMouseButton(this->wnd, button) != GLFW_RELEASE;
+  }
+
+  inline void context_t::SetStickyMouse(bool enable) const
+  {
+    glfwSetInputMode(
+      this->wnd,
+      GLFW_STICKY_MOUSE_BUTTONS,
+      (enable)?(GLFW_TRUE):(GLFW_FALSE)
+    );
   }
 
   inline glm::dvec2 context_t::MousePos() const

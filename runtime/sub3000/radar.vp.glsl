@@ -2,7 +2,8 @@
 #version 330 core
 
 layout(location = 0) in vec2 pos;
-layout(location = 1) in float dist;
+layout(location = 1) in vec2 dist;
+layout(location = 2) in float time;
 
 uniform camera
 {
@@ -10,10 +11,12 @@ uniform camera
   mat4 view;
 };
 
-out float fragPos;
+out vec2 fragPos;
+out float fragTime;
 
 void main()
 {
   fragPos = dist;
+  fragTime = time;
   gl_Position = proj * view * vec4(pos, 0.0f, 1.0f);
 }

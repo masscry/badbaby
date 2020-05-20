@@ -2,6 +2,7 @@
 #include <common.hpp>
 
 #include <cstdio>
+#include <cstring>
 #include <cmath>
 #include <utility>
 #include <memory>
@@ -13,10 +14,10 @@ namespace
 {
 
   const glm::vec2 vPos[4] = {
-    { -0.5f, -0.5f },
-    { +0.5f, -0.5f },
-    { +0.5f, +0.5f },
-    { -0.5f, +0.5f}
+    { 0.0f, 0.0f },
+    { 1.0f, 0.0f },
+    { 1.0f, 1.0f },
+    { 0.0f, 1.0f }
   };
 
   const glm::vec2 vUV[4] = {
@@ -25,6 +26,17 @@ namespace
     { 1.0f, 0.0f },
     { 0.0f, 0.0f }
   };
+
+  const glm::vec2 vYFlipUV[4] = {
+    { 0.0f, 0.0f },
+    { 1.0f, 0.0f },
+    { 1.0f, 1.0f },
+    { 0.0f, 1.0f }
+  };
+
+  static_assert(sizeof(vUV) == sizeof(vYFlipUV),
+    "this arrays are used interchangably"
+  );
 
   const uint16_t vInd[6] = {
     0, 1, 2, 0, 2, 3
@@ -35,13 +47,13 @@ namespace
 namespace bb
 {
 
-  mesh_t GeneratePlane(glm::vec2 size, glm::vec3 pos)
+  mesh_t GeneratePlane(glm::vec2 size, glm::vec3 pos, glm::vec2 origin, bool flipY)
   {
     glm::vec3 xPos[4] = {
-      glm::vec3(vPos[0]*size, 0.0f),
-      glm::vec3(vPos[1]*size, 0.0f),
-      glm::vec3(vPos[2]*size, 0.0f),
-      glm::vec3(vPos[3]*size, 0.0f)
+      glm::vec3((vPos[0]-origin)*size, 0.0f),
+      glm::vec3((vPos[1]-origin)*size, 0.0f),
+      glm::vec3((vPos[2]-origin)*size, 0.0f),
+      glm::vec3((vPos[3]-origin)*size, 0.0f)
     };
 
     xPos[0] += pos;
@@ -49,10 +61,14 @@ namespace bb
     xPos[2] += pos;
     xPos[3] += pos;
 
+
     auto vboPos = bb::vbo_t::CreateArrayBuffer(xPos, sizeof(xPos), false);
-    auto vboUV  = bb::vbo_t::CreateArrayBuffer(vUV,  sizeof(vUV),  false);
     auto vboInd = bb::vbo_t::CreateElementArrayBuffer(vInd, sizeof(vInd), false);
     auto vao    = bb::vao_t::CreateVertexAttribObject();
+
+    bb::vbo_t vboUV = (flipY)?
+      (bb::vbo_t::CreateArrayBuffer(vYFlipUV, sizeof(vYFlipUV), false))
+      :(bb::vbo_t::CreateArrayBuffer(vUV, sizeof(vUV), false));
 
     vao.BindVBO(vboPos, 0, 3, GL_FLOAT, GL_FALSE, 0, 0);
     vao.BindVBO(vboUV,  1, 2, GL_FLOAT, GL_FALSE, 0, 0);
@@ -75,10 +91,10 @@ namespace bb
       float zPos = static_cast<float>(i)*deltaZ + startZ;
 
       glm::vec3 xPos[4] = {
-        glm::vec3(vPos[0]*size, zPos),
-        glm::vec3(vPos[1]*size, zPos),
-        glm::vec3(vPos[2]*size, zPos),
-        glm::vec3(vPos[3]*size, zPos)
+        glm::vec3((vPos[0]-vec2_t(0.5f))*size, zPos),
+        glm::vec3((vPos[1]-vec2_t(0.5f))*size, zPos),
+        glm::vec3((vPos[2]-vec2_t(0.5f))*size, zPos),
+        glm::vec3((vPos[3]-vec2_t(0.5f))*size, zPos)
       };
 
       uint16_t indecies[6] = {

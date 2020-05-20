@@ -23,7 +23,7 @@ namespace bb
     std::unique_ptr<uint8_t[]> perm3D; // permutation array in 3D
   public:
 
-    simplex_t(long seed);
+    simplex_t(int64_t seed);
 
     simplex_t(const simplex_t& cp);
     simplex_t(simplex_t&& mv);

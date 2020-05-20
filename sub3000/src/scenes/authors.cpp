@@ -84,7 +84,7 @@ namespace sub3000
 
 
     auto& pool = bb::workerPool_t::Instance();
-    this->model = pool.Register(std::unique_ptr<bb::role_t>(new sub3000::authorsModel_t()));
+    this->model = pool.Register<sub3000::authorsModel_t>();
     this->pContext->RegisterActorCallback(this->model, bb::cmfKeyboard);
   }
 
@@ -107,7 +107,7 @@ namespace sub3000
       this->camera.UniformBlock()
     );
 
-    this->shader.SetVector3f(this->glyphColorBindPoint, 1, &authorsColor.r);
+    this->shader.SetVector3f(this->glyphColorBindPoint, 1, &authorsColor.x);
     this->shader.SetMatrix(this->modelBindPoint, &this->authorsNode.Model()[0][0]);
     this->authorsText.Render();
   }

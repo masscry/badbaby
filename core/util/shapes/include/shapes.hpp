@@ -22,17 +22,27 @@
 namespace bb
 {
 
+  enum meshFlag_t: uint32_t
+  {
+    MF_NONE  = 0x00,
+    MF_BREAK = 0x01
+  };
+
   class mesh_t final
   {
     vao_t vao;
     size_t totalVerts;
     GLenum drawMode;
     GLuint activeBuffers;
+    uint32_t flags;
+    uint32_t breakIndex;
 
     mesh_t(const mesh_t&) = delete;
     mesh_t& operator=(const mesh_t&) = delete;
 
   public:
+
+    void Breaking(bool enable, uint32_t index);
 
     bool Good() const;
 
@@ -52,7 +62,7 @@ namespace bb
     return (this->totalVerts != 0) && (this->vao.Good());
   }
 
-  mesh_t GeneratePlane(glm::vec2 size, glm::vec3 pos);
+  mesh_t GeneratePlane(glm::vec2 size, glm::vec3 pos, glm::vec2 origin, bool flipY);
 
   mesh_t GeneratePlaneStack(glm::vec2 size, uint32_t stackDepth, float startZ, float endZ);
 

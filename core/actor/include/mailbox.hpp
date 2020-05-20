@@ -19,6 +19,8 @@
 
 namespace bb
 {
+  
+  using postAddress_t = uint32_t;
 
   class mailbox_t final
   {
@@ -29,7 +31,7 @@ namespace bb
     mutable std::mutex guard;
     mutable std::condition_variable notify;
     storage_t storage;
-    uint32_t address;
+    postAddress_t address;
 
     mailbox_t(const mailbox_t&) = delete;
     mailbox_t(mailbox_t&&) = delete;
@@ -37,14 +39,14 @@ namespace bb
     mailbox_t& operator=(const mailbox_t&) = delete;
     mailbox_t& operator=(mailbox_t&&) = delete;
 
-    explicit mailbox_t(uint32_t address);
+    explicit mailbox_t(postAddress_t address);
 
   public:
 
     using shared_t = std::shared_ptr<mailbox_t>;
     using weak_t = std::weak_ptr<mailbox_t>;
 
-    uint32_t Address() const;
+    postAddress_t Address() const;
 
     size_t Has() const;
 
@@ -64,7 +66,7 @@ namespace bb
   {
     friend class mailbox_t;
 
-    using storage_t = std::unordered_map<uint32_t, mailbox_t::weak_t>;
+    using storage_t = std::unordered_map<postAddress_t, mailbox_t::weak_t>;
 
     std::mutex guard;
     storage_t storage;
@@ -77,9 +79,9 @@ namespace bb
     postOffice_t(postOffice_t&&) = delete;
     postOffice_t& operator=(postOffice_t&&) = delete;
 
-    void Delete(uint32_t address);
+    void Delete(postAddress_t address);
 
-    mailbox_t::shared_t New(uint32_t address);
+    mailbox_t::shared_t New(postAddress_t address);
 
   public:
 
@@ -88,11 +90,11 @@ namespace bb
     mailbox_t::shared_t New(const std::string& address);
 
     int Post(const std::string& address, msg_t&& msg);
-    int Post(uint32_t address, msg_t&& msg);
+    int Post(postAddress_t address, msg_t&& msg);
 
   };
 
-  inline uint32_t mailbox_t::Address() const
+  inline postAddress_t mailbox_t::Address() const
   {
     return this->address;
   }

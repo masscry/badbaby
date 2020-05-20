@@ -15,7 +15,7 @@ namespace
   bb::mailbox_t::shared_t mail = bb::postOffice_t::Instance().New("sub3000");
 
   std::mutex g_mapGenLock;
-  int g_mapGenActorID = -1;
+  bb::actorPID_t g_mapGenActorID = -1;
 
 }
 
@@ -27,7 +27,7 @@ namespace sub3000
     mail->Put(std::move(msg));
   }
 
-  bool RequestGenerateMap(uint16_t width, uint16_t height, float radius, int sendResultToID)
+  bool RequestGenerateMap(bb::actorPID_t sendResultToID)
   {
     std::unique_lock<std::mutex> lock(g_mapGenLock);
     if (g_mapGenActorID == -1)
@@ -35,12 +35,31 @@ namespace sub3000
       return false;
     }
 
+    auto config = bb::config_t("genmap.config");
+
+    auto maxWidth = static_cast<uint16_t>(config.Value("map.width", 2048.0));
+    auto maxHeight = static_cast<uint16_t>(config.Value("map.height", 2048.0));
+
+    auto mapSeed = static_cast<int64_t>(config.Value("map.seed", 0.0));
+    auto mapRadiusStart = static_cast<float>(config.Value("map.radius.start", 1.0));
+    auto mapRadiusFinish = static_cast<float>(config.Value("map.radius.finish", 10.0));
+    auto mapRadiusRounds = static_cast<size_t>(config.Value("map.radius.rounds", 10.0));
+    auto mapFalloff = static_cast<float>(config.Value("map.falloff", 0.2));
+    auto mapPower = static_cast<float>(config.Value("map.power", 2.0));
+
     auto& pool = bb::workerPool_t::Instance();
     pool.PostMessage(
       g_mapGenActorID,
-      bb::Issue<sub3000::generate_t>(
+      bb::Issue<bb::ext::generate_t>(
         sendResultToID,
-        width, height, radius
+        maxWidth,
+        maxHeight,
+        mapRadiusStart,
+        mapRadiusFinish,
+        mapSeed,
+        mapFalloff,
+        mapRadiusRounds,
+        mapPower
       )
     );
     return true;
@@ -48,9 +67,9 @@ namespace sub3000
 
 }
 
-void ProcessGameAction(int src, sub3000::gameAction_t action)
+void ProcessGameAction(bb::actorPID_t src, sub3000::gameAction_t action)
 {
-  bb::Debug("GameAction: %u from %d", static_cast<uint32_t>(action), src);
+  bb::Debug("GameAction: %u from %ld", static_cast<uint32_t>(action), src);
   switch (action)
   {
   case sub3000::gameAction_t::newGame:
@@ -82,17 +101,27 @@ int main(int argc, char* argv[])
     return -1;
   }
 
-  auto& context = bb::context_t::Instance();
-
-  sub3000::PushScene(sub3000::GetScene(sub3000::sceneID_t::splash));
-  sub3000::deltaTime_t dt;
-  bb::msg_t msgToMain;
-
   auto& pool = bb::workerPool_t::Instance();
   {
     std::unique_lock<std::mutex> lock(g_mapGenLock);
-    g_mapGenActorID = pool.Register(std::unique_ptr<bb::role_t>(new sub3000::mapGen_t()));
+    g_mapGenActorID = pool.Register<bb::ext::mapGen_t>();
   }
+
+  auto& context = bb::context_t::Instance();
+
+  bb::config_t defaultConfig = bb::config_t("default.config");
+  auto sceneName = defaultConfig.Value("scene", "Splash");
+  auto sceneID = sub3000::StringToSceneID(sceneName);
+
+  if (sceneID == sub3000::sceneID_t::undef)
+  {
+    bb::Error("Unknown Scene: \"%s\". Abort!", sceneName.c_str());
+    return -1;
+  }
+
+  sub3000::PushScene(sub3000::GetScene(sceneID));
+  sub3000::deltaTime_t dt;
+  bb::msg_t msgToMain;
 
   bool loop = true;
   while(loop)
@@ -108,6 +137,12 @@ int main(int argc, char* argv[])
 
     if (mail->Poll(&msgToMain))
     {
+      if (auto newWinTitle = bb::As<bb::msg::updateTitle_t>(msgToMain))
+      {
+        context.Title(newWinTitle->Title());
+        continue;
+      }
+
       if (auto changeScene = bb::As<sub3000::changeScene_t>(msgToMain))
       {
         sub3000::PopScene();
@@ -129,7 +164,7 @@ int main(int argc, char* argv[])
       if (auto action = bb::As<sub3000::action_t>(msgToMain))
       {
         auto gameAction = action->GameAction();
-        bb::Debug("Action: %s from %d", sub3000::GetTextForAction(gameAction), action->Source());
+        bb::Debug("Action: %s from %ld", sub3000::GetTextForAction(gameAction), action->Source());
         ProcessGameAction(
           action->Source(),
           gameAction

@@ -32,7 +32,7 @@ namespace bb
       return msg::result_t::skipped;
     }
 
-    Debug("Process \"%s\" (%08x)", this->Name().c_str(), this->ID());
+    Debug("Process \"%s\" (%08lx)", this->Name().c_str(), this->ID());
 
     auto result = msg::result_t::complete;
     while(msgAlreadyInQueue-->0)
@@ -41,7 +41,7 @@ namespace bb
 
       if (bb::As<bb::msg::poison_t>(msg) != nullptr)
       {
-        bb::Debug("Actor \"%s\" (%08x) is poisoned", this->Name().c_str(), this->ID());
+        bb::Debug("Actor \"%s\" (%08lx) is poisoned", this->Name().c_str(), this->ID());
         context_t::UnregisterActorCallbacksIfContextExists(this->ID());
         this->sick = true;
         return msg::result_t::poisoned;
@@ -56,7 +56,7 @@ namespace bb
       auto tmpResult = curRole.ProcessMessage(*this, *msg.get());
       if (tmpResult == msg::result_t::poisoned)
       {
-        bb::Debug("Actor \"%s\" (%08x) poisoned himself", this->Name().c_str(), this->ID());
+        bb::Debug("Actor \"%s\" (%08lx) poisoned himself", this->Name().c_str(), this->ID());
         this->sick = true;
         return msg::result_t::poisoned;
       }

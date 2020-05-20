@@ -11,8 +11,10 @@
 
 #include <msg.hpp>
 #include <actor.hpp>
+
 #include <memory>
 #include <type_traits>
+#include <string>
 
 namespace bb
 {
@@ -45,15 +47,38 @@ namespace bb
 
   using uniqueRole_t = std::unique_ptr<role_t>;
 
-  template<typename newRole_t, typename ... args_t>
-  uniqueRole_t MakeRole(args_t ... args)
+  class execTask_t: public role_t
   {
-    static_assert(std::is_base_of<bb::role_t, newRole_t>::value,
-      "Can be used only with bb::role_t subclasses"
-    );
-    return uniqueRole_t(
-      new newRole_t(std::forward<args_t>(args)...)
-    );
+    std::string name;
+
+    msg::result_t OnProcessMessage(const actor_t& self, const msg::basic_t& msg) override;
+
+  public:
+
+    const char* DefaultName() const override;
+
+    execTask_t();
+    ~execTask_t() override = default;
+  };
+
+  inline msg::result_t execTask_t::OnProcessMessage(const actor_t&, const msg::basic_t& msg)
+  {
+    if (auto execTask = bb::msg::As<msg::basicExecTask_t>(msg))
+    {
+      return execTask->Execute();
+    }
+    return msg::result_t::error;
+  }
+
+  inline const char* execTask_t::DefaultName() const
+  {
+    return this->name.c_str();
+  }
+
+  inline execTask_t::execTask_t()
+  : name(bb::GenerateUniqueName())
+  {
+    ;
   }
 
 } // namespace bb

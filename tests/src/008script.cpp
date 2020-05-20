@@ -23,7 +23,7 @@ int main(int argc, char* argv[])
   for (int i = 1; i < argc; ++i)
   {
     printf("PROCESS \"%s\"\n", argv[i]);
-    auto inputData = bb::ReadWholeFile(argv[i], nullptr);
+    auto inputData = bb::ReadWholeFile(argv[i], "rt", nullptr);
     if (inputData == nullptr)
     {
       continue;

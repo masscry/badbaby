@@ -92,7 +92,7 @@ namespace bb
   }
 
   blur_t::blur_t(bb::framebuffer_t* src, bb::framebuffer_t* dst, int fboSize)
-  : plane(bb::GeneratePlane(bb::vec2_t(2.0f, 2.0f), bb::vec3_t(0.0f))),
+  : plane(bb::GeneratePlane(bb::vec2_t(2.0f, 2.0f), bb::vec3_t(0.0f), bb::vec2_t(0.5f), false)),
     shader(blurVShader, blurFShader),
     temp(fboSize, fboSize),
     src(src),

@@ -9,13 +9,25 @@
 #define __BB_COMMON_HEADER__
 
 #include <cstdio>
-#include <memory>
 
+#include <type_traits>
+#include <limits>
 #include <functional>
+#include <memory>
 #include <mutex>
 #include <condition_variable>
 
 //#define BB_DOUBLE_LOCK_ASSERT
+
+#if defined(__clang__) || defined(__GNUC__)
+#define BB_FORMAT_LIKE_PRINTF(N, M) __attribute__ ((format (printf, N, M)))
+#else
+#define BB_FORMAT_LIKE_PRINTF(N, M)
+#endif
+
+#ifndef _GNU_SOURCE
+extern "C" int vasprintf(char** strp, const char* fmt, va_list ap);
+#endif /* _GNU_SOURCE */
 
 namespace bb
 {
@@ -26,7 +38,11 @@ namespace bb
     return N;
   }
 
-  const uint16_t BREAKING_INDEX = 0xFFFF;
+  template<typename T>
+  constexpr T breakingIndex()
+  {
+    return std::numeric_limits<T>::max();
+  }
 
   /**
    * @brief Process common startup arguments.
@@ -39,10 +55,10 @@ namespace bb
    */
   int ProcessStartupArguments(int argc, char* argv[]);
 
-  void Debug(const char* format, ...) __attribute__ ((format (printf, 1, 2)));
-  void Info(const char* format, ...) __attribute__ ((format (printf, 1, 2)));
-  void Warning(const char* format, ...) __attribute__ ((format (printf, 1, 2)));
-  void Error(const char* format, ...) __attribute__ ((format (printf, 1, 2)));
+  void Debug(const char* format, ...) BB_FORMAT_LIKE_PRINTF(1, 2);
+  void Info(const char* format, ...) BB_FORMAT_LIKE_PRINTF(1, 2);
+  void Warning(const char* format, ...) BB_FORMAT_LIKE_PRINTF(1, 2);
+  void Error(const char* format, ...) BB_FORMAT_LIKE_PRINTF(1, 2);
 
   template<typename data_t>
   data_t CheckValueBounds(data_t value, data_t lowerBound, data_t upperBound)
@@ -62,9 +78,29 @@ namespace bb
 
   const std::string& GetThisThreadName();
 
+  void SetThisThreadName(const std::string& name);
+
   std::string GenerateUniqueName();
 
   std::string CurrentTime();
+
+  template<typename type_t>
+  inline constexpr type_t signum(type_t value, std::false_type)
+  {
+    return type_t(0) < value;
+  }
+
+  template<typename type_t>
+  inline constexpr type_t signum(type_t value, std::true_type)
+  {
+    return (type_t(0) < value) - (value < type_t(0));
+  }
+
+  template<typename type_t>
+  inline constexpr type_t signum(type_t value)
+  {
+    return bb::signum(value, std::is_signed<type_t>());
+  }
 
   #ifdef BB_DOUBLE_LOCK_ASSERT
     #define READ_MODE ("R")
@@ -161,13 +197,13 @@ namespace bb
       ;
     }
 
-    callOnScopeExit(callOnScopeExit&& other)
+    callOnScopeExit(callOnScopeExit&& other) noexcept
     :func(std::move(other.func))
     {
       other.func = nullptr;
     }
 
-    callOnScopeExit& operator = (callOnScopeExit&& other)
+    callOnScopeExit& operator = (callOnScopeExit&& other) noexcept
     {
       if (this == &other)
       {
@@ -257,5 +293,14 @@ namespace bb
 #define BB_CALL_SCOPE_NAME_2(PREFIX, INDEX) BB_CALL_SCOPE_NAME_1(PREFIX, INDEX)
 #define BB_CALL_SCOPE_NAME_3(PREFIX) BB_CALL_SCOPE_NAME_2(PREFIX, __COUNTER__)
 #define BB_DEFER(CODE) auto BB_CALL_SCOPE_NAME_3(_bb_defer_) = bb::callOnScopeExit([&](){ CODE; })
+
+#if defined(__LP64__) && defined(__linux__)
+#define BBsize_t "%zu"
+#define BBssize_t "%zd"
+#endif
+
+#ifndef BBsize_t
+#error "Unsupported platform! Must defined BBsize_t for size_t types"
+#endif /* BBsize_t */
 
 #endif /* __BB_COMMON_HEADER__ */

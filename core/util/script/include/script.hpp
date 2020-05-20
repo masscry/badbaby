@@ -50,7 +50,7 @@ namespace bb
    *
    * @return content of read file or nullptr on errors
    */
-  char* ReadWholeFile(const char* filename, size_t* pSize);
+  char* ReadWholeFile(const char* filename, const char* openMode, size_t* pSize);
 
   char* ReadWholeFile(FILE* input, size_t* pSize);
 

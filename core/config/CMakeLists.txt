@@ -17,7 +17,9 @@ add_library(config STATIC
 )
 
 # add strtod_l support for C objects (aka config.lex.c)
-target_compile_definitions(config PRIVATE _GNU_SOURCE)
+if(UNIX)
+  target_compile_definitions(config PRIVATE _GNU_SOURCE)
+endif(UNIX)
 
 target_include_directories(config
 PUBLIC

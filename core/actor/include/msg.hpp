@@ -19,7 +19,7 @@
 namespace bb
 {
 
-  using actorPID_t = int;
+  using actorPID_t = int64_t;
 
   const actorPID_t INVALID_ACTOR = -1;
 
@@ -79,6 +79,72 @@ namespace bb
       poison_t& operator=(poison_t&&) = default;
 
       ~poison_t() override = default;
+    };
+
+    class basicExecTask_t: public basic_t
+    {
+    public:
+
+      virtual msg::result_t Execute() const = 0;
+
+      basicExecTask_t(const basicExecTask_t&) = default;
+      basicExecTask_t& operator= (const basicExecTask_t&) = default;
+
+      basicExecTask_t(basicExecTask_t&&) = default;
+      basicExecTask_t& operator=(basicExecTask_t&&) = default;
+
+      ~basicExecTask_t() override = default;
+    };
+
+    template<typename func_t>
+    class execTask_t final: public basicExecTask_t
+    {
+      func_t func;
+    public:
+
+      msg::result_t Execute() const override;
+
+      execTask_t(func_t func);
+
+      execTask_t(const execTask_t&) = default;
+      execTask_t& operator= (const execTask_t&) = default;
+
+      execTask_t(execTask_t&&) = default;
+      execTask_t& operator=(execTask_t&&) = default;
+
+      ~execTask_t() override = default;
+    };
+
+    template<typename func_t>
+    inline msg::result_t execTask_t<func_t>::Execute() const
+    {
+      return this->func();
+    }
+
+    template<typename func_t>
+    inline execTask_t<func_t>::execTask_t(func_t func)
+    : func(func)
+    {
+      ;
+    }
+
+    class updateTitle_t final: public basic_t
+    {
+      std::string title;
+    public:
+
+      const std::string& Title() const
+      {
+        return this->title;
+      }
+
+      updateTitle_t(std::string&& title)
+      : title(std::move(title))
+      {
+        ;
+      }
+      ~updateTitle_t() override = default;
+
     };
 
     class setName_t final: public basic_t
@@ -209,7 +275,7 @@ namespace bb
   }
 
   template<typename msgType_t, typename... args_t>
-  msg_t Issue(args_t ... args)
+  msg_t Issue(args_t&& ... args)
   {
     static_assert(std::is_base_of<bb::msg::basic_t, msgType_t>::value,
       "Can be used only with bb::msg::basic_t subclasses"

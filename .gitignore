@@ -11,3 +11,10 @@ runtime/tests/*.log
 *.swp
 runtime/painter/*.log
 runtime/painter/default.config
+.vs/*
+/CMakeSettings.json
+runtime/sub3000/*.pgm
+runtime/tests/*.pgm
+runtime/sub3000/world.bbw
+runtime/tests/test.bbf
+runtime/orthofight/*.log

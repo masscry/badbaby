@@ -90,7 +90,7 @@ namespace sub3000
     int          modelBindPoint;
     int          glyphColorBindPoint;
 
-    int menuModelID;
+    bb::actorPID_t menuModelID;
     bb::mailbox_t::shared_t mailbox;
     uint32_t selectedMenuLine;
 

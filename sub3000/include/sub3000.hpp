@@ -171,8 +171,8 @@ namespace sub3000
       ~rmWatch_t() override = default;
     };
 
-
   }
+
 
   class exit_t final: public bb::msg::basic_t
   {
@@ -205,7 +205,7 @@ namespace sub3000
     ~action_t() override = default;
   };
 
-  bool RequestGenerateMap(uint16_t width, uint16_t height, float radius, int sendResultToID);
+  bool RequestGenerateMap(bb::actorPID_t sendResultToID);
 
 } // namespace sub3000
 

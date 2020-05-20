@@ -32,26 +32,30 @@ namespace
             11, -4, -4,      4, -11, -4,     4, -4, -11
         };
 
-    typedef class contrib_t {
+    class contrib_t {
     public:
         double dx, dy, dz;
         int xsb, ysb, zsb;
-        contrib_t* Next;
+        std::shared_ptr<contrib_t> Next;
 
         contrib_t(double multiplier, int xsb, int ysb, int zsb):
             dx(-xsb - multiplier * SQUISH_3D),
             dy(-ysb - multiplier * SQUISH_3D),
             dz(-zsb - multiplier * SQUISH_3D),
-            xsb(xsb), ysb(ysb), zsb(zsb),Next(nullptr) {}
+            xsb(xsb), ysb(ysb), zsb(zsb) {}
 
         ~contrib_t()
         {
-          delete this->Next;
+            ;
         }
 
-    } *ptrContrib_t;
+    };
 
-    static std::unique_ptr<ptrContrib_t[]> lookup3D;
+    using ptrContrib_t = std::shared_ptr<contrib_t>;
+
+    using ptrUniqueContribArray_t = std::unique_ptr<ptrContrib_t[]>;
+
+    static ptrUniqueContribArray_t lookup3D;
 
     static const int a1[] = { 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1 };
     static const int a2[] = { 2, 1, 1, 0, 2, 1, 0, 1, 2, 0, 1, 1, 3, 1, 1, 1 };
@@ -73,7 +77,7 @@ namespace
       0, 2, 1, 1, 1, -1, 2, 2, 0, 0, 2, 1, 1, 1, -1, 2, 0, 2, 0
     };
 
-    static const int lookupPairs3D[] = {
+    static const size_t lookupPairs3D[] = {
       0, 2, 1, 1, 2, 2, 5, 1, 6, 0, 7, 0, 32, 2, 34, 2, 129, 1, 133, 1,
       160, 5, 161, 5, 518, 0, 519, 0, 546, 4, 550, 4, 645, 3, 647, 3, 672, 5,
       673, 5, 674, 4, 677, 3, 678, 4, 679, 3, 680, 13, 681, 13, 682, 12, 685,
@@ -92,18 +96,17 @@ namespace
     public:
         initOpenSimplexNoise_t() 
         {
-
-            ptrContrib_t* contributions3D = new ptrContrib_t[countof(p3D) / 9];
+            ptrUniqueContribArray_t contributions3D(new ptrContrib_t[countof(p3D) / 9]);
             for (size_t i = 0; i < countof(p3D); i += 9)
             {
                 auto* baseSet = base3D[p3D[i]];
                 auto baseSetSize = base3DSize[p3D[i]];
-                ptrContrib_t previous = nullptr;
-                ptrContrib_t current = nullptr;
+                ptrContrib_t previous;
+                ptrContrib_t current;
 
                 for (size_t k = 0; k < baseSetSize; k += 4)
                 {
-                    current = new contrib_t(baseSet[k], baseSet[k + 1], baseSet[k + 2], baseSet[k + 3]);
+                    current = std::make_shared<contrib_t>(baseSet[k], baseSet[k + 1], baseSet[k + 2], baseSet[k + 3]);
                     if (previous == nullptr) {
                         contributions3D[i / 9] = current;
                     }
@@ -113,14 +116,14 @@ namespace
                     }
                     previous = current;
                 }
-                current->Next = new contrib_t(p3D[i + 1], p3D[i + 2], p3D[i + 3], p3D[i + 4]);
-                current->Next->Next = new contrib_t(p3D[i + 5], p3D[i + 6], p3D[i + 7], p3D[i + 8]);
+                current->Next = std::make_shared<contrib_t>(p3D[i + 1], p3D[i + 2], p3D[i + 3], p3D[i + 4]);
+                current->Next->Next = std::make_shared<contrib_t>(p3D[i + 5], p3D[i + 6], p3D[i + 7], p3D[i + 8]);
             }
 
             lookup3D.reset(new ptrContrib_t[2048]);
             for (size_t i = 0; i < countof(lookupPairs3D); i += 2)
             {
-                lookup3D[static_cast<const size_t>(lookupPairs3D[i])] = contributions3D[lookupPairs3D[i + 1]];
+                lookup3D[lookupPairs3D[i]] = contributions3D[lookupPairs3D[i + 1]];
             }
         }
     } initOpenSimplexNoise;
@@ -129,7 +132,7 @@ namespace
 namespace bb
 {
 
-  simplex_t::simplex_t(long seed)
+  simplex_t::simplex_t(int64_t seed)
   :perm(new uint8_t[256]),
    perm3D(new uint8_t[256])
   {

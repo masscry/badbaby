@@ -6,7 +6,7 @@
     {
       "label": "Build All (Debug)",
       "type": "shell",
-      "command": "cmake --build ./.debug --",
+      "command": "cmake --build ${workspaceFolder}/.debug -- -j4",
       "group": {
         "kind": "build",
         "isDefault": true
@@ -16,66 +16,6 @@
       "label": "Build All (Release)",
       "type": "shell",
       "command": "cmake --build ./.release --clean-first",
-      "group": "build"
-    },
-    {
-      "label": "Build 000hello (Debug)",
-      "type": "shell",
-      "command": "cmake --build ./.debug --target 000hello",
-      "group": "build"
-    },
-    {
-      "label": "Build 001render (Debug)",
-      "type": "shell",
-      "command": "cmake --build ./.debug --target 001render",
-      "group": "build"
-    },
-    {
-      "label": "Build 002config (Debug)",
-      "type": "shell",
-      "command": "cmake --build ./.debug --target 002config",
-      "group": "build"
-    },
-    {
-      "label": "Build 003font (Debug)",
-      "type": "shell",
-      "command": "cmake --build ./.debug --target 003font",
-      "group": "build"
-    },
-    {
-      "label": "Build 004camera (Debug)",
-      "type": "shell",
-      "command": "cmake --build ./.debug --target 004camera",
-      "group": "build"
-    },
-    {
-      "label": "Build 005splash (Debug)",
-      "type": "shell",
-      "command": "cmake --build ./.debug --target 005splash",
-      "group": "build"
-    },
-    {
-      "label": "Build 006simplex (Debug)",
-      "type": "shell",
-      "command": "cmake --build ./.debug --target 006simplex",
-      "group": "build"
-    },
-    {
-      "label": "Build 007menu (Debug)",
-      "type": "shell",
-      "command": "cmake --build ./.debug --target 007menu",
-      "group": "build"
-    },
-    {
-      "label": "Build painter (Debug)",
-      "type": "shell",
-      "command": "cmake --build ./.debug --target painter",
-      "group": "build"
-    },
-    {
-      "label": "Build Submarine-3000 (Debug)",
-      "type": "shell",
-      "command": "cmake --build ./.debug --target sub3000",
       "group": "build"
     }
   ]

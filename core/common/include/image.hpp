@@ -9,6 +9,7 @@
 #ifndef __BB_CORE_COMMON_TARGA_HEADER__
 #define __BB_CORE_COMMON_TARGA_HEADER__
 
+#include <string>
 #include <cstdint>
 #include <memory>
 

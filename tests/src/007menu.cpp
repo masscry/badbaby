@@ -237,9 +237,7 @@ int main(int argc, char* argv[])
 
   auto& context = bb::context_t::Instance();
   auto& pool = bb::workerPool_t::Instance();
-  int menuActor = pool.Register(
-    bb::MakeRole<menu::model_t>()
-  );
+  auto menuActor = pool.Register<menu::model_t>();
 
   context.RegisterActorCallback(menuActor, bb::cmfKeyboard);
 
@@ -284,7 +282,14 @@ int main(int argc, char* argv[])
         continue;
       }
 
-      bb::Error("Unknown message type: %s", typeid(*renderMsg.get()).name());
+      if (auto* defMsg = renderMsg.get())
+      {
+        bb::Error("Unknown message type: %s", typeid(*defMsg).name());
+      }
+      else
+      {
+        bb::Error("Unknown message type: %s", "Invalid Message");
+      }
       assert(0);
     }
 

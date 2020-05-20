@@ -38,7 +38,7 @@ namespace bb
 
   };
 
-  class defaultVertexBuffer_t: public basicVertexBuffer_t
+  class defaultVertexBuffer_t final: public basicVertexBuffer_t
   {
     std::unique_ptr<uint8_t[]> data;
     size_t                     size;
@@ -230,18 +230,6 @@ namespace bb
 
     this->self.insert(this->self.end(), itemsToAppend, itemsToAppend + itemsSize);
     return 0;
-  }
-
-  template<typename array_t>
-  typename array_t::value_type MaximumIndex(const array_t& array)
-  {
-    auto result = std::numeric_limits<typename array_t::value_type>::lowest();
-    for (auto item: array)
-    { // BREAKING_INDEX - special index to break triangle strips,
-      // so ignore it
-      result = ((result < item) && (item != BREAKING_INDEX))?item:result;
-    }
-    return result;
   }
 
 } // namespace bb

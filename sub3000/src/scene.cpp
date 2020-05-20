@@ -103,5 +103,25 @@ namespace sub3000
     );
   }
 
+  sceneID_t StringToSceneID(const std::string& str)
+  {
+    if (str.compare("Splash") == 0)
+    {
+      return sceneID_t::splash;
+    }
+    if (str.compare("MainMenu") == 0)
+    {
+      return sceneID_t::mainMenu;
+    }
+    if (str.compare("Authors") == 0)
+    {
+      return sceneID_t::authors;
+    }
+    if (str.compare("Arena") == 0)
+    {
+      return sceneID_t::arena;
+    }
+    return sceneID_t::undef;
+  }
 
 } // namespace sub3000

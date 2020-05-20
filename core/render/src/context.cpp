@@ -103,6 +103,7 @@ namespace
   void APIENTRY OnGLError(GLenum /*source*/, GLenum type, GLuint /*id*/, GLenum severity, GLsizei /*length*/, const GLchar* message, const void* /*userPtr*/)
   {
     bb::Debug("OpenGL: [%s] [%s]\n\t%s", ErrorSeverity(severity), ErrorTypeToString(type), message);
+    assert(severity < GL_DEBUG_SEVERITY_HIGH);
   }
 
 }
@@ -215,9 +216,6 @@ namespace bb
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    glEnable(GL_PRIMITIVE_RESTART);
-    glPrimitiveRestartIndex(BREAKING_INDEX);
-
     context_t::isAlreadyExists = true;
   }
 
@@ -316,12 +314,12 @@ namespace bb
     }
   }
 
-  void context_t::RegisterActorCallback(int actorID, contextMsgFlag_t flags)
+  void context_t::RegisterActorCallback(actorPID_t actorID, contextMsgFlag_t flags)
   {
     this->actorCallbackList.emplace_back(std::make_pair(actorID, flags));
   }
 
-  void context_t::UnregisterActorCallbacks(int actorID)
+  void context_t::UnregisterActorCallbacks(actorPID_t actorID)
   {
     this->actorCallbackList.remove_if(
       [actorID](const pairOfFlags& pof) -> bool
@@ -329,6 +327,30 @@ namespace bb
         return (pof.first == actorID);
       }
     );
+  }
+
+  size_t TypeSize(GLenum type)
+  {
+    switch(type)
+    {
+      case GL_BYTE:
+      case GL_UNSIGNED_BYTE:
+        return 1;
+      case GL_SHORT:
+      case GL_UNSIGNED_SHORT:
+      case GL_HALF_FLOAT:
+        return 2;
+      case GL_INT:
+      case GL_UNSIGNED_INT:
+      case GL_FIXED:
+      case GL_FLOAT:
+        return 4;
+      default:
+        // programmer's error
+        bb::Error("Unknown type: (%d)", type);
+        assert(0);
+        return 0;
+    }
   }
 
 } // namespace bb

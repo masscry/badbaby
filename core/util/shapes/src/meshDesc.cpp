@@ -1,219 +1,8 @@
 #include <meshDesc.hpp>
+#include <cstring>
 
 namespace bb
 {
-
-  size_t basicVertexBuffer_t::TypeSize() const
-  {
-    switch(this->Type())
-    {
-      case GL_BYTE:
-      case GL_UNSIGNED_BYTE:
-        return 1;
-      case GL_SHORT:
-      case GL_UNSIGNED_SHORT:
-      case GL_HALF_FLOAT:
-        return 2;
-      case GL_INT:
-      case GL_UNSIGNED_INT:
-      case GL_FIXED:
-      case GL_FLOAT:
-        return 4;
-      default:
-        // programmer's error
-        bb::Error("Unsupported type: (%d)", this->Type());
-        assert(0);
-        return 0;
-    }
-  }
-
-  size_t basicVertexBuffer_t::ByteSize() const
-  {
-    return this->Size()*this->Dimensions()*this->TypeSize();
-  }
-
-  basicVertexBuffer_t::~basicVertexBuffer_t()
-  {
-    ;
-  }
-
-  size_t defaultVertexBuffer_t::Size() const
-  {
-    return this->size;
-  }
-
-  GLint defaultVertexBuffer_t::Dimensions() const
-  {
-    return this->dim;
-  }
-
-  GLenum defaultVertexBuffer_t::Type() const
-  {
-    return this->type;
-  }
-
-  GLboolean defaultVertexBuffer_t::Normalized() const
-  {
-    return this->normalized;
-  }
-
-  const void* defaultVertexBuffer_t::Data() const
-  {
-    return this->data.get();
-  }
-
-  basicVertexBuffer_t* defaultVertexBuffer_t::Copy() const
-  {
-    return new defaultVertexBuffer_t(*this);
-  }
-
-  int defaultVertexBuffer_t::Assign(const basicVertexBuffer_t& src)
-  {
-    if ((src.ByteSize() == 0) || (src.Data() == nullptr))
-    { // programmer's mistake
-      assert(0);
-      return -1;
-    }
-
-    size_t byteSize = src.ByteSize();
-    std::unique_ptr<uint8_t[]> newData(new uint8_t[byteSize]);
-
-    memcpy(newData.get(), src.Data(), byteSize);
-
-    this->data       = std::move(newData);
-    this->size       = src.Size();
-    this->dim        = src.Dimensions();
-    this->type       = src.Type();
-    this->normalized = src.Normalized();
-    return 0;
-  }
-
-  int defaultVertexBuffer_t::Append(const basicVertexBuffer_t& src)
-  {
-    if (!this->data)
-    { // if no data, just assign
-      return this->Assign(src);
-    }
-
-    if (
-         (this->Dimensions() != src.Dimensions())
-      || (this->Type() != src.Type())
-      || (this->Normalized() != src.Normalized())
-    )
-    { // some programmer's mistake
-      bb::Error("%s", "Trying to append buffers of different types");
-      assert(0);
-      return -1;
-    }
-
-    // otherwise append data at end
-    size_t fullByteSize = src.ByteSize() + this->ByteSize();
-    std::unique_ptr<uint8_t[]> fullNewData(new uint8_t[fullByteSize]);
-
-    memcpy(fullNewData.get(), this->Data(), this->ByteSize());
-    memcpy(fullNewData.get() + this->ByteSize(), src.Data(), src.ByteSize());
-
-    this->data = std::move(fullNewData);
-    this->size = fullByteSize;
-    return 0;
-  }
-
-  defaultVertexBuffer_t::defaultVertexBuffer_t()
-  : size(0),
-    dim(0),
-    type(GL_TRIANGLES),
-    normalized(GL_FALSE)
-  {
-    ;
-  }
-
-  defaultVertexBuffer_t::defaultVertexBuffer_t(
-    const void* data,
-    size_t size,
-    GLint dim,
-    GLenum type,
-    GLboolean normalized
-  )
-  : size(size),
-    dim(dim),
-    type(type),
-    normalized(normalized)
-  {
-    this->data.reset(new uint8_t[this->ByteSize()]);
-    memcpy(this->data.get(), data, this->ByteSize());
-  }
-
-  defaultVertexBuffer_t::defaultVertexBuffer_t(
-    const defaultVertexBuffer_t& src
-  )
-  : size(src.size),
-    dim(src.dim),
-    type(src.type),
-    normalized(src.normalized)
-  {
-    if (this->ByteSize() != 0)
-    {
-      this->data.reset(new uint8_t[this->ByteSize()]);
-      memcpy(this->data.get(), src.Data(), this->ByteSize());
-    }
-  }
-
-  defaultVertexBuffer_t::defaultVertexBuffer_t(
-    defaultVertexBuffer_t&& src
-  )
-  : data(std::move(src.data)),
-    size(src.size),
-    dim(src.dim),
-    type(src.type),
-    normalized(src.normalized)
-  {
-    src.size = 0;
-    src.dim  = 0;
-    src.type = GL_TRIANGLES;
-    src.normalized = GL_FALSE;
-  }
-
-  defaultVertexBuffer_t& defaultVertexBuffer_t::operator = (const defaultVertexBuffer_t& src)
-  {
-    if (this == &src)
-    {
-      return *this;
-    }
-
-    this->Assign(src);
-    return *this;
-  }
-
-  defaultVertexBuffer_t& defaultVertexBuffer_t::operator = (defaultVertexBuffer_t&& src)
-  {
-    if (this == &src)
-    {
-      return *this;
-    }
-
-    this->data       = std::move(src.data);
-    this->size       = src.size;
-    this->dim        = src.dim;
-    this->type       = src.type;
-    this->normalized = src.normalized;
-
-    src.size = 0;
-    src.dim  = 0;
-    src.type = GL_TRIANGLES;
-    src.normalized = GL_FALSE;
-    return *this;
-  }
-
-  defaultVertexBuffer_t::~defaultVertexBuffer_t()
-  {
-    ;
-  }
-
-  template<>
-  GLint vertexBuffer_t<float>::Dimensions() const
-  {
-    return 1;
-  }
 
   meshDesc_t::meshDesc_t()
   : drawMode(GL_TRIANGLES)
@@ -226,9 +15,9 @@ namespace bb
     ;
   }
 
-  uint16_t meshDesc_t::MaxIndex() const
+  size_t meshDesc_t::MaxIndex() const
   {
-    return MaximumIndex(this->indecies);
+    return this->indecies->MaximumIndex();
   }
 
   int meshDesc_t::Append(const meshDesc_t& mesh)
@@ -243,7 +32,7 @@ namespace bb
     if (this->buffers.empty())
     { // destination is empty, just copy
       this->drawMode = mesh.drawMode;
-      this->indecies = mesh.Indecies();
+      this->indecies.reset(mesh.Indecies()->Copy());
       for (auto& buffer: mesh.Buffers())
       {
         this->buffers.emplace_back(buffer->Copy());
@@ -274,36 +63,12 @@ namespace bb
       }
     }
 
-    //
-    // After new vertecies added at end of dst buffer, we need to fix indecies
-    //
-    switch (this->DrawMode())
-    {
-      case GL_LINE_STRIP:
-      case GL_TRIANGLE_STRIP: // we adding breaking index for strips
-        this->indecies.reserve(this->indecies.size() + mesh.indecies.size() + 1);
-        this->indecies.push_back(BREAKING_INDEX);
-        break;
-      default:
-        this->indecies.reserve(this->indecies.size() + mesh.indecies.size());
-    }
-
-    uint16_t thisMaxIndex = static_cast<uint16_t>(this->MaxIndex() + 1);
-    for (auto index: mesh.indecies)
-    { 
-      //
-      // break-index must stay unchanged
-      //
-      this->indecies.emplace_back(
-        (index != BREAKING_INDEX)?(index + thisMaxIndex):(BREAKING_INDEX)
-      );
-    }
-    return 0;
+    return this->indecies->Append(*mesh.indecies, this->MaxIndex() + 1);
   }
 
   bool meshDesc_t::IsGood() const
   {
-    return (!this->buffers.empty()) && (!this->indecies.empty());
+    return (!this->buffers.empty()) && (this->indecies->Size() != 0);
   }
 
 #pragma pack(push, 1)
@@ -358,7 +123,7 @@ namespace bb
       meshDescArrayHeader_t arrayHeader;
       arrayHeader.magic = MESH_DESC_ARRAY_MAGIC;
       arrayHeader.size = static_cast<uint32_t>(arrayBuffer->Size());
-      arrayHeader.dim = arrayBuffer->Dimensions();
+      arrayHeader.dim = static_cast<uint32_t>(arrayBuffer->Dimensions()); // dimension can't be < 0
       arrayHeader.type = arrayBuffer->Type();
       arrayHeader.normalized = arrayBuffer->Normalized();
       arrayHeader.byteSize = static_cast<uint32_t>(arrayBuffer->ByteSize() + sizeof(meshDescArrayHeader_t));
@@ -373,24 +138,24 @@ namespace bb
       }
     }
 
-    assert(this->Indecies().size() < std::numeric_limits<uint32_t>::max());
-    assert(this->Indecies().size()*sizeof(uint16_t) + sizeof(meshDescArrayHeader_t) < std::numeric_limits<uint32_t>::max());
+    assert(this->Indecies()->Size() < std::numeric_limits<uint32_t>::max());
+    assert(this->Indecies()->ByteSize() + sizeof(meshDescArrayHeader_t) < std::numeric_limits<uint32_t>::max());
 
     meshDescArrayHeader_t arrayHeader;
     arrayHeader.magic = MESH_DESC_ELEMENT_MAGIC;
-    arrayHeader.size = static_cast<uint32_t>(this->Indecies().size());
+    arrayHeader.size = static_cast<uint32_t>(this->Indecies()->Size());
     arrayHeader.dim = 1;
-    arrayHeader.type = GL_UNSIGNED_SHORT;
+    arrayHeader.type = this->Indecies()->Type();
     arrayHeader.normalized = GL_FALSE;
     arrayHeader.byteSize = static_cast<uint32_t>(
-      this->Indecies().size()*sizeof(uint16_t) + sizeof(meshDescArrayHeader_t)
+      this->Indecies()->ByteSize() + sizeof(meshDescArrayHeader_t)
     );
 
     if (fwrite(&arrayHeader, sizeof(meshDescArrayHeader_t), 1, output) != 1)
     {
       return -1;
     }
-    if (fwrite(this->Indecies().data(), sizeof(uint16_t), this->Indecies().size(), output) != this->Indecies().size())
+    if (fwrite(this->Indecies()->Data(), this->Indecies()->TypeSize(), this->Indecies()->Size(), output) != this->Indecies()->Size())
     {
       return -1;
     }
@@ -464,30 +229,32 @@ namespace bb
                new bb::defaultVertexBuffer_t(
                  arrayData.get(),
                  arrHeader.size,
-                 arrHeader.dim,
+                 static_cast<GLint>(arrHeader.dim), // OpenGL wants GLint as dimension
                  arrHeader.type,
                  static_cast<GLboolean>(arrHeader.normalized)
                )
              );          
           }
           break;
-        case MESH_DESC_ELEMENT_MAGIC:        
+        case MESH_DESC_ELEMENT_MAGIC:
           {
-            result.Indecies().resize(arrHeader.size);
-            if (fread(
-              result.Indecies().data(),
-              sizeof(uint16_t), result.Indecies().size(),
-              input) != result.Indecies().size()
-            )
+            size_t elemDataByteSize = arrHeader.byteSize - sizeof(meshDescArrayHeader_t);
+
+            std::unique_ptr<uint8_t[]> elemData(new uint8_t[elemDataByteSize]);
+            if (fread(elemData.get(), 1, elemDataByteSize, input) != elemDataByteSize)
             {
               assert(0);
               return meshDesc_t();
-            }            
+            }
+
+            result.indecies.reset(
+              new defaultIndexBuffer_t(elemData.get(), arrHeader.size, arrHeader.type)
+            );
           }
           break;
         default:
           assert(0);
-          return meshDesc_t();        
+          return meshDesc_t();
       }
       
     }

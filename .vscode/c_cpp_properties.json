@@ -2,10 +2,6 @@
     "configurations": [
         {
             "name": "Linux",
-            "includePath": [
-                "${workspaceFolder}/**",
-                "/usr/include"
-            ],
             "defines": [],
             "compilerPath": "/usr/bin/clang",
             "intelliSenseMode": "gcc-x64",

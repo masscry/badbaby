@@ -8,29 +8,6 @@
 #include <config.hpp>
 #include <role.hpp>
 
-namespace
-{
-#ifdef __APPLE__
-  void SetThisThreadName(const std::string& name)
-  {
-    pthread_setname_np(name.c_str());
-  }
-#define HAS_SetThisThreadName
-#endif
-
-#ifdef __linux__
-  void SetThisThreadName(const std::string& name)
-  {
-    pthread_setname_np(pthread_self(), name.c_str());
-  }
-#define HAS_SetThisThreadName
-#endif
-
-#ifndef HAS_SetThisThreadName
-#error "SetThisThreadName undefined for given platform!"
-#endif /* HAS_SetThisThreadName */
-}
-
 namespace bb
 {
 
@@ -72,6 +49,57 @@ namespace bb
     return false;
   }
 
+  void workerPool_t::DoProcessActors()
+  {
+    auto readLock = this->actorsGuard.GetReadLock();
+    assert(this->actors.size() <= maxActorsInWorkerPool);
+  
+    for (auto actorIt = this->actors.begin(), actorEnd = this->actors.end(); actorIt != actorEnd;)
+    {
+      auto actorProcessResult = msg::result_t::skipped;
+      auto& actor = *actorIt;
+      if (actor)
+      {
+        //
+        // Actor can use PostMessage from inside, so we need somehow
+        // release actorsGuard#readLock, but forbid others to mess with
+        // this actor while it processes data.
+        //
+        // We do this inside ProcessMessagesReadReleaseAquire, after
+        // actor's own lock is captured, actorsGuard#readLock can be
+        // temporaly released, until actor processing completes
+        //
+        actorProcessResult = actor->ProcessMessagesReadReleaseAquire(this->actorsGuard);
+      }
+      switch (actorProcessResult)
+      {
+      default:
+        /* programmer's mistake */
+        assert(0);
+      case msg::result_t::skipped:
+      case msg::result_t::complete:
+        ++actorIt; // just incrementing
+        break;
+      case msg::result_t::poisoned:
+      {
+        // this is only way to delete actor, code works in a way that
+        // only actor itself says when it can be killed.
+        this->actorsGuard.UnlockRead(); // must get stronger lock temporaly
+  
+        BB_DEFER(this->actorsGuard.LockRead()); // read lock will be aquired, when wlock is dies
+  
+        auto wlock = this->actorsGuard.GetWriteLock(); // wlock dies before BB_DEFER executes
+        actorIt = this->actors.erase(actorIt); // incrementing by deleting current, and taking next
+      }
+      break;
+      case msg::result_t::error:
+        bb::Error("Actor \"%s\" (%ld) works with errors", actor->Name().c_str(), actor->ID());
+        ++actorIt; // just incrementing
+        break;
+      }
+    }
+  }
+
   void workerPool_t::WorkerThread(workerID_t id)
   {
     auto& info = this->infos[id];
@@ -86,54 +114,7 @@ namespace bb
         Info("%s", "Stop Requested");
         break;
       }
-      {
-        auto readLock = this->actorsGuard.GetReadLock();
-        assert(this->actors.size() <= maxActorsInWorkerPool);
-
-        for (auto actorIt = this->actors.begin(), actorEnd = this->actors.end(); actorIt != actorEnd; ++actorIt)
-        {
-          auto actorProcessResult = msg::result_t::skipped;
-          auto& actor = *actorIt;
-          if (actor)
-          {
-            //
-            // Actor can use PostMessage from inside, so we need somehow
-            // release actorsGuard#readLock, but forbid others to mess with
-            // this actor while it processes data.
-            //
-            // We do this inside ProcessMessagesReadReleaseAquire, after
-            // actor's own lock is captured, actorsGuard#readLock can be
-            // temporaly released, until actor processing completes
-            //
-            actorProcessResult = actor->ProcessMessagesReadReleaseAquire(this->actorsGuard);
-          }
-          switch (actorProcessResult)
-          {
-          case msg::result_t::skipped:
-          case msg::result_t::complete:
-            break;
-          case msg::result_t::poisoned:
-            {
-              // this is only way to delete actor, code works in a way that
-              // only actor itself says when it can be killed.
-              this->actorsGuard.UnlockRead(); // must get stronger lock temporaly
-
-              // read lock will be aquired, when wlock is dies
-              BB_DEFER(this->actorsGuard.LockRead());
-
-              // wlock dies before BB_DEFER executes
-              auto wlock = this->actorsGuard.GetWriteLock();
-              actorIt = this->actors.erase(actorIt);
-            }
-            break;
-          case msg::result_t::error:
-            bb::Error("Actor \"%s\" (%d) works with errors", actor->Name().c_str(), actor->ID());
-            break;
-          default:
-            assert(0);
-          }
-        }
-      }
+      DoProcessActors();
       info.notify.wait(lock, [&info, this](){ return (info.stop) || this->HasActorsInQueue(); });
     }
     Info("%s", "Worker Stopped");
@@ -192,7 +173,7 @@ namespace bb
     return self;
   }
 
-  int workerPool_t::Register(std::unique_ptr<role_t>&& role)
+  actorPID_t workerPool_t::Register(std::unique_ptr<role_t>&& role)
   {
     assert(role);
     std::string roleName = role->DefaultName();
@@ -205,14 +186,14 @@ namespace bb
     }
 
     std::unique_ptr<actor_t> newActor(new actor_t(std::move(role)));
-    int resultActorID = newActor->ID();
+    auto resultActorID = newActor->ID();
     this->actors.emplace_back(std::move(newActor));
     
-    bb::Info("Actor \"%s\" (%x) registered", roleName.c_str(), resultActorID);
+    bb::Info("Actor \"%s\" (%lx) registered", roleName.c_str(), resultActorID);
     return resultActorID;
   }
 
-  int workerPool_t::FindFirstByName(const std::string& name)
+  actorPID_t  workerPool_t::FindFirstByName(const std::string& name)
   {
     auto lock = this->actorsGuard.GetReadLock();
     for(auto& actIt: this->actors)
@@ -225,11 +206,25 @@ namespace bb
     return -1;
   }
 
-  int workerPool_t::PostMessage(int actorID, msg_t&& message)
+  static inline postAddress_t ActorIDToPostbox(actorPID_t pid)
+  { // postAddress_t - lower part of actorID
+    // when actorID == -1 - this is an programmer's mistake
+    assert(pid != INVALID_ACTOR);
+    return static_cast<postAddress_t>(pid);
+  }
+
+  int workerPool_t::PostMessage(actorPID_t actorID, msg_t&& message)
   {
-    if (bb::postOffice_t::Instance().Post(actorID, std::move(message)) != 0)
+    if (actorID == INVALID_ACTOR)
     {
-      bb::Error("Actor (%08x) is no longer exists!", actorID);
+      bb::Error("%s", "Can't send message to INVALID_ACTOR");
+      assert(0);
+      return -1;
+    }
+
+    if (bb::postOffice_t::Instance().Post(ActorIDToPostbox(actorID), std::move(message)) != 0)
+    {
+      bb::Error("Actor (%08lx) is no longer exists!", actorID);
       assert(0);
       return -1;
     }
@@ -240,7 +235,7 @@ namespace bb
     return 0;
   }
 
-  int workerPool_t::Unregister(int actorID)
+  int workerPool_t::Unregister(actorPID_t actorID)
   {
     return this->PostMessage(actorID,
       bb::IssuePoison()

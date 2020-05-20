@@ -1,54 +1,36 @@
-add_executable(000hello
-  src/000hello.cpp
+macro(SETUP_TEST TEST_NAME)
+
+add_executable(${TEST_NAME}
+  src/${TEST_NAME}.cpp
 )
 
-target_link_libraries(000hello PRIVATE actor)
-
-add_executable(001render
-  src/001render.cpp
+target_link_libraries(${TEST_NAME}
+	PRIVATE
+		actor
+		render
+		config
+		shapes
+		simplex
+		mapgen
+		script
+		binstore
 )
 
-target_link_libraries(001render PRIVATE actor render)
-
-add_executable(002config
-  src/002config.cpp
+set_target_properties(${TEST_NAME} PROPERTIES
+	VS_DEBUGGER_WORKING_DIRECTORY
+		"${CMAKE_SOURCE_DIR}/runtime/tests"
 )
 
-target_link_libraries(002config PRIVATE config)
+endmacro(SETUP_TEST)
 
-add_executable(003font
-  src/003font.cpp
-)
-
-target_link_libraries(003font PRIVATE config render shapes)
-
-add_executable(004camera
-  src/004camera.cpp
-)
-
-target_link_libraries(004camera PRIVATE config render shapes)
-
-add_executable(005splash
-  src/005splash.cpp
-)
-
-target_link_libraries(005splash PRIVATE config render)
-
-add_executable(006simplex
-  src/006simplex.cpp
-)
-
-target_link_libraries(006simplex PRIVATE config render simplex shapes)
-
-
-add_executable(007menu
-  src/007menu.cpp
-)
-
-target_link_libraries(007menu PRIVATE config render actor shapes)
-
-add_executable(008script
-  src/008script.cpp
-)
-
-target_link_libraries(008script PRIVATE script)
+SETUP_TEST(001render)
+SETUP_TEST(002config)
+SETUP_TEST(003font)
+SETUP_TEST(004camera)
+SETUP_TEST(005splash)
+SETUP_TEST(006simplex)
+SETUP_TEST(007menu)
+SETUP_TEST(008script)
+SETUP_TEST(009field)
+SETUP_TEST(010bin)
+SETUP_TEST(011automata)

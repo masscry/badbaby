@@ -4,6 +4,28 @@ All notable changes to this project will be documented in this file
 
 ## [Unreleased]
 
+## [0.2.0] - 2020-05-21
+
+### Added
+ - extra.mapgen: map generation added
+ - extra.binstore: simple de\serializer
+ - tests: 008script, 009field, 010bin, 011automata added
+ - orthofight: added
+ - sub3000: radar raycasting implemented
+
+### Changed
+ - core.render.contrib: build glfw from sources
+ - core.render.contrib: glm, glfw, win-iconv moved to submodules
+ - core.render: bug fixes, big indecies > 0xFFFF support added
+ - core.util.shapes: points now round, shader fixes
+ - core: started porting to Windows
+ - core: multiple bugs fixed
+ - sub3000: physics finetuning
+
+## [0.1.1] - 2020-03-10
+### Changed
+ - core: compiles on macOS
+
 ## [0.1.0] - 2020-03-06
 ### Added
  - core.shapes: textStatic_t typography, textDynamic_t multiline support
@@ -74,7 +96,8 @@ All notable changes to this project will be documented in this file
 - tests: 000hello, 001render, 002config, 003font
 - documentation: README.md, CHANGELOG.md, plan.md, LICENSE.md
 
-[Unreleased]: https://github.com/masscry/badbaby/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/masscry/badbaby/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/masscry/badbaby/releases/tag/v0.1.1
 [0.1.0]: https://github.com/masscry/badbaby/releases/tag/v0.1.0
 [0.0.5]: https://github.com/masscry/badbaby/releases/tag/v0.0.5
 [0.0.4]: https://github.com/masscry/badbaby/releases/tag/v0.0.4

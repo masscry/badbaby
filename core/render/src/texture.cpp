@@ -46,23 +46,21 @@ namespace bb
 
   texture_t& texture_t::operator=(texture_t&& move)
   {
-    if (this == &move)
+    if (this != &move)
     {
-      return *this;
-    }
+      if (this->self != 0)
+      {
+        glDeleteTextures(1, &this->self);
+      }
 
-    if (this->self != 0)
-    {
-      glDeleteTextures(1, &this->self);
+      this->self = move.self;
+      move.self = 0;
     }
-
-    this->self = move.self;
-    move.self = 0;
     return *this;
   }
 
   texture_t::texture_t()
-  :self(0)
+  : self(0)
   {
     ;
   }
@@ -73,6 +71,7 @@ namespace bb
     {
       glDeleteTextures(1, &this->self);
     }
+    this->self = 0;
   }
 
   texture_t::texture_t(int width, int height)
@@ -114,7 +113,7 @@ namespace bb
 
     glGenTextures(1, &this->self);
     glBindTexture(GL_TEXTURE_2D, this->self);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_FLOAT, data);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, width, height, 0, GL_RED, GL_FLOAT, data);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glBindTexture(GL_TEXTURE_2D, 0);

@@ -12,8 +12,10 @@ namespace
   {
     uint32_t result = 0;
     for (auto smb: text)
-    {
-      result += (std::isspace(smb) != 0);
+    { // standard says, that isspace works for symbols between 0 and 255
+      // otherwise - result implementation dependent
+      // win32 crt raises assert here, so additional check here
+      result += ((smb <= 0xFF) && (std::isspace(static_cast<int>(smb)) != 0));
     }
     return result;
   }
@@ -45,13 +47,14 @@ namespace
     auto totalSpaces = GetTotalSpaceCount(symbols);
 
     auto totalSymbols = symbols.size() - totalSpaces;
+    auto breakIndex = bb::breakingIndex<uint16_t>();
 
-    assert(totalSymbols*4 < bb::BREAKING_INDEX); // in debug we assert this issue
-    if (totalSymbols*4 >= bb::BREAKING_INDEX)
+    assert(totalSymbols*4 < breakIndex); // in debug we assert this issue
+    if (totalSymbols*4 >= breakIndex)
     { // we are using uint16_t for vert indecies
       // need to check if given text is to long for
       // in release we truncate tail
-      symbols.resize(bb::BREAKING_INDEX);
+      symbols.resize(breakIndex/4);
     }
 
     if (output.vPos.size() < totalSymbols*4)
@@ -74,7 +77,7 @@ namespace
 
     for (auto it: symbols)
     {
-      if (std::isspace(it) != 0)
+      if ((it <= 0xFF) && (std::isspace(static_cast<int>(it)) != 0))
       {
         switch (it)
         {
@@ -175,12 +178,14 @@ namespace
   {
     auto symbols = bb::utf8extract(text.c_str());
 
-    assert(symbols.size()*4 < bb::BREAKING_INDEX); // in debug we assert this issue
-    if (symbols.size()*4 >= bb::BREAKING_INDEX)
+    auto breakIndex = bb::breakingIndex<uint16_t>();
+
+    assert(symbols.size()*4 < breakIndex); // in debug we assert this issue
+    if (symbols.size()*4 >= breakIndex)
     { // we are using uint16_t for vert indecies
       // need to check if given text is to long for
       // in release we truncate tail
-      symbols.resize(bb::BREAKING_INDEX);
+      symbols.resize(breakIndex/4);
     }
 
     if (output.vPos.size() < symbols.size()*4)
@@ -246,7 +251,7 @@ namespace
         }
       }
 
-      if (*std::get<1>(line) == '\n')
+      if ((std::get<1>(line) != symbols.end()) && (*std::get<1>(line) == '\n'))
       {
         newLine = true;
       }
@@ -313,6 +318,13 @@ namespace bb
   {
     assert(this->font != nullptr);
     size_t textI = MakeText(*this->font, text, this->chSize, this->vertecies);
+
+    if (textI == 0)
+    {
+      Error("%s", "Empty Dynamic String");
+      assert(0);
+      return;
+    }
 
     if (this->totalI < textI)
     { // new bigger VBO needed

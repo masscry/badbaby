@@ -6,6 +6,8 @@
  */
 
 #include <msg.hpp>
+#include <heightMap.hpp>
+#include <control.hpp>
 
 namespace sub3000
 {
@@ -38,6 +40,13 @@ namespace sub3000
       float dragCoeff;
       float crossSection;
 
+      bool clip;
+      float radarAngle;
+
+      float depth;
+
+      bb::vec2_t Dir() const;
+
       data_t();
 
       data_t(const data_t&) = default;
@@ -47,6 +56,11 @@ namespace sub3000
       ~data_t() = default;
 
     };
+
+    inline bb::vec2_t data_t::Dir() const
+    {
+      return bb::Dir(-this->angle);
+    }
 
     inline data_t::data_t()
     : pos(0.0f),
@@ -64,7 +78,10 @@ namespace sub3000
       width(1.0f),
       length(1.0f),
       dragCoeff(0.0f),
-      crossSection(0.0f)
+      crossSection(0.0f),
+      clip(true),
+      radarAngle(0.0f),
+      depth(28.0f)
     {
       ;
     }
@@ -80,7 +97,7 @@ namespace sub3000
       const data_t& Data() const;
 
       template<typename... args_t>
-      status_t(args_t ... args);
+      status_t(args_t&& ... args);
 
       status_t(const status_t&) = default;
       status_t& operator=(const status_t&) = default;
@@ -91,7 +108,7 @@ namespace sub3000
     };
 
     template<typename... args_t>
-    inline status_t::status_t(args_t ... args)
+    inline status_t::status_t(args_t&& ... args)
     : bb::msg::basic_t(-1),
       data(std::forward<args_t>(args)...)
     {
@@ -108,7 +125,7 @@ namespace sub3000
       return this->data;
     }
 
-    void Update(data_t* data, float dt);
+    void Update(data_t* data, const bb::ext::heightMap_t& hmap, float dt);
 
     int Control(data_t* data, const bb::msg::keyEvent_t& key);
 

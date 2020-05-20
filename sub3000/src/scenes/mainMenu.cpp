@@ -92,11 +92,11 @@ namespace sub3000
       return bb::msg::result_t::complete;
     }
 
-    if (auto done = bb::msg::As<sub3000::done_t>(msg))
+    if (auto done = bb::msg::As<bb::ext::hmDone_t>(msg))
     {
       bb::Debug("Map Generation Done: %d %d",
-        done->HeightMap().width,
-        done->HeightMap().height
+        done->HeightMap().Width(),
+        done->HeightMap().Height()
       );
       return bb::msg::result_t::complete;
     }
@@ -133,6 +133,10 @@ namespace sub3000
 
   void mainMenuScene_t::OnPrepare()
   {
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+
     this->pContext = &bb::context_t::Instance();
     this->shader = bb::shader_t::LoadProgramFromFiles(
       this->shader_vp.c_str(),
@@ -150,10 +154,6 @@ namespace sub3000
     this->camBindBlock        = this->shader.UniformBlockIndex("camera");
     this->modelBindPoint      = this->shader.UniformLocation("model");
     this->glyphColorBindPoint = this->shader.UniformLocation("glyphColor");
-
-    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
 
     float line = 0.0f;
 
@@ -198,7 +198,7 @@ namespace sub3000
     this->gameInfoNode.Translate(bb::vec3_t(100.0f, -100.0f, 0.0f));
 
     auto& pool = bb::workerPool_t::Instance();
-    this->menuModelID = pool.Register(std::unique_ptr<bb::role_t>(new sub3000::mainMenuModel_t(this->textList, *this->mailbox)));
+    this->menuModelID = pool.Register<sub3000::mainMenuModel_t>(this->textList, *this->mailbox);
     this->pContext->RegisterActorCallback(menuModelID, bb::cmfKeyboard);
   }
 
@@ -248,24 +248,24 @@ namespace sub3000
 
       if (this->selectedMenuLine == line)
       {
-        itemColor.r = 1.0f;
-        itemColor.g = 0.4f;
-        itemColor.b = 0.4f;
+        itemColor.x = 1.0f;
+        itemColor.y = 0.4f;
+        itemColor.z = 0.4f;
       }
       else
       {
-        itemColor.r = 0.4f;
-        itemColor.g = 0.4f;
-        itemColor.b = 0.4f;
+        itemColor.x = 0.4f;
+        itemColor.y = 0.4f;
+        itemColor.z = 0.4f;
       }
       
-      this->shader.SetVector3f(this->glyphColorBindPoint, 1, &itemColor.r);
+      this->shader.SetVector3f(this->glyphColorBindPoint, 1, &itemColor.x);
       this->shader.SetMatrix(this->modelBindPoint, &item.node.Model()[0][0]);
       item.text.Render();
       ++line;
     }
 
-    this->shader.SetVector3f(this->glyphColorBindPoint, 1, &infoNodeColor.r);
+    this->shader.SetVector3f(this->glyphColorBindPoint, 1, &infoNodeColor.x);
     this->shader.SetMatrix(this->modelBindPoint, &this->gameInfoNode.Model()[0][0]);
     this->gameInfoText.Render();
 

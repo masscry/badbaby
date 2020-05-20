@@ -17,6 +17,27 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#ifdef _WIN32
+
+  typedef _locale_t locale_t;
+
+  void freelocale(locale_t locale);
+
+  double strtod_l(const char* strSource, char** endptr, locale_t locale);
+
+#ifndef strdup
+#define strdup _strdup
+#endif
+
+#endif
+
+  /**
+   * This function must return standard C locale. 
+   *
+   * POSIX: newlocale(LC_ALL_MASK, "C", nullptr)
+   * WIN32: _create_locale(LC_ALL, "C")
+   */
+  locale_t clocale();
 
   enum bbCoreConfigToken_t
   {

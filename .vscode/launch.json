@@ -8,7 +8,7 @@
       "name": "Launch 000Hello (Debug)",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/.debug/tests/000hello",
+      "program": "${workspaceFolder}/.debug/bin/000hello",
       "args": [ ],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}/runtime/tests",
@@ -22,13 +22,13 @@
           "ignoreFailures": true
         }
       ],
-      "preLaunchTask": "Build 000hello (Debug)"
+      "preLaunchTask": "Build All (Debug)"
     },
     {
       "name": "Launch 001Render (Debug)",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/.debug/tests/001render",
+      "program": "${workspaceFolder}/.debug/bin/001render",
       "args": [ ],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}/runtime/tests",
@@ -42,13 +42,13 @@
           "ignoreFailures": true
         }
       ],
-      "preLaunchTask": "Build 001render (Debug)"
+      "preLaunchTask": "Build All (Debug)"
     },
     {
       "name": "Launch 002Config (Debug)",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/.debug/tests/002config",
+      "program": "${workspaceFolder}/.debug/bin/002config",
       "args": [ ],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}/runtime/tests",
@@ -62,13 +62,13 @@
           "ignoreFailures": true
         }
       ],
-      "preLaunchTask": "Build 002config (Debug)"
+      "preLaunchTask": "Build All (Debug)"
     },
     {
       "name": "Launch 003Font (Debug)",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/.debug/tests/003font",
+      "program": "${workspaceFolder}/.debug/bin/003font",
       "args": [ ],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}/runtime/tests",
@@ -82,13 +82,13 @@
           "ignoreFailures": true
         }
       ],
-      "preLaunchTask": "Build 003font (Debug)"
+      "preLaunchTask": "Build All (Debug)"
     },
     {
       "name": "Launch 004Camera (Debug)",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/.debug/tests/004camera",
+      "program": "${workspaceFolder}/.debug/bin/004camera",
       "args": [ ],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}/runtime/tests",
@@ -102,13 +102,13 @@
           "ignoreFailures": true
         }
       ],
-      "preLaunchTask": "Build 004camera (Debug)"
+      "preLaunchTask": "Build All (Debug)"
     },
     {
       "name": "Launch 005Splash (Debug)",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/.debug/tests/005splash",
+      "program": "${workspaceFolder}/.debug/bin/005splash",
       "args": [ ],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}/runtime/tests",
@@ -122,13 +122,13 @@
           "ignoreFailures": true
         }
       ],
-      "preLaunchTask": "Build 005splash (Debug)"
+      "preLaunchTask": "Build All (Debug)"
     },
     {
       "name": "Launch 006simplex (Debug)",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/.debug/tests/006simplex",
+      "program": "${workspaceFolder}/.debug/bin/006simplex",
       "args": [ ],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}/runtime/tests",
@@ -142,13 +142,13 @@
           "ignoreFailures": true
         }
       ],
-      "preLaunchTask": "Build 006simplex (Debug)"
+      "preLaunchTask": "Build All (Debug)"
     },
     {
       "name": "Launch 007menu (Debug)",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/.debug/tests/007menu",
+      "program": "${workspaceFolder}/.debug/bin/007menu",
       "args": [ ],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}/runtime/tests",
@@ -162,13 +162,73 @@
           "ignoreFailures": true
         }
       ],
-      "preLaunchTask": "Build 007menu (Debug)"
+      "preLaunchTask": "Build All (Debug)"
+    },
+    {
+      "name": "Launch 009field (Debug)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/.debug/bin/009field",
+      "args": [ ],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}/runtime/tests",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      "preLaunchTask": "Build All (Debug)"
+    },
+    {
+      "name": "Launch 010bin (Debug)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/.debug/bin/010bin",
+      "args": [ ],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}/runtime/tests",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      "preLaunchTask": "Build All (Debug)"
+    },
+    {
+      "name": "Launch 011automata (Debug)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/.debug/bin/011automata",
+      "args": [ ],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}/runtime/tests",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      "preLaunchTask": "Build All (Debug)"
     },
     {
       "name": "Launch Painter (Debug)",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/.debug/painter/painter",
+      "program": "${workspaceFolder}/.debug/bin/painter",
       "args": [ "./test.pvf" ],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}/runtime/painter",
@@ -182,13 +242,13 @@
           "ignoreFailures": true
         }
       ],
-      "preLaunchTask": "Build painter (Debug)"
+      "preLaunchTask": "Build All (Debug)"
     },
     {
       "name": "Launch Submarine-3000 (Debug)",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/.debug/sub3000/sub3000",
+      "program": "${workspaceFolder}/.debug/bin/sub3000",
       "args": [ ],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}/runtime/sub3000",
@@ -202,7 +262,27 @@
           "ignoreFailures": true
         }
       ],
-      "preLaunchTask": "Build Submarine-3000 (Debug)"
+      "preLaunchTask": "Build All (Debug)"
+    },
+    {
+      "name": "OrthoFight (Debug)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/.debug/bin/orthofight",
+      "args": [ ],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}/runtime/orthofight",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      "preLaunchTask": "Build All (Debug)"
     }
   ]
 }

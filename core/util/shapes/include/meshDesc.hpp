@@ -10,11 +10,12 @@
 #define __BB_CORE_UTIL_SHAPES_MESH_DESCRIPTOR_HEADER__
 
 #include <vertexBuffer.hpp>
+#include <indexBuffer.hpp>
 
 namespace bb
 {
 
-  using arrayOfIndecies_t = std::vector<uint16_t>;
+  using arrayOfIndecies_t = std::unique_ptr<basicIndexBuffer_t>;
   using arrayOfVertexBuffers_t = std::deque<std::unique_ptr<basicVertexBuffer_t>>;
   using linePoints_t = std::deque<glm::vec2>;
 
@@ -45,7 +46,7 @@ namespace bb
 
     void SetDrawMode(GLenum drawMode);
 
-    uint16_t MaxIndex() const;
+    size_t MaxIndex() const;
 
     bool IsGood() const;
 

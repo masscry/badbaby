@@ -10,6 +10,12 @@
 D    [0-9]
 E    ([Ee][+-]?{D}+)
 
+%top{
+#ifndef YY_NO_UNISTD_H
+#define YY_NO_UNISTD_H
+#endif
+}
+
 %{
 
 #include <assert.h>

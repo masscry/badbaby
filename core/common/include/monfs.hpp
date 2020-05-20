@@ -25,6 +25,12 @@ namespace bb
     class processor_t
     {
     public:
+
+      /**
+       * Callback executes when change on filesysem occures.
+       * 
+       * @return 0, if no errors, non-zero otherwise
+       */
       virtual int OnChange(const char* filename, event_t event) = 0;
       virtual ~processor_t() = 0;
     };
@@ -43,10 +49,27 @@ namespace bb
 
       bool IsGood() const;
 
+      /**
+       * Check for occured events.
+       * 
+       * If any callback return non-zero function return -1 immediately
+       */
       int Check();
 
+      /**
+       * Add file to watch list
+       * 
+       * @param filename file to add to watch list
+       * 
+       * @return file ID in watch list or -1 on errors
+       */
       int Watch(const char* filename);
 
+      /**
+       * Remove given file from watch list
+       * 
+       * @param wd file ID in watch list
+       */
       int RemoveWatch(int wd);
 
       monitor_t();
@@ -57,6 +80,21 @@ namespace bb
       static monitor_t Create(
         std::unique_ptr<processor_t>&& processor
       );
+
+      template<typename procImpl_t, typename... args_t>
+      static monitor_t Create(
+        args_t&& ... args
+      )
+      {
+        static_assert(std::is_base_of<processor_t, procImpl_t>::value,
+          "Can be used only with processor_t subclasses"
+        );
+        return monitor_t::Create(
+          std::unique_ptr<processor_t>(
+            new procImpl_t(std::forward(args)...)
+          )
+        );
+      }
 
     };
 

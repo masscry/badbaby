@@ -8,20 +8,23 @@ add_executable(sub3000
   include/mainMenu.hpp
   include/actionTable.hpp
   include/authors.hpp
-  include/mapGen.hpp
   include/arena.hpp
   include/space.hpp
 
 # Sources
   src/sub3000.cpp
   src/scene.cpp
-  src/splash.cpp
-  src/mainMenu.cpp
   src/actionTable.cpp
-  src/authors.cpp
-  src/mapGen.cpp
-  src/arena.cpp
-  src/space.cpp
+
+  src/scenes/mainMenu.cpp
+  src/scenes/splash.cpp
+  src/scenes/authors.cpp
+  src/scenes/arena.cpp
+
+  src/scenes/arena/player.cpp
+  src/scenes/arena/space.cpp
+  src/scenes/arena/screen_t.cpp
+  src/scenes/arena/status_t.cpp
 )
 
 target_include_directories(sub3000
@@ -34,9 +37,15 @@ target_link_libraries(sub3000
     config
     render
     actor
-    simplex 
+    simplex
     shapes
     effects
+    mapgen
+)
+
+set_target_properties(sub3000 PROPERTIES
+	VS_DEBUGGER_WORKING_DIRECTORY
+		"${CMAKE_SOURCE_DIR}/runtime/sub3000"
 )
 
 install(TARGETS sub3000
