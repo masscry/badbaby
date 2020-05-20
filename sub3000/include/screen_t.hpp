@@ -39,15 +39,10 @@ namespace sub3000
       bb::mailbox_t::shared_t box;
       bb::actorPID_t spaceActorID;
 
-      bb::shader_t debugMapShader;
-      bb::mesh_t debugMapMesh;
-      bb::texture_t debugMapTex;
-
       bb::linePoints_t unitPoints;
       std::deque<float> unitLife;
 
       float depth;
-      float depthSteps;
       float pointSize;
       float worldScale;
 

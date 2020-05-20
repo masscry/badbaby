@@ -39,6 +39,9 @@ namespace sub3000
 
   void arenaScene_t::OnPrepare()
   {
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
 
     bb::config_t menuConfig;
     menuConfig.Load("./arena.config");

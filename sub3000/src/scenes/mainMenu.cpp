@@ -133,6 +133,10 @@ namespace sub3000
 
   void mainMenuScene_t::OnPrepare()
   {
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+
     this->pContext = &bb::context_t::Instance();
     this->shader = bb::shader_t::LoadProgramFromFiles(
       this->shader_vp.c_str(),
@@ -150,10 +154,6 @@ namespace sub3000
     this->camBindBlock        = this->shader.UniformBlockIndex("camera");
     this->modelBindPoint      = this->shader.UniformLocation("model");
     this->glyphColorBindPoint = this->shader.UniformLocation("glyphColor");
-
-    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
 
     float line = 0.0f;
 

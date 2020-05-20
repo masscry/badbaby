@@ -40,7 +40,7 @@ namespace sub3000
 
   const double SPACE_TIME_STEP = 1.0/30.0;
 
-  const double NEW_POINT_TIME = 0.05;
+  const double NEW_POINT_TIME = 0.02;
 
   void space_t::Step(double dt)
   {
@@ -138,10 +138,6 @@ namespace sub3000
         this->distMap.Serialize(worldWriter);
       }
 
-      bb::postOffice_t::Instance().Post(
-        "arenaScreen",
-        bb::Issue<bb::ext::hmDone_t>(*mapReady)
-      );
       return bb::msg::result_t::complete;
     }
 

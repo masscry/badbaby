@@ -82,19 +82,6 @@ namespace sub3000
         }
       }
 
-
-      this->debugMapShader = bb::shader_t::LoadProgramFromFiles(
-        "hmap-debug.vp.glsl",
-        "hmap-debug.fp.glsl"
-      );
-
-      this->debugMapMesh = bb::GeneratePlane(
-        bb::vec2_t(512.0f, 256.0f),
-        bb::vec3_t(0.0f),
-        bb::vec2_t(0.0f),
-        true
-      );
-
     }
 
     template<typename data_t>
@@ -105,7 +92,6 @@ namespace sub3000
 
       for(auto item: items)
       {
-        result.emplace_back(item);
         result.emplace_back(item);
         result.emplace_back(item);
         result.emplace_back(item);
@@ -133,7 +119,7 @@ namespace sub3000
       auto cursorUnit = this->unitPoints.begin();
       for (size_t index = 0, lastIndex = this->unitLife.size(); index < lastIndex; ++index)
       {
-        if (*cursorLife > 10.0f)
+        if (*cursorLife > 2.0f)
         {
           cursorLife = this->unitLife.erase(cursorLife);
           cursorUnit = this->unitPoints.erase(cursorUnit);
@@ -203,17 +189,6 @@ namespace sub3000
         );
         this->depth = state->Depth();
       }
-
-      if (auto mapReady = bb::As<bb::ext::hmDone_t>(msg))
-      {
-        this->debugMapTex = bb::texture_t(
-          mapReady->HeightMap().Width(), 
-          mapReady->HeightMap().Height(),
-          mapReady->HeightMap().Data()
-        );
-        this->debugMapTex.SetFilter(GL_LINEAR, GL_LINEAR);
-        this->depthSteps = mapReady->DistanceMap().Depth();
-      }
     }
 
     void screen_t::OnRender()
@@ -230,27 +205,6 @@ namespace sub3000
       );
 
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-      /*
-
-      bb::shader_t::Bind(this->debugMapShader);
-      bb::texture_t::Bind(this->debugMapTex);
-      this->debugMapShader.SetBlock(
-        this->debugMapShader.UniformBlockIndex("camera"),
-        this->camera.UniformBlock()
-      );
-      this->debugMapShader.SetFloat(
-        "border",
-        this->depth/(this->depthSteps-1)
-      );
-      this->debugMapShader.SetFloat(
-        "depthSteps",
-        this->depthSteps
-      );
-
-      this->debugMapMesh.Render();
-
-      */
 
       bb::shader_t::Bind(this->shader);
       this->shader.SetBlock(
