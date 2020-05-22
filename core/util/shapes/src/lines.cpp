@@ -13,6 +13,29 @@
 namespace bb
 {
 
+  namespace
+  {
+    //
+    // 0---1
+    // |  /|
+    // | / |
+    // |/  |
+    // 3---2
+    //
+    const uint16_t pointIndecies[] = 
+    {
+      0, 1, 3, 2
+    };
+
+    const glm::vec2 topleft(0.0f, 0.0f);
+    const glm::vec2 topright(0.0f, 1.0f);
+    const glm::vec2 left(0.5f, 0.0f);
+    const glm::vec2 right(0.5f, 1.0f);
+    const glm::vec2 bottomleft(1.0f, 0.0f);
+    const glm::vec2 bottomright(1.0f, 1.0f);
+
+  }
+
   bb::mesh_t GenerateLine(float width, const linePoints_t& linePoints)
   {
     return GenerateMesh(DefineLine(glm::vec3(0.0f), width, linePoints));
@@ -34,17 +57,14 @@ namespace bb
       return bb::meshDesc_t();
     }
 
-    points.reserve(linePoints.size()*2);
-    distance.reserve(linePoints.size()*2);
-    indecies.reserve(linePoints.size()*3);
+    points.reserve((linePoints.size()-1)*8);
+    distance.reserve((linePoints.size()-1)*8);
+    indecies.reserve((linePoints.size()-1)*9);
 
     uint16_t index = 0;
     auto off2d = glm::vec2(offset.x, offset.y);
     auto item = linePoints.begin();
     auto end = linePoints.end();
-
-    const glm::vec2 dist1(1.0f);
-    const glm::vec2 dist0(0.0f);
 
     while (std::next(item) != end)
     {
@@ -53,24 +73,32 @@ namespace bb
       auto dir = glm::normalize(*nextItem - *item);
       auto tangent = glm::vec2(dir.y, -dir.x)*width/2.0f;
 
-      points.push_back(*item + tangent + off2d);
-      points.push_back(*item - tangent + off2d);
-      points.push_back(*nextItem + tangent + off2d);
-      points.push_back(*nextItem - tangent + off2d);
+      points.emplace_back(*item + tangent + off2d - dir*width/2.0f);
+      points.emplace_back(*item - tangent + off2d - dir*width/2.0f);
+      points.emplace_back(*item + tangent + off2d + dir*width/2.0f);
+      points.emplace_back(*item - tangent + off2d + dir*width/2.0f);
+      points.emplace_back(*nextItem + tangent + off2d - dir*width/2.0f);
+      points.emplace_back(*nextItem - tangent + off2d - dir*width/2.0f);
+      points.emplace_back(*nextItem + tangent + off2d + dir*width/2.0f);
+      points.emplace_back(*nextItem - tangent + off2d + dir*width/2.0f);
 
-      distance.emplace_back(dist0);
-      distance.emplace_back(dist1);
-      distance.emplace_back(dist0);
-      distance.emplace_back(dist1);
+      distance.emplace_back(topleft);
+      distance.emplace_back(topright);
+      distance.emplace_back(left);
+      distance.emplace_back(right);
+      distance.emplace_back(left);
+      distance.emplace_back(right);
+      distance.emplace_back(bottomleft);
+      distance.emplace_back(bottomright);
 
-      indecies.push_back(index++);
-      indecies.push_back(index++);
-      indecies.push_back(index++);
-      indecies.push_back(index++);
-
+      for (uint16_t cnt = 0; cnt < 8; ++cnt)
+      {
+        indecies.push_back(index + cnt);
+      }
+      index += 8;
       item = nextItem;
       ++nextItem;
-      indecies.push_back(breakIndex);
+      indecies.emplace_back(breakIndex);
     }
 
     bb::meshDesc_t result;
@@ -86,32 +114,12 @@ namespace bb
     return result;
   }
 
-  namespace
-  {
-    //
-    // 0---1
-    // |  /|
-    // | / |
-    // |/  |
-    // 3---2
-    //
-    const uint16_t pointIndecies[] = 
-    {
-      0, 1, 3, 1, 2, 3
-    };
-
-    const glm::vec2 topleft(0.0f, 0.0f);
-    const glm::vec2 topright(0.0f, 1.0f);
-    const glm::vec2 bottomleft(1.0f, 0.0f);
-    const glm::vec2 bottomright(1.0f, 1.0f);
-
-  }
-
   meshDesc_t DefinePoints(float width, const linePoints_t& points)
   {
     std::vector<glm::vec2> vpos;
     std::vector<glm::vec2> distance;
     std::vector<uint16_t> indecies;
+    const auto breakingIndex = bb::breakingIndex<uint16_t>();
 
     width = bb::CheckValueBounds(width, 0.01f, 100.0f);
 
@@ -124,10 +132,9 @@ namespace bb
       return bb::meshDesc_t();
     }
 
-    vpos.reserve(points.size()*9);
-    distance.reserve(points.size()*9);
-    indecies.reserve(points.size()*11);
-
+    vpos.reserve(points.size()*4);
+    distance.reserve(points.size()*4);
+    indecies.reserve(points.size()*5);
 
     for (auto cpos: points)
     {
@@ -147,6 +154,7 @@ namespace bb
       {
         indecies.emplace_back(cIndex + pointIndecies[i]);
       }
+      indecies.emplace_back(breakingIndex);
     }
 
     bb::meshDesc_t result;
@@ -158,7 +166,7 @@ namespace bb
       MakeVertexBuffer(std::move(distance))
     );
     result.Indecies() = MakeIndexBuffer(std::move(indecies));
-    result.SetDrawMode(GL_TRIANGLES);
+    result.SetDrawMode(GL_TRIANGLE_STRIP);
     return result;
   }
 
