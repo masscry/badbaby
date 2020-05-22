@@ -86,6 +86,9 @@ void ProcessGameAction(bb::actorPID_t src, sub3000::gameAction_t action)
     break;
   case sub3000::gameAction_t::settings:
     break;
+  case sub3000::gameAction_t::demo:
+    sub3000::PostChangeScene(sub3000::sceneID_t::demo);
+    break;
   default:
     assert(0);
   }

@@ -17,6 +17,7 @@ namespace sub3000
     arena,
     radarScreen,
     radarStatus,
+    demo
   };
 
   sceneID_t StringToSceneID(const std::string& str);
