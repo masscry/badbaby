@@ -39,16 +39,15 @@ namespace sub3000
 
 
   const double SPACE_TIME_STEP = 1.0/30.0;
-
-  const double NEW_POINT_TIME = 0.02;
+  const double NEW_POINT_TIME = SPACE_TIME_STEP * 2.0;
 
   void space_t::Step(double dt)
   {
     this->cumDT += dt;
-    this->newPointDT += dt;
     while (this->cumDT > SPACE_TIME_STEP)
     {
       this->cumDT -= SPACE_TIME_STEP;
+      this->newPointDT += SPACE_TIME_STEP;
       player::Update(&this->player, this->heightMap, static_cast<float>(SPACE_TIME_STEP));
     }
 
@@ -64,21 +63,22 @@ namespace sub3000
         }
 
         auto start = glfwGetTime();
-        auto dir = bb::Dir(glm::radians(this->player.radarAngle)-this->player.angle);
+        auto dir = bb::Dir(glm::radians(this->player.RadarAngle())-this->player.angle);
 
         bb::vec3_t isec;
 
         if (this->distMap.CastRay(
             bb::vec3_t(this->player.pos - bb::vec2_t(0.5f), this->player.depth),
             bb::vec3_t(dir, 0.0f),
-            &isec, -1.0f
+            &isec, 10.0f
             )
           )
         {
           this->units.emplace_back(bb::vec2_t(isec) + bb::vec2_t(0.5f));
         }
 
-        this->player.radarAngle = fmodf(this->player.radarAngle + 2.0f, 359.0f);
+        this->player.radarAngle += bb::deci_t(2, 0);
+        this->player.radarAngle %= bb::deci_t(360);
 
         auto finish = glfwGetTime();
 
@@ -106,7 +106,7 @@ namespace sub3000
             this->player.angle,
             this->player.depth,
             std::move(this->units),
-            this->player.radarAngle,
+            this->player.RadarAngle(),
             this->player.vel
           )
         );

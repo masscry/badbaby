@@ -8,6 +8,7 @@
 #include <msg.hpp>
 #include <heightMap.hpp>
 #include <control.hpp>
+#include <deci.hpp>
 
 namespace sub3000
 {
@@ -41,11 +42,13 @@ namespace sub3000
       float crossSection;
 
       bool clip;
-      float radarAngle;
+      bb::deci_t radarAngle;
 
       float depth;
 
       bb::vec2_t Dir() const;
+
+      float RadarAngle() const;
 
       data_t();
 
@@ -56,6 +59,11 @@ namespace sub3000
       ~data_t() = default;
 
     };
+
+    inline float data_t::RadarAngle() const
+    {
+      return static_cast<float>(static_cast<double>(this->radarAngle));
+    }
 
     inline bb::vec2_t data_t::Dir() const
     {
