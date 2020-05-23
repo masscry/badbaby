@@ -46,7 +46,7 @@ namespace sub3000
   class space_t final: public bb::role_t
   {
     double cumDT;
-    double newPointDT;
+    int newPointCount;
     player::data_t player;
 
     bb::linePoints_t units;

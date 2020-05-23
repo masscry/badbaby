@@ -39,7 +39,6 @@ namespace sub3000
 
 
   const double SPACE_TIME_STEP = 1.0/30.0;
-  const double NEW_POINT_TIME = SPACE_TIME_STEP * 2.0;
 
   void space_t::Step(double dt)
   {
@@ -47,14 +46,12 @@ namespace sub3000
     while (this->cumDT > SPACE_TIME_STEP)
     {
       this->cumDT -= SPACE_TIME_STEP;
-      this->newPointDT += SPACE_TIME_STEP;
+      this->newPointCount += 10;
       player::Update(&this->player, this->heightMap, static_cast<float>(SPACE_TIME_STEP));
     }
 
-    while (this->newPointDT > NEW_POINT_TIME)
+    while (this->newPointCount-->0)
     {
-      this->newPointDT -= NEW_POINT_TIME;
-
       if (this->distMap.IsGood())
       {
         if (this->units.size() >= 720)
@@ -77,8 +74,23 @@ namespace sub3000
           this->units.emplace_back(bb::vec2_t(isec) + bb::vec2_t(0.5f));
         }
 
-        this->player.radarAngle += bb::deci_t(2, 0);
-        this->player.radarAngle %= bb::deci_t(360);
+        this->player.radarAngle += this->player.radarAngleDelta;
+        switch(this->player.radar)
+        {
+          case radar::radius360:
+            this->player.radarAngle %= bb::deci_t(360);
+            break;
+          case radar::front90:
+            if (this->player.radarAngle > 225)
+            {
+              this->player.radarAngleDelta = -1;
+            }
+            if (this->player.radarAngle < 135)
+            {
+              this->player.radarAngleDelta = +1;
+            }
+            break;
+        }
 
         auto finish = glfwGetTime();
 
@@ -148,7 +160,7 @@ namespace sub3000
 
   space_t::space_t()
   : cumDT(0.0),
-    newPointDT(0.0)
+    newPointCount(0)
   {
     bb::config_t config;
     config.Load("./arena.config");

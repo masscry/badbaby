@@ -100,14 +100,28 @@ namespace sub3000
       return result;
     }
 
+    template<typename data_t>
+    std::vector<data_t> FillBuffer(size_t size, data_t value)
+    {
+      std::vector<data_t> result;
+      result.resize(size, value);
+      return result;
+    }
+
     void screen_t::UpdateUnits(bb::linePoints_t&& units, float radarAngle, double dt)
     {
-      this->radarLine = bb::GenerateLine(
-        0.02f,
+      auto defLine = bb::DefineLine(
+        glm::vec3(0.0f), 0.02f, 
         bb::linePoints_t{
           {0.0f, 0.0f},
           bb::Dir(glm::radians(radarAngle))
         }
+      );
+      defLine.Buffers().emplace_back(
+        bb::MakeVertexBuffer(FillBuffer(8, 4.0f))
+      );
+      this->radarLine = bb::GenerateMesh(
+        defLine
       );
 
       for (auto& item: this->unitLife)
@@ -119,7 +133,7 @@ namespace sub3000
       auto cursorUnit = this->unitPoints.begin();
       for (size_t index = 0, lastIndex = this->unitLife.size(); index < lastIndex; ++index)
       {
-        if (*cursorLife > 2.0f)
+        if (*cursorLife > 5.0f)
         {
           cursorLife = this->unitLife.erase(cursorLife);
           cursorUnit = this->unitPoints.erase(cursorUnit);

@@ -171,6 +171,16 @@ namespace sub3000
         data->clip = !data->clip;
       }
 
+      if (key.Key() == GLFW_KEY_F3)
+      {
+        data->radar = radar::front90;
+      }
+      if (key.Key() == GLFW_KEY_F4)
+      {
+        data->radar = radar::radius360;
+        data->radarAngleDelta = bb::deci_t(1);
+      }
+
       if (data->clip == false)
       {
         int control = (key.Key() == GLFW_KEY_DOWN) - (key.Key() == GLFW_KEY_UP);

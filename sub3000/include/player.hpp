@@ -12,9 +12,18 @@
 
 namespace sub3000
 {
+  namespace radar
+  {
+    enum mode_t
+    {
+      radius360 = 0,
+      front90 = 1
+    };
+  }
 
   namespace player
   {
+
     struct data_t final
     {
       bb::vec2_t pos;
@@ -24,6 +33,7 @@ namespace sub3000
 
       engine::mode_t engine;
       rudder::mode_t rudder;
+      radar::mode_t radar;
 
       float engineOutput;
       float rudderPos;
@@ -43,6 +53,7 @@ namespace sub3000
 
       bool clip;
       bb::deci_t radarAngle;
+      bb::deci_t radarAngleDelta;
 
       float depth;
 
@@ -77,6 +88,7 @@ namespace sub3000
       aVel(0.0f),
       engine(engine::stop),
       rudder(rudder::midship),
+      radar(radar::radius360),
       engineOutput(0.0f),
       rudderPos(0.0f),
       mass(1.0f),
@@ -88,7 +100,8 @@ namespace sub3000
       dragCoeff(0.0f),
       crossSection(0.0f),
       clip(true),
-      radarAngle(0.0f),
+      radarAngle(0),
+      radarAngleDelta(1),
       depth(28.0f)
     {
       ;
