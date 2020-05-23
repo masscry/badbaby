@@ -58,6 +58,29 @@ namespace bb
     glBindFramebuffer(GL_FRAMEBUFFER, this->self);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->tex.self, 0);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rbo);
+    
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+    {
+      throw std::runtime_error("Failed to cmplete framebuffer");
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glDeleteRenderbuffers(1, &rbo);
+  }
+
+  framebuffer_t::framebuffer_t(int width, int height, bool fp)
+  :tex(width, height, fp),self(0),width(width),height(height)
+  {
+    GLuint rbo;
+
+    glGenRenderbuffers(1, &rbo);
+    glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+    glGenFramebuffers(1, &this->self);
+    glBindFramebuffer(GL_FRAMEBUFFER, this->self);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this->tex.self, 0);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rbo);
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     {
@@ -89,5 +112,11 @@ namespace bb
     glViewport(0, 0, context_t::Instance().Width(), context_t::Instance().Height());
   }
 
+  void framebuffer_t::Swap(framebuffer_t& src)
+  {
+    auto tmp = std::move(src);
+    src = std::move(*this);
+    *this = std::move(tmp);
+  }
 
 } // namespace bb

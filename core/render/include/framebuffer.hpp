@@ -28,6 +28,8 @@ namespace bb
 
   public:
 
+    void Swap(framebuffer_t& src);
+
     int Width() const
     {
       return this->width;
@@ -48,6 +50,7 @@ namespace bb
 
     framebuffer_t();
     framebuffer_t(int width, int height);
+    framebuffer_t(int width, int height, bool fp);
     ~framebuffer_t();
 
     static void Bind(const framebuffer_t& fb);
