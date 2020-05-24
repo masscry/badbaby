@@ -92,8 +92,8 @@ const char* fpShader =
 
   void main()
   {
-    float fragDist = length(vec2(1.0)-2.0*abs(fragPos - vec2(0.5f)));
-    pixColor = mix(vec4(0.0f), lineColor, fragDist);
+    float pct = 1.0f - 2.0f*distance(fragPos, vec2(0.5));
+    pixColor = mix(vec4(0.0f), lineColor, pct);
   }
 )shader";
 
