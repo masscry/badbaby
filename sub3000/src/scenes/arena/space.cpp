@@ -47,16 +47,31 @@ namespace sub3000
     {
       this->cumDT -= SPACE_TIME_STEP;
       this->newPointCount += 10;
+      this->renderDepth = true;
       player::Update(&this->player, this->heightMap, static_cast<float>(SPACE_TIME_STEP));
+    }
+
+    if (this->renderDepth)
+    {
+      auto dir = bb::Dir(glm::radians(180.0f) - this->player.angle)*0.5f;
+      auto cursor = this->player.pos - bb::vec2_t(0.5f) - dir*10.0f;
+
+      for (auto& zDepth: this->radarZ)
+      {
+        zDepth = this->distMap.SampleHeightMap(bb::vec3_t(cursor + dir, this->player.depth)) / this->distMap.Depth();
+        zDepth = std::max(0.0f, zDepth);
+        cursor += dir;
+      }
+      this->renderDepth = false;
     }
 
     while (this->newPointCount-->0)
     {
       if (this->distMap.IsGood())
       {
-        if (this->units.size() >= 720)
+        if (this->radarXY.size() >= 720)
         {
-          this->units.pop_front();
+          this->radarXY.pop_front();
         }
 
         auto start = glfwGetTime();
@@ -71,7 +86,7 @@ namespace sub3000
             )
           )
         {
-          this->units.emplace_back(bb::vec2_t(isec) + bb::vec2_t(0.5f));
+          this->radarXY.emplace_back(bb::vec2_t(isec) + bb::vec2_t(0.5f));
         }
 
         this->player.radarAngle += this->player.radarAngleDelta;
@@ -117,9 +132,10 @@ namespace sub3000
             this->player.pos,
             this->player.angle,
             this->player.depth,
-            std::move(this->units),
+            std::move(this->radarXY),
             this->player.RadarAngle(),
-            this->player.vel
+            this->player.vel,
+            this->radarZ
           )
         );
 
@@ -160,7 +176,8 @@ namespace sub3000
 
   space_t::space_t()
   : cumDT(0.0),
-    newPointCount(0)
+    newPointCount(0),
+    renderDepth(false)
   {
     bb::config_t config;
     config.Load("./arena.config");
@@ -175,6 +192,8 @@ namespace sub3000
 
     this->player.pos = glm::vec2(240.0f, 117.0f);
     this->player.angle = 0.0f;
+
+    this->radarZ.resize(20, 0.0f);
   }
 
 }

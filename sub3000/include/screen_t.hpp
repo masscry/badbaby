@@ -42,6 +42,8 @@ namespace sub3000
       bb::linePoints_t unitPoints;
       std::deque<float> unitLife;
 
+      bb::mesh_t depthZ;
+
       float depth;
       float pointSize;
       float worldScale;

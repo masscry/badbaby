@@ -184,6 +184,39 @@ namespace sub3000
           dt
         );
 
+        auto points = bb::linePoints_t();
+        float zpos = 0.0f;
+        for(auto zdepth: state->RadarZ())
+        {
+          points.emplace_back(
+            glm::vec2(zpos - 0.5f, zdepth)
+          );
+          zpos += 0.05f;
+        }
+
+        auto tmap = 
+          glm::scale(
+            glm::translate(
+              glm::mat3(1.0f),
+              glm::vec2(0.775f, -0.8f)
+            ),
+            glm::vec2(0.35f, 0.5f)
+          );
+
+        for (auto& zpoint: points)
+        {
+          zpoint = tmap * glm::vec3(zpoint, 1.0f);
+        }
+
+        auto zpoints = bb::DefinePoints(
+          this->pointSize * 0.01f,
+          points
+        );
+
+        this->depthZ = bb::GenerateMesh(
+          zpoints
+        );
+
         float newScale = this->worldScale/4.0f;
         
         this->camera = bb::camera_t::Orthogonal(
@@ -237,6 +270,12 @@ namespace sub3000
         this->units.Render();
       }
       this->radarLine.Render();
+
+      if (this->depthZ.Good())
+      {
+        this->depthZ.Render();
+      }
+
     }
 
     void screen_t::OnCleanup()

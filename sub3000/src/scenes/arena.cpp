@@ -30,11 +30,11 @@ namespace sub3000
     return center + screenDim*offset;
   }
 
-  glm::vec2 SquareScreenPercent(float percent)
+  glm::vec2 SquareScreenPercent(float percent, glm::vec2 scale)
   {
     auto screenDim = bb::context_t::Instance().Dimensions();
     auto minDim = std::min(screenDim.x, screenDim.y);
-    return glm::vec2(minDim*percent);
+    return glm::vec2(minDim*percent)*scale;
   }
 
   void arenaScene_t::OnPrepare()
@@ -49,7 +49,8 @@ namespace sub3000
     this->radarScreen.Prepare();
     this->radarPlane = bb::GeneratePlane(
       SquareScreenPercent(
-        static_cast<float>(menuConfig.Value("arena.radar.size", 0.9))
+        static_cast<float>(menuConfig.Value("arena.radar.size", 0.9)),
+        glm::vec2(1.0f, 1.0f)
       ),
       glm::vec3(
         OffsetFromCenterOfScreen(
@@ -67,7 +68,8 @@ namespace sub3000
     this->radarStatus.Prepare();
     this->radarStatusPlane = bb::GeneratePlane(
       SquareScreenPercent(
-        static_cast<float>(menuConfig.Value("arena.status.size", 0.9))
+        static_cast<float>(menuConfig.Value("arena.status.size", 0.9)),
+        glm::vec2(1.0f, 1.0f)
       ),
       glm::vec3(
         OffsetFromCenterOfScreen(

@@ -4,6 +4,8 @@
 #include <context.hpp>
 #include <camera.hpp>
 #include <worker.hpp>
+#include <meshDesc.hpp>
+#include <shapes.hpp>
 
 namespace sub3000
 {
@@ -50,6 +52,33 @@ namespace sub3000
           )
         );
       }
+
+      bb::meshDesc_t lineDesc;
+
+      auto wmDim = worldMap.Dimensions();
+      for (float i = 0.0f; i < wmDim.x; i += 10.0f)
+      {
+        lineDesc.Append(
+          bb::DefineLine(glm::vec3(0.0f), 1.0f, 
+          bb::linePoints_t{
+            glm::vec2(i, 0.0f),
+            glm::vec2(i, wmDim.y)
+          })
+        );
+      }
+
+      for (float i = 0.0f; i < wmDim.y; i += 10.0f)
+      {
+        lineDesc.Append(
+          bb::DefineLine(glm::vec3(0.0f), 1.0f, 
+          bb::linePoints_t{
+            glm::vec2(0.0f,    i),
+            glm::vec2(wmDim.x, i)
+          })
+        );
+      }
+
+      this->lines = bb::GenerateMesh(lineDesc);
     }
     else
     {
@@ -85,7 +114,11 @@ namespace sub3000
         auto meshDesc = bb::DefinePoints(1.0f, state->Units());
 
         meshDesc.Append(
-          bb::DefineLine(glm::vec3(0.0f), 1.0f, bb::linePoints_t{state->Pos(), state->Pos() + dir*10.0f})
+          bb::DefineLine(glm::vec3(0.0f), 1.0f, 
+          bb::linePoints_t{
+            state->Pos(),
+            state->Pos() + dir*10.0f}
+          )
         );
 
         this->mesh = bb::GenerateMesh(meshDesc);
@@ -98,6 +131,10 @@ namespace sub3000
     bb::framebuffer_t::Bind(bb::context_t::Instance().Canvas());
 
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+    glBlendFunc(
+      GL_SRC_ALPHA, GL_ONE
+    );
+
     bb::shader_t::Bind(this->shader);
     camera.Update();
 
@@ -105,6 +142,10 @@ namespace sub3000
       this->shader.UniformBlockIndex("camera"),
       this->camera.UniformBlock()
     );
+    if (this->lines.Good())
+    {
+      this->lines.Render();
+    }
     if (this->mesh.Good())
     {
       this->mesh.Render();

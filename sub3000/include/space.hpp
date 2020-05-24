@@ -47,9 +47,11 @@ namespace sub3000
   {
     double cumDT;
     int newPointCount;
+    bool renderDepth;
     player::data_t player;
 
-    bb::linePoints_t units;
+    bb::linePoints_t radarXY;
+    std::vector<float> radarZ;
 
     bb::ext::heightMap_t heightMap;
     bb::ext::distanceMap_t distMap;

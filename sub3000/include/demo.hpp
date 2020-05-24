@@ -18,6 +18,8 @@ namespace sub3000
     bb::shader_t   shader;
     bb::mesh_t     mesh;
 
+    bb::mesh_t     lines;
+
     bb::actorPID_t space;
 
     void OnPrepare() override;
