@@ -63,6 +63,13 @@ namespace sub3000
         cursor += dir;
       }
       this->renderDepth = false;
+
+      bb::postOffice_t::Instance().Post(
+        "arenaStatus",
+        bb::Issue<player::status_t>(
+          this->player
+        )
+      );
     }
 
     while (this->newPointCount-->0)
@@ -131,13 +138,6 @@ namespace sub3000
           bb::Issue<state_t>(
             std::move(this->radarXY),
             this->radarZ,
-            this->player
-          )
-        );
-
-        bb::postOffice_t::Instance().Post(
-          "arenaStatus",
-          bb::Issue<player::status_t>(
             this->player
           )
         );

@@ -25,12 +25,21 @@ namespace sub3000
     class status_t final: public scene_t
     {
       bb::framebuffer_t fb;
-      bb::shader_t shader;
       bb::camera_t camera;
       bb::mailbox_t::shared_t box;
 
-      bb::font_t font;
-      bb::textDynamic_t text;
+      bb::shader_t mapShader;
+      bb::texture_t mapTex;
+      bb::mesh_t mapPlane;
+
+      bb::linePoints_t coursePoints;
+      bb::shader_t mapPointsShader;
+      bb::mesh_t mapPoints;
+      bb::mesh_t mapShip;
+
+      bb::vec2_t mapDims;
+
+      int statCounter;
 
       status_t(const status_t&) = delete;
       status_t& operator=(const status_t&) = delete;

@@ -1,6 +1,7 @@
 #include <status_t.hpp>
 
 #include <player.hpp>
+#include <space.hpp>
 
 namespace sub3000
 {
@@ -13,20 +14,71 @@ namespace sub3000
       bb::config_t menuConfig;
       menuConfig.Load("./arena.config");
 
-      this->shader = bb::shader_t::LoadProgramFromFiles(
-        menuConfig.Value("status.shader.vp", "status.vp.glsl").c_str(),
-        menuConfig.Value("status.shader.fp", "status.fp.glsl").c_str()
-      );
+      this->mapDims.x = 64.0f;
+      this->mapDims.y = 64.0f;
 
       this->camera = bb::camera_t::Orthogonal(
-        -12.0f, 500.0f, -256.0f, 256.0f
+        0.0f, this->mapDims.x, this->mapDims.y, 0.0f
       );
 
       this->fb = bb::framebuffer_t(512, 512);
       this->box = bb::postOffice_t::Instance().New("arenaStatus");
 
-      this->font = bb::font_t(menuConfig.Value("status.font", "mono.config"));
-      this->text = bb::textDynamic_t(this->font, bb::vec2_t(12.0f, -24.0f));
+      this->mapShader = bb::shader_t::LoadProgramFromFiles(
+        menuConfig.Value("map.shader.vp", "hmap-debug.vp.glsl").c_str(),
+        menuConfig.Value("map.shader.fp", "hmap-debug.fp.glsl").c_str()
+      );
+      
+      this->mapPointsShader = bb::shader_t::LoadProgramFromFiles(
+        menuConfig.Value("map.points.vp", "radar-2.vp.glsl").c_str(),
+        menuConfig.Value("map.points.fp", "radar-2.fp.glsl").c_str()
+      );
+
+      this->mapPlane = bb::GeneratePlane(
+        glm::vec2(512.0f, 256.0f),
+        glm::vec3(0.0f),
+        glm::vec2(0.0f, 0.0f),
+        true
+      );
+
+      this->statCounter = 0;
+
+    }
+
+    namespace
+    {
+
+      const glm::vec2 shipTri[] = 
+      {
+        glm::vec2(-0.3f,   0.0f),
+        glm::vec2( 0.3f,   0.0f),
+        glm::vec2( 0.0f,  -1.0f),
+        glm::vec2(-0.3f,   0.0f)
+      };
+
+      bb::meshDesc_t ShipTriangle(float pointSize, glm::vec2 pos, float angle)
+      {
+        auto points = bb::linePoints_t();
+
+        auto tmap = 
+            glm::rotate(
+              glm::translate(
+                glm::mat3(1.0f),
+                pos
+              ),
+              angle
+            );
+
+        for (auto triPoint: shipTri)
+        {
+          points.emplace_back(
+            tmap*glm::vec3(triPoint, 1.0f)
+          );
+        }
+
+        return bb::DefineLine(glm::vec3(0.0f), pointSize * 0.02f, points);
+      }
+
     }
 
     void status_t::OnUpdate(double)
@@ -34,28 +86,49 @@ namespace sub3000
       bb::msg_t msg;
       if (this->box->Poll(&msg))
       {
+        if (auto mapData = bb::As<bb::msg::dataMsg_t<bb::ext::heightMap_t>>(msg))
+        {
+          const auto& hmap = mapData->Data();
+
+          this->mapTex = bb::texture_t(
+            hmap.Width(),
+            hmap.Height(),
+            hmap.Data()
+          );
+          this->mapTex.SetFilter(
+            GL_LINEAR, GL_LINEAR
+          );
+        }
+
         if (auto status = bb::As<player::status_t>(msg))
         {
-          this->text.Update(
-            "POS:\t[%+6.3f;%+6.3f]\n"
-            "DEPTH:\t%+6.3f\n"
-            "ENGINE:\t%s\n"
-            "OUTPUT:\t%+6.3f\n"
-            "SPEED:\t[%+6.3f;%+6.3f]\n"
-            "RUDDER:\t%s [%+6.3f]\n"
-            "AVEL:\t%+6.3f\n"
-            "ANGLE:\t%+6.3f\n"
-            "DRAG:\t%+6.3f",
-            status->Data().pos.x, status->Data().pos.y,
-            status->Data().depth,
-            engine::ToString(status->Data().engine),
-            status->Data().engineOutput,
-            status->Data().vel.x, status->Data().vel.y,
-            rudder::ToString(status->Data().rudder), status->Data().rudderPos*180.0/M_PI,
-            status->Data().aVel*180.0/M_PI,
-            status->Data().angle*180.0/M_PI,
-            status->Data().dragCoeff
+          camera.View() = glm::translate(
+            glm::mat4(1.0f),
+            glm::vec3(-status->Data().pos + this->mapDims/2.0f, 0.0f)
           );
+
+          this->mapShip = bb::GenerateMesh(ShipTriangle(10.0f, status->Data().pos, status->Data().angle));
+
+          ++this->statCounter;
+          if ((this->statCounter > 30))
+          {
+            if ((this->coursePoints.empty()) || (glm::length(this->coursePoints.back() - status->Data().pos) >= 0.4f))
+            {
+              this->statCounter = 0;
+              this->coursePoints.emplace_back(
+                status->Data().pos
+              );
+
+              if (this->coursePoints.size() > 200)
+              {
+                this->coursePoints.pop_front();
+              }
+
+              this->mapPoints = bb::GenerateMesh(
+                bb::DefinePoints(0.2f, this->coursePoints)
+              );
+            }
+          }
         }
       }
     }
@@ -63,26 +136,38 @@ namespace sub3000
     void status_t::OnRender()
     {
       bb::framebuffer_t::Bind(this->fb);
-      
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+      glBlendFunc(
+        GL_ONE, GL_ONE_MINUS_SRC_ALPHA
+      );
 
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-      bb::shader_t::Bind(this->shader);
+
       camera.Update();
 
-      this->shader.SetBlock(
-        this->shader.UniformBlockIndex("camera"),
+      bb::shader_t::Bind(this->mapShader);
+      this->mapShader.SetBlock(
+        this->mapShader.UniformBlockIndex("camera"),
         this->camera.UniformBlock()
       );
+      this->mapShader.SetFloat("border", 28.0f/63.0f);
 
-      this->shader.SetVector3f(
-        "glyphColor", glm::vec3(0.2f, 0.7f, 0.0f)
+      bb::texture_t::Bind(this->mapTex);
+      this->mapPlane.Render();
+
+      bb::shader_t::Bind(this->mapPointsShader);
+      this->mapPointsShader.SetBlock(
+        this->mapPointsShader.UniformBlockIndex("camera"),
+        this->camera.UniformBlock()
       );
-      this->shader.SetMatrix(
-        "model",
-        glm::mat4(1.0f)
-      );
-      this->text.Render();
+      if (this->mapPoints.Good())
+      {
+        this->mapPoints.Render();
+      }
+      if (this->mapShip.Good())
+      {
+        this->mapShip.Render();
+      }
     }
 
     void status_t::OnCleanup()
