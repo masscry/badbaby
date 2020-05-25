@@ -120,6 +120,13 @@ namespace
     bb::countof(tNine)
   };
 
+  const glm::vec2 tMinus[] = {
+    { 0.0f, 0.5f },
+    { 0.5f, 0.5f },
+  };
+
+  const size_t tMinusSize = bb::countof(tMinus);
+
   static_assert(bb::countof(tNumber) == bb::countof(tNumberSize),
     "tNumber arrays size must be equal to tNumberSize array size"
   );
@@ -129,6 +136,32 @@ namespace
 
 namespace bb
 {
+
+  namespace
+  {
+    meshDesc_t AddSymbol(glm::vec3 offset, float width,  glm::vec2 scale, const glm::vec2* points, size_t totalPoints, glm::vec2 cursor)
+    {
+      linePoints_t linePoints;
+
+      for (size_t i = 0; i < totalPoints; ++i)
+      {
+        linePoints.emplace_back(
+          (points[i].x+cursor.x)*scale.x,
+          (points[i].y+cursor.y)*scale.y
+        );
+      }
+      return DefineLine(offset, width, linePoints);
+    }
+
+    meshDesc_t AddDigit(glm::vec3 offset, float width,  glm::vec2 scale, char number, glm::vec2 cursor)
+    {
+      assert(std::isdigit(number));
+
+      auto index = number - '0';
+      return AddSymbol(offset, width, scale, tNumber[index], tNumberSize[index], cursor);
+    }
+
+  }
 
   meshDesc_t DefineNumber(glm::vec3 offset, float width, glm::vec2 scale, const char* number)
   {
@@ -143,29 +176,29 @@ namespace bb
 
     while(*number != '\0')
     {
-      if (!std::isdigit(*number))
-      { // Only digits expected
-        assert(0);
-        return meshDesc_t();
-      }
-
-      auto index = *number - '0';
-
-      auto points = tNumber[index];
-      auto totalPoints = tNumberSize[index];
-
-      linePoints_t linePoints;
-
-      for (size_t i = 0; i < totalPoints; ++i)
+      if (std::isdigit(*number))
       {
-        linePoints.emplace_back(
-          (points[i].x+cursor.x)*scale.x,
-          (points[i].y+cursor.y)*scale.y
+        result.Append(
+          AddDigit(offset, width, scale, *number, cursor)
         );
+        ++number;
+        cursor.x += 1.0f;
+        continue;
       }
-      result.Append(DefineLine(offset, width, linePoints));
-      ++number;
-      cursor.x += 1.0f;
+
+      if (*number == '-')
+      {
+        result.Append(
+          AddSymbol(offset, width, scale, tMinus, tMinusSize, cursor)
+        );
+        ++number;
+        cursor.x += 1.0f;
+        continue;
+      }
+
+      bb::Error("Unknown symbol: %c", *number);
+      assert(0);
+      return meshDesc_t();
     }
     return result;
   }
