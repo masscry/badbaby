@@ -109,7 +109,7 @@ namespace sub3000
         }
 
         float rotDragCoeff = 0.5f * aVelLen * 0.8f 
-          * static_cast<float>(M_PI)*(data->width*data->width);
+          * static_cast<float>(M_PI)*(data->length*data->length);
 
         // rotDrag - force applied to stop ship from rotating
         float rotDragForce = -aVelDir*rotDragCoeff;

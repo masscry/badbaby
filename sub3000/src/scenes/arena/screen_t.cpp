@@ -160,12 +160,145 @@ namespace sub3000
 
       if (!this->unitPoints.empty())
       {
-        auto mesh = bb::DefinePoints(this->pointSize * 0.1f, this->unitPoints);
+        auto mesh = bb::DefinePoints(this->pointSize * 0.01f, this->unitPoints);
         mesh.Buffers().emplace_back(
           bb::MakeVertexBuffer(Linearize(this->unitLife))
         );
         this->units = bb::GenerateMesh(mesh);
       }
+    }
+
+    void screen_t::UpdateDepthRadar(const state_t& state)
+    {
+      auto points = bb::linePoints_t();
+      float zpos = 0.0f;
+      for(auto zdepth: state.RadarZ())
+      {
+        points.emplace_back(
+          glm::vec2(zpos - 0.5f, zdepth)
+        );
+        zpos += 0.05f;
+      }
+
+      auto tmap = 
+        glm::scale(
+          glm::translate(
+            glm::mat3(1.0f),
+            glm::vec2(0.775f, -0.8f)
+          ),
+          glm::vec2(0.35f, 0.5f)
+        );
+
+      for (auto& zpoint: points)
+      {
+        zpoint = tmap * glm::vec3(zpoint, 1.0f);
+      }
+
+      auto zpoints = bb::DefinePoints(
+        this->pointSize * 0.01f,
+        points
+      );
+
+      this->depthZ = bb::GenerateMesh(
+        zpoints
+      );
+    }
+    namespace
+    {
+      const glm::vec2 engineTri[] = 
+      {
+        glm::vec2( -0.1f,  -0.05f),
+        glm::vec2( -0.1f,   0.05f),
+        glm::vec2(  0.0f,   0.00f),
+        glm::vec2( -0.1f,  -0.05f)
+      };
+
+      const glm::vec2 rudderTri[] = 
+      {
+        glm::vec2(-0.05f,   0.1f),
+        glm::vec2( 0.05f,   0.1f),
+        glm::vec2( 0.00f,  -0.0f),
+        glm::vec2(-0.05f,   0.1f)
+      };
+
+      bb::meshDesc_t EngineTriangle(float pointSize, float normEngineOutput, glm::vec2 scale)
+      {
+        auto points = bb::linePoints_t();
+
+        auto tmap = 
+          glm::scale(
+            glm::translate(
+              glm::mat3(1.0f),
+              glm::vec2(-0.85f, 0.8f - normEngineOutput)
+            ),
+            glm::vec2(0.35f, 0.5f) * scale
+          );
+
+        for (auto triPoint: engineTri)
+        {
+          points.emplace_back(
+            tmap*glm::vec3(triPoint, 1.0f)
+          );
+        }
+
+        return bb::DefineLine(glm::vec3(0.0f), pointSize * 0.02f, points);
+      }
+
+      bb::meshDesc_t RudderTriangle(float pointSize, float normRudderOutput, glm::vec2 scale)
+      {
+        auto points = bb::linePoints_t();
+
+        auto tmap = 
+          glm::scale(
+            glm::translate(
+              glm::mat3(1.0f),
+              glm::vec2(-0.775f - normRudderOutput, -0.8f)
+            ),
+            glm::vec2(0.35f, 0.5f) * scale
+          );
+
+        for (auto triPoint: rudderTri)
+        {
+          points.emplace_back(
+            tmap*glm::vec3(triPoint, 1.0f)
+          );
+        }
+
+        return bb::DefineLine(glm::vec3(0.0f), pointSize * 0.02f, points);
+      }
+
+    }
+
+    void screen_t::UpdateRudder(const state_t& state)
+    {
+      auto maxRudder = rudder::Output(rudder::left_40);
+      auto normRudder = state.Player().rudderPos/maxRudder*0.175f;
+      auto destRudder = rudder::Output(state.Player().rudder)/maxRudder*0.175f;
+
+      auto actualRudderTri = RudderTriangle(this->pointSize * 0.02f, normRudder, glm::vec2(1.0f));
+      actualRudderTri.Append(
+        RudderTriangle(this->pointSize * 0.02f, destRudder, glm::vec2(1.0f, -1.0f))
+      );
+
+      this->rudder = bb::GenerateMesh(
+        actualRudderTri
+      );
+    }
+
+    void screen_t::UpdateEngine(const state_t& state)
+    {
+      auto maxEngine = state.Player().engineModeList.Output(sub3000::engine::mode_t::full_ahead);
+      auto normEngineOutput = (state.Player().engineOutput/maxEngine)*0.15f;
+      auto destEngineOutput = state.Player().engineModeList.Output(state.Player().engine)/maxEngine*0.15f;
+
+      auto actualOutputTri = EngineTriangle(this->pointSize * 0.02f, normEngineOutput, glm::vec2(1.0f));
+      actualOutputTri.Append(
+        EngineTriangle(this->pointSize * 0.02f, destEngineOutput, glm::vec2(-1.0f, 1.0f))
+      );
+
+      this->engine = bb::GenerateMesh(
+        actualOutputTri
+      );
     }
 
     void screen_t::OnUpdate(double dt)
@@ -184,38 +317,9 @@ namespace sub3000
           dt
         );
 
-        auto points = bb::linePoints_t();
-        float zpos = 0.0f;
-        for(auto zdepth: state->RadarZ())
-        {
-          points.emplace_back(
-            glm::vec2(zpos - 0.5f, zdepth)
-          );
-          zpos += 0.05f;
-        }
-
-        auto tmap = 
-          glm::scale(
-            glm::translate(
-              glm::mat3(1.0f),
-              glm::vec2(0.775f, -0.8f)
-            ),
-            glm::vec2(0.35f, 0.5f)
-          );
-
-        for (auto& zpoint: points)
-        {
-          zpoint = tmap * glm::vec3(zpoint, 1.0f);
-        }
-
-        auto zpoints = bb::DefinePoints(
-          this->pointSize * 0.01f,
-          points
-        );
-
-        this->depthZ = bb::GenerateMesh(
-          zpoints
-        );
+        this->UpdateDepthRadar(*state);
+        this->UpdateRudder(*state);
+        this->UpdateEngine(*state);
 
         float newScale = this->worldScale/4.0f;
         
@@ -276,6 +380,14 @@ namespace sub3000
         this->depthZ.Render();
       }
 
+      if (this->rudder.Good())
+      {
+        this->rudder.Render();
+      }
+      if (this->engine.Good())
+      {
+        this->engine.Render();
+      }
     }
 
     void screen_t::OnCleanup()

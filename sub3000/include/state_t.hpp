@@ -10,6 +10,7 @@
 #include <msg.hpp>
 #include <algebra.hpp>
 #include <meshDesc.hpp>
+#include <player.hpp>
 
 namespace sub3000
 {
@@ -18,19 +19,19 @@ namespace sub3000
   {
     bb::linePoints_t units;
     std::vector<float> radarZ;
-    bb::vec2_t pos;
-    bb::vec2_t vel;
-    float angle;
-    float depth;
-    float radarAngle;
+    player::data_t player;
   public:
+
+    player::data_t& Player();
+
+    const player::data_t& Player() const;
 
     bb::vec2_t& Vel();
 
     bb::vec2_t& Pos();
     float& Angle();
     float& Depth();
-    float& RadarAngle();
+    float RadarAngle();
 
     bb::linePoints_t& Units();
 
@@ -40,7 +41,7 @@ namespace sub3000
 
     const std::vector<float>& RadarZ() const;
 
-    state_t(bb::vec2_t pos, float angle, float depth, bb::linePoints_t&& units, float radarAngle, bb::vec2_t vel, const std::vector<float>& radarZ);
+    state_t(bb::linePoints_t&& units, const std::vector<float>& radarZ, const player::data_t& player);
 
     state_t(const state_t&) = default;
     state_t& operator=(const state_t&) = default;
@@ -51,36 +52,42 @@ namespace sub3000
     ~state_t() override = default;
   };
 
-  inline state_t::state_t(bb::vec2_t pos, float angle, float depth, bb::linePoints_t&& units, float radarAngle, bb::vec2_t vel, const std::vector<float>& radarZ)
+  inline state_t::state_t(bb::linePoints_t&& units, const std::vector<float>& radarZ, const player::data_t& player)
   : units(std::move(units)),
     radarZ(radarZ),
-    pos(pos),
-    vel(vel),
-    angle(angle),
-    depth(depth),
-    radarAngle(radarAngle)
+    player(player)
   {
     ;
   }
 
+  inline player::data_t& state_t::Player()
+  {
+    return this->player;
+  }
+
+  inline const player::data_t& state_t::Player() const
+  {
+    return this->player;
+  }
+
   inline bb::vec2_t& state_t::Vel()
   {
-    return this->vel;
+    return this->player.vel;
   }
 
   inline float& state_t::Depth()
   {
-    return this->depth;
+    return this->player.depth;
   }
 
   inline bb::vec2_t& state_t::Pos()
   {
-    return this->pos;
+    return this->player.pos;
   }
 
   inline float& state_t::Angle()
   {
-    return this->angle;
+    return this->player.angle;
   }
 
   inline bb::linePoints_t& state_t::Units()
@@ -103,9 +110,9 @@ namespace sub3000
     return this->radarZ;
   }
 
-  inline float& state_t::RadarAngle()
+  inline float state_t::RadarAngle()
   {
-    return this->radarAngle;
+    return this->player.RadarAngle();
   }
 
 }

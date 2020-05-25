@@ -13,6 +13,7 @@
 #include <vao.hpp>
 #include <framebuffer.hpp>
 #include <sub3000.hpp>
+#include <state_t.hpp>
 #include <shapes.hpp>
 #include <camera.hpp>
 #include <mailbox.hpp>
@@ -43,6 +44,8 @@ namespace sub3000
       std::deque<float> unitLife;
 
       bb::mesh_t depthZ;
+      bb::mesh_t rudder;
+      bb::mesh_t engine;
 
       float depth;
       float pointSize;
@@ -59,6 +62,9 @@ namespace sub3000
     public:
 
       void UpdateUnits(bb::linePoints_t&& units, float radarAngle, double dt);
+      void UpdateDepthRadar(const state_t& state);
+      void UpdateRudder(const state_t& state);
+      void UpdateEngine(const state_t& state);
 
       bb::framebuffer_t& Framebuffer();
       const bb::framebuffer_t& Framebuffer() const;

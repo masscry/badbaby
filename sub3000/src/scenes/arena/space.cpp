@@ -29,7 +29,7 @@ namespace sub3000
       this->output[mode_t::slow_ahead] = static_cast<float>(config.Value("engine.slow_ahead", 0.125));
       this->output[mode_t::dead_slow_ahead] = static_cast<float>(config.Value("engine.dead_slow_ahead", 0.05));
       this->output[mode_t::stop] = 0.0f;
-      this->output[mode_t::dead_slow_astern] = static_cast<float>(config.Value("engine.slow_astern", -0.025));
+      this->output[mode_t::dead_slow_astern] = static_cast<float>(config.Value("engine.dead_slow_astern", -0.025));
       this->output[mode_t::slow_astern] = static_cast<float>(config.Value("engine.slow_astern", -0.05));
       this->output[mode_t::half_astern] = static_cast<float>(config.Value("engine.half_astern", -0.125));
       this->output[mode_t::full_astern] = static_cast<float>(config.Value("engine.full_astern", -0.25));
@@ -81,10 +81,10 @@ namespace sub3000
 
         if (this->distMap.CastRay(
             bb::vec3_t(this->player.pos - bb::vec2_t(0.5f), this->player.depth),
-            bb::vec3_t(dir, 0.0f),
+            glm::normalize(bb::vec3_t(dir, 0.0f)),
             &isec, 10.0f
-            )
           )
+        )
         {
           this->radarXY.emplace_back(bb::vec2_t(isec) + bb::vec2_t(0.5f));
         }
@@ -129,13 +129,9 @@ namespace sub3000
         bb::workerPool_t::Instance().PostMessage(
           step->Source(),
           bb::Issue<state_t>(
-            this->player.pos,
-            this->player.angle,
-            this->player.depth,
             std::move(this->radarXY),
-            this->player.RadarAngle(),
-            this->player.vel,
-            this->radarZ
+            this->radarZ,
+            this->player
           )
         );
 
@@ -165,6 +161,14 @@ namespace sub3000
         auto worldWriter = bb::ext::binstore_t::Create("world.bbw");
         this->distMap.Serialize(worldWriter);
       }
+
+      bb::postOffice_t::Instance().Post(
+        "arenaStatus",
+        bb::Issue<bb::msg::dataMsg_t<bb::ext::heightMap_t>>(
+          mapReady->HeightMap(),
+          -1
+        )
+      );
 
       return bb::msg::result_t::complete;
     }
