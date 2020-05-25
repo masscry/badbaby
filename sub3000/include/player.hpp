@@ -5,6 +5,10 @@
  * 
  */
 
+#pragma once
+#ifndef __SUB3000_ARENA_PLAYER__
+#define __SUB3000_ARENA_PLAYER__
+
 #include <msg.hpp>
 #include <heightMap.hpp>
 #include <control.hpp>
@@ -153,3 +157,5 @@ namespace sub3000
   } // namespace player
 
 } // namespace sub3000
+
+#endif /* __SUB3000_ARENA_PLAYER__ */
