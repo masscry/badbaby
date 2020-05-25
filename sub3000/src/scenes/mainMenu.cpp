@@ -136,6 +136,7 @@ namespace sub3000
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     this->pContext = &bb::context_t::Instance();
     this->shader = bb::shader_t::LoadProgramFromFiles(
