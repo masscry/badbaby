@@ -4,6 +4,7 @@
 #include <cctype>
 #include <cassert>
 #include <cstdio>
+#include <cstring>
 #include <memory>
 
 namespace bb
@@ -78,22 +79,52 @@ namespace bb
         break;
       case SM_ARG:
         {
-          char* afterArg = 0;
-          double arg = std::strtod(cursor, &afterArg);
-          if (errno == ERANGE)
+          while(std::isspace(*cursor))
           {
+            ++cursor;
+          }
+
+          if ((*cursor == '\'') || (*cursor == '\"'))
+          {
+            int strToken = *cursor;
+            auto strEnd = strchr(cursor+1, strToken);
+            if (strEnd == nullptr)
+            {
+              return -1;
+            }
+
+            auto strLen = static_cast<size_t>(strEnd - (cursor + 1));
+
+            std::string arg;
+            arg.resize(strLen);
+            memcpy(&arg[0], cursor + 1, strLen);
+
+            if (vm.Push(ref_t::String(arg)) != 0)
+            {
+              return -1;
+            }
+            cursor = strEnd+1;
+          }
+          else
+          {
+            char* afterArg;
             errno = 0;
-            return -1;
+            double arg = std::strtod(cursor, &afterArg);
+            if (errno == ERANGE)
+            {
+              errno = 0;
+              return -1;
+            }
+            if (afterArg == cursor)
+            {
+              return -1;
+            }
+            if (vm.Push(ref_t::Number(arg)) != 0)
+            {
+              return -1;
+            }
+            cursor = afterArg;
           }
-          if (afterArg == cursor)
-          {
-            return -1;
-          }
-          if (vm.Push(ref_t::Number(arg)) != 0)
-          {
-            return -1;
-          }
-          cursor = afterArg;
           scriptMode = SM_NEXT_OR_END;
         }
         break;
@@ -141,6 +172,17 @@ namespace bb
       return item->Number();
     }
     return 0.0;
+  }
+
+  std::string StringArg(const listOfRefs_t& refs, uint32_t id)
+  {
+    if (id < refs.size())
+    {
+      auto item = refs.begin();
+      std::advance(item, id);
+      return item->AsString();
+    }
+    return std::string("");
   }
 
   char* ReadWholeFile(FILE* input, size_t* pSize)

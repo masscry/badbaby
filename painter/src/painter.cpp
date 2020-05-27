@@ -179,11 +179,7 @@ class painterVM_t: public bb::vm_t
           this->cursor,
           this->brushWidth,
           this->textScale,
-          std::to_string(
-            static_cast<int32_t>(
-              bb::Argument(refs, 0)
-            )
-          ).c_str()
+          bb::StringArg(refs, 0).c_str()
         )
       );
       break;

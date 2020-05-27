@@ -33,8 +33,19 @@ namespace bb
 
   public:
 
-    virtual bool operator == (const value_t& rhs) = 0;
+    /**
+     * Converts embeded value to string in format, which can be easily parsed
+     * back with config parser - e.g strings puts " symbols around text, and
+     * numbers do not.
+     */
     virtual std::string ToString() const = 0;
+
+    /**
+     * Convert embeded value to simple raw strings.
+     */
+    virtual std::string AsString() const = 0;
+
+    virtual bool operator == (const value_t& rhs) = 0;
     virtual type_t Type() const = 0;
     virtual double Number() const = 0;
     virtual const std::string& String() const = 0;
@@ -62,6 +73,15 @@ namespace bb
         return this->val->Type();
       }
       return type_t::none;
+    }
+
+    std::string AsString() const
+    {
+      if (this->val)
+      {
+        return this->val->AsString();
+      }
+      return std::string("none");
     }
 
     std::string ToString() const
