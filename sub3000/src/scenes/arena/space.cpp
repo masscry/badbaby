@@ -191,6 +191,7 @@ namespace sub3000
     this->player.engineModeList = engine::modeList_t(config);
     this->player.maxOutputChange =  static_cast<float>(config.Value("player.max.change.output", 0.1f));
     this->player.maxAngleChange =  static_cast<float>(config.Value("player.max.change.angle", 0.3f));
+    this->player.maxBallastChange = static_cast<float>(config.Value("player.max.change.ballast", 0.6f));
     this->player.width = static_cast<float>(config.Value("player.width", 1.0f));
     this->player.length =  static_cast<float>(config.Value("player.length", 1.0f));
 

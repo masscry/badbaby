@@ -52,10 +52,10 @@ namespace sub3000
         return;
       }
 
-      data->depth += ControlVal(GLFW_KEY_KP_ADD, GLFW_KEY_KP_SUBTRACT)*dt*10.0f;
-
       if (data->clip)
       {
+        data->depth += ControlVal(GLFW_KEY_KP_ADD, GLFW_KEY_KP_SUBTRACT)*dt*10.0f;
+
         data->angle += ControlVal(GLFW_KEY_Q, GLFW_KEY_E)*dt;
         auto cdir = ControlDir(GLFW_KEY_RIGHT, GLFW_KEY_LEFT, GLFW_KEY_DOWN, GLFW_KEY_UP);
 
@@ -134,12 +134,14 @@ namespace sub3000
           static_cast<float>(2.0*M_PI)
         );
 
+        data->depth += data->ballastStatus*dt;
+
         float expectedOutput = data->engineModeList.Output(data->engine);
 
         data->engineOutput += glm::clamp(
           expectedOutput - data->engineOutput,
           -data->maxOutputChange,
-          data->maxOutputChange
+          +data->maxOutputChange
         )*dt;
 
         float expectedRudder = rudder::Output(data->rudder);
@@ -147,7 +149,15 @@ namespace sub3000
         data->rudderPos += glm::clamp(
           expectedRudder - data->rudderPos,
           -data->maxAngleChange,
-          data->maxAngleChange
+          +data->maxAngleChange
+        )*dt;
+
+        float expectedBallast = ballast::Output(data->ballast);
+
+        data->ballastStatus += glm::clamp(
+          expectedBallast - data->ballastStatus,
+          -data->maxBallastChange,
+          +data->maxBallastChange
         )*dt;
       }
 
@@ -195,6 +205,13 @@ namespace sub3000
         if ((newRudder >= rudder::left_40) && (newRudder <= rudder::right_40))
         {
           data->rudder = static_cast<rudder::mode_t>(newRudder);
+        }
+
+        int bal = (key.Key() == GLFW_KEY_KP_ADD) - (key.Key() == GLFW_KEY_KP_SUBTRACT);
+        int newBal = bal + data->ballast;
+        if ((newBal >= ballast::blow) && (newBal <= ballast::pump))
+        {
+          data->ballast = static_cast<ballast::mode_t>(newBal);
         }
       }
 

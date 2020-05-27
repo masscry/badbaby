@@ -244,6 +244,29 @@ namespace sub3000
         return bb::DefineLine(glm::vec3(0.0f), pointSize * 0.02f, points);
       }
 
+      bb::meshDesc_t BallastTriangle(float pointSize, float normBallastOutput, glm::vec2 scale)
+      {
+        auto points = bb::linePoints_t();
+
+        auto tmap = 
+          glm::scale(
+            glm::translate(
+              glm::mat3(1.0f),
+              glm::vec2(0.8f, 0.8f - normBallastOutput)
+            ),
+            glm::vec2(0.35f, 0.5f) * scale
+          );
+
+        for (auto triPoint: engineTri)
+        {
+          points.emplace_back(
+            tmap*glm::vec3(triPoint, 1.0f)
+          );
+        }
+
+        return bb::DefineLine(glm::vec3(0.0f), pointSize * 0.02f, points);
+      }
+
       bb::meshDesc_t RudderTriangle(float pointSize, float normRudderOutput, glm::vec2 scale)
       {
         auto points = bb::linePoints_t();
@@ -301,6 +324,22 @@ namespace sub3000
       );
     }
 
+    void screen_t::UpdateBallast(const state_t& state)
+    {
+      auto maxBallast = ballast::Output(ballast::blow);
+      auto normBallastOutput = (state.Player().ballastStatus/maxBallast)*0.15f;
+      auto destBallastOutput = ballast::Output(state.Player().ballast)/maxBallast*0.15f;
+
+      auto actualOutputTri = BallastTriangle(this->pointSize * 0.02f, normBallastOutput, glm::vec2(1.0f));
+      actualOutputTri.Append(
+        BallastTriangle(this->pointSize * 0.02f, destBallastOutput, glm::vec2(-1.0f, 1.0f))
+      );
+
+      this->ballast = bb::GenerateMesh(
+        actualOutputTri
+      );
+    }
+
     void screen_t::OnUpdate(double dt)
     {
       bb::workerPool_t::Instance().PostMessage(
@@ -320,6 +359,7 @@ namespace sub3000
         this->UpdateDepthRadar(*state);
         this->UpdateRudder(*state);
         this->UpdateEngine(*state);
+        this->UpdateBallast(*state);
 
         float newScale = this->worldScale/4.0f;
         
@@ -387,6 +427,10 @@ namespace sub3000
       if (this->engine.Good())
       {
         this->engine.Render();
+      }
+      if (this->ballast.Good())
+      {
+        this->ballast.Render();
       }
     }
 

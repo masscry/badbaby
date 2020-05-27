@@ -168,6 +168,56 @@ namespace sub3000
 
   } // namespace rudder
 
+  namespace ballast
+  {
+
+    enum mode_t
+    {
+      blow = 0,
+      half_blow,
+      quarter_blow,
+      stop,
+      quarter_pump,
+      half_pump,
+      pump
+    };
+
+    inline const char* ToString(mode_t mode)
+    {
+      switch (mode)
+      {
+      case blow: return "BLOW";
+      case half_blow: return "BLOW/2";
+      case quarter_blow: return "BLOW/4";
+      case stop: return "STOP";
+      case quarter_pump: return "PUMP/4";
+      case half_pump: return "PUMP/2";
+      case pump: return "PUMP";
+      default:
+        assert(0);
+        return "???";
+      }
+    }
+
+    inline float Output(mode_t mode)
+    {
+      switch(mode)
+      {
+        case blow: return +1.0f;
+        case half_blow: return +0.5f;
+        case quarter_blow: return +0.25f;
+        case stop: return 0.0f;
+        case quarter_pump: return -0.25f;
+        case half_pump: return -0.5f;
+        case pump: return -1.0f;
+        default:
+          assert(0);
+          return 0.0f;
+      }
+    }
+
+  }
+
 } // namespace sub3000
 
 #endif /* __SUB3000_CONTROL_HEADER__ */

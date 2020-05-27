@@ -48,6 +48,7 @@ namespace sub3000
       engine::modeList_t engineModeList;
       float maxOutputChange;
       float maxAngleChange;
+      float maxBallastChange;
 
       float width;
       float length;
@@ -60,6 +61,9 @@ namespace sub3000
       bb::deci_t radarAngleDelta;
 
       float depth;
+
+      ballast::mode_t ballast;
+      float ballastStatus;
 
       bb::vec2_t Dir() const;
 
@@ -99,6 +103,7 @@ namespace sub3000
       rotMoment(1.0f),
       maxOutputChange(0.1f),
       maxAngleChange(0.3f),
+      maxBallastChange(0.1f),
       width(1.0f),
       length(1.0f),
       dragCoeff(0.0f),
@@ -106,7 +111,9 @@ namespace sub3000
       clip(true),
       radarAngle(0),
       radarAngleDelta(1),
-      depth(28.0f)
+      depth(28.0f),
+      ballast(ballast::stop),
+      ballastStatus(0.0f)
     {
       ;
     }

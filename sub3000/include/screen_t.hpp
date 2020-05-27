@@ -46,6 +46,7 @@ namespace sub3000
       bb::mesh_t depthZ;
       bb::mesh_t rudder;
       bb::mesh_t engine;
+      bb::mesh_t ballast;
 
       float depth;
       float pointSize;
@@ -65,6 +66,7 @@ namespace sub3000
       void UpdateDepthRadar(const state_t& state);
       void UpdateRudder(const state_t& state);
       void UpdateEngine(const state_t& state);
+      void UpdateBallast(const state_t& state);
 
       bb::framebuffer_t& Framebuffer();
       const bb::framebuffer_t& Framebuffer() const;
