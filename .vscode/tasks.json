@@ -13,6 +13,15 @@
       }
     },
     {
+      "label": "Build Painter (Debug)",
+      "type": "shell",
+      "command": "cmake --build ${workspaceFolder}/.debug --target painter -- -j4",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
       "label": "Build All (Release)",
       "type": "shell",
       "command": "cmake --build ./.release --clean-first",

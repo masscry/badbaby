@@ -262,7 +262,7 @@
           "ignoreFailures": true
         }
       ],
-      "preLaunchTask": "Build All (Debug)"
+      "preLaunchTask": "Build Painter (Debug)"
     },
     {
       "name": "Launch Submarine-3000 (Debug)",
