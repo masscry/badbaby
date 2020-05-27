@@ -16,10 +16,7 @@
       "label": "Build Painter (Debug)",
       "type": "shell",
       "command": "cmake --build ${workspaceFolder}/.debug --target painter -- -j4",
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      }
+      "group": "build"
     },
     {
       "label": "Build All (Release)",
