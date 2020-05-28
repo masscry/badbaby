@@ -86,7 +86,7 @@ namespace sub3000
 
     inline bb::vec2_t data_t::Dir() const
     {
-      return bb::Dir(-this->angle);
+      return bb::Dir(-this->angle + static_cast<float>(M_PI));
     }
 
     inline data_t::data_t()

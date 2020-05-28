@@ -69,6 +69,17 @@ namespace bb
     );
   }
 
+  inline float Angle(vec2_t v)
+  {
+    auto vlen = glm::length(v);
+    if (vlen != 0.0f)
+    {
+      v /= vlen;
+      return atan2f(v.y, v.x);
+    }
+    return 0.0f;
+  }
+
 }
 
 #endif /* __BB_RENDER_ALGEBRA_HEADER__ */

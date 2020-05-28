@@ -119,7 +119,7 @@ namespace sub3000
 
         // rudderDir.y - part of force applied to linear velocity
         // rudderDir.x - part of force applied to rotation
-        bb::vec2_t rudderDir = bb::Dir(data->rudderPos);
+        bb::vec2_t rudderDir = bb::Dir(-data->rudderPos);
 
         // linear force = engineForce + dragForce
         bb::vec2_t linForce = shipDir * data->engineOutput * rudderDir.y 
@@ -146,25 +146,23 @@ namespace sub3000
         float rotForce = (data->engineOutput + rotFromLinVel*10.0f) * rudderDir.x
           + rotDragForce;
 
-        auto newPos = data->pos - data->vel * dt;
-        if (hmap.Sample(newPos - glm::vec2(0.5f))*64.0f <= data->depth - data->width*0.2f)
-        { // can swim
-          data->pos = newPos;
-          data->vel += linForce/data->mass * dt;
+        auto newPos = data->pos + data->vel * dt;
+        auto newAngle = data->angle + data->aVel * dt;
 
-          data->angle -= data->aVel * dt;
-          data->aVel += rotForce/data->rotMoment * dt;
+        if (hmap.Sample(newPos - glm::vec2(0.5f))*63.0f > data->depth - data->width*0.2f)
+        {
+          auto normal2D = glm::normalize(glm::vec2(NormalAtPoint(hmap, newPos - glm::vec2(0.5f), 63.0f)));
+          linForce += normal2D * glm::length(data->vel)*100.0f;
+
+          auto theta = acosf(glm::dot(data->vel, normal2D)/glm::length(data->vel)); // normal length is always 1.0
+          rotForce += theta * 100.0f;
         }
-        else
-        { // collision!
-          auto normal = glm::normalize(glm::vec2(NormalAtPoint(hmap, newPos - glm::vec2(0.5f), 64.0f)));
 
-          data->angle -= data->aVel * dt;
-          data->aVel -= glm::dot(data->vel, normal);
+        data->pos = newPos;
+        data->vel += linForce/data->mass * dt;
 
-          data->pos = newPos;
-          data->vel = glm::reflect(data->vel, glm::normalize(glm::vec2(normal))) * 2.0f;
-        }
+        data->angle = newAngle;
+        data->aVel += rotForce/data->rotMoment * dt;
 
         // force angle in 0 - 2*PI
         data->angle = fmodf(

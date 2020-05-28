@@ -197,6 +197,7 @@ namespace sub3000
 
     this->player.pos = glm::vec2(240.0f, 117.0f);
     this->player.angle = 0.0f;
+    this->player.clip = (config.Value("clip", 1.0f) != 0.0f);
 
     this->radarZ.resize(20, 0.0f);
   }
