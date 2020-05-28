@@ -44,7 +44,31 @@ namespace sub3000
       return bb::vec2_t(0.0f);
     }
 
-    void Update(data_t* data, const bb::ext::heightMap_t&, float dt)
+    glm::vec3 NormalAtPoint(const bb::ext::heightMap_t& hmap, glm::vec2 pos, float zScale)
+    {
+      auto p0 = glm::vec3(pos, hmap.Sample(pos)*zScale);
+
+      auto p1 = glm::vec3(pos + glm::vec2(-1.0f,  0.0f), hmap.Sample(pos + glm::vec2(-1.0f,  0.0f))*zScale);
+      auto p2 = glm::vec3(pos + glm::vec2( 0.0f, -1.0f), hmap.Sample(pos + glm::vec2( 0.0f, -1.0f))*zScale);
+      auto p3 = glm::vec3(pos + glm::vec2( 1.0f,  0.0f), hmap.Sample(pos + glm::vec2( 1.0f,  0.0f))*zScale);
+      auto p4 = glm::vec3(pos + glm::vec2( 0.0f,  1.0f), hmap.Sample(pos + glm::vec2( 0.0f,  1.0f))*zScale);
+
+      auto v1 = p1 - p0;
+      auto v2 = p2 - p0;
+      auto v3 = p3 - p0;
+      auto v4 = p4 - p0;
+
+      auto v12 = glm::cross(v1, v2);
+      auto v23 = glm::cross(v2, v3);
+      auto v34 = glm::cross(v3, v4);
+      auto v41 = glm::cross(v4, v1);
+
+      return glm::normalize(
+        v12 + v23 + v34 + v41
+      );
+    }
+
+    void Update(data_t* data, const bb::ext::heightMap_t& hmap, float dt)
     {
       if (data == nullptr)
       { // programmer's mistake
@@ -122,11 +146,25 @@ namespace sub3000
         float rotForce = (data->engineOutput + rotFromLinVel*10.0f) * rudderDir.x
           + rotDragForce;
 
-        data->pos += -data->vel * dt;
-        data->vel += linForce/data->mass * dt;
+        auto newPos = data->pos - data->vel * dt;
+        if (hmap.Sample(newPos - glm::vec2(0.5f))*64.0f <= data->depth - data->width*0.2f)
+        { // can swim
+          data->pos = newPos;
+          data->vel += linForce/data->mass * dt;
 
-        data->angle += -data->aVel * dt;
-        data->aVel += rotForce/data->rotMoment * dt;
+          data->angle += -data->aVel * dt;
+          data->aVel += rotForce/data->rotMoment * dt;
+        }
+        else
+        { // collision!
+          auto normal = glm::normalize(glm::vec2(NormalAtPoint(hmap, newPos - glm::vec2(0.5f), 64.0f)));
+
+          data->angle += -data->aVel * dt;
+          data->aVel -= glm::dot(data->vel, normal);
+
+          data->pos = newPos;
+          data->vel = glm::reflect(data->vel, glm::normalize(glm::vec2(normal)));
+        }
 
         // force angle in 0 - 2*PI
         data->angle = fmodf(
@@ -134,7 +172,23 @@ namespace sub3000
           static_cast<float>(2.0*M_PI)
         );
 
-        data->depth += data->ballastStatus*dt;
+        float maxHeight = data->depth;
+        float minHeight = data->depth;
+
+        if (data->ballastStatus < 0.0f)
+        {
+          minHeight = hmap.Sample(data->pos)*63.0f + data->width*0.2f;
+        }
+
+        if (data->ballastStatus > 0.0f)
+        {
+          maxHeight = 28.0f;
+        }
+
+        data->depth = glm::clamp(
+          data->depth + data->ballastStatus*dt,
+          minHeight, maxHeight
+        );
 
         float expectedOutput = data->engineModeList.Output(data->engine);
 
