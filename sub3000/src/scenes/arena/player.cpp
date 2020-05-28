@@ -152,18 +152,18 @@ namespace sub3000
           data->pos = newPos;
           data->vel += linForce/data->mass * dt;
 
-          data->angle += -data->aVel * dt;
+          data->angle -= data->aVel * dt;
           data->aVel += rotForce/data->rotMoment * dt;
         }
         else
         { // collision!
           auto normal = glm::normalize(glm::vec2(NormalAtPoint(hmap, newPos - glm::vec2(0.5f), 64.0f)));
 
-          data->angle += -data->aVel * dt;
+          data->angle -= data->aVel * dt;
           data->aVel -= glm::dot(data->vel, normal);
 
           data->pos = newPos;
-          data->vel = glm::reflect(data->vel, glm::normalize(glm::vec2(normal)));
+          data->vel = glm::reflect(data->vel, glm::normalize(glm::vec2(normal))) * 2.0f;
         }
 
         // force angle in 0 - 2*PI
