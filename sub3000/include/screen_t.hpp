@@ -55,6 +55,10 @@ namespace sub3000
       float pointSize;
       float worldScale;
 
+      bool hasCollision;
+
+      bool mayCollide;
+
       screen_t(const screen_t&) = delete;
       screen_t& operator=(const screen_t&) = delete;
 

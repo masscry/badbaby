@@ -41,6 +41,8 @@ namespace bb
         return this->Sample(vec2_t(std::forward<args_t>(args)...));
       }
 
+      bb::vec2_t Dimensions() const;
+
       size_t DataSize() const;
 
       uint16_t Width() const;
@@ -79,6 +81,14 @@ namespace bb
       heightMap_t(heightMap_t&&) = default;
       heightMap_t& operator=(heightMap_t&&) = default;
     };
+
+    inline bb::vec2_t heightMap_t::Dimensions() const
+    {
+      return bb::vec2_t(
+        static_cast<float>(this->width),
+        static_cast<float>(this->height)
+      );
+    }
 
     inline float& heightMap_t::operator[](size_t pos)
     {

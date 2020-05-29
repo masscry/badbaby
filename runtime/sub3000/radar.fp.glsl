@@ -6,7 +6,7 @@ layout(location = 0) out vec4 pixColor;
 in vec2 fragPos;
 in float fragTime;
 
-const vec4 lineColor = vec4(0.1f, 1.3f, 0.1f, 1.0f);
+uniform vec4 lineColor;
 
 void main()
 {

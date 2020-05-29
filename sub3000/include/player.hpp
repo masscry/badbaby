@@ -65,6 +65,8 @@ namespace sub3000
       ballast::mode_t ballast;
       float ballastStatus;
 
+      bool hasCollision;
+
       bb::vec2_t Dir() const;
 
       float RadarAngle() const;
@@ -115,7 +117,8 @@ namespace sub3000
       radarAngleDelta(1),
       depth(28.0f),
       ballast(ballast::stop),
-      ballastStatus(0.0f)
+      ballastStatus(0.0f),
+      hasCollision(false)
     {
       ;
     }

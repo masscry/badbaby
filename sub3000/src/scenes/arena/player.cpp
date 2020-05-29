@@ -90,6 +90,17 @@ namespace sub3000
       else
       {
         float velLen = glm::dot(data->vel, data->vel); // two times velocity
+        if (std::isinf(velLen) || !bb::InsideBounds(data->pos, bb::vec2_t(0.0f), hmap.Dimensions()))
+        {
+          data->pos.x = hmap.Width()/2.0f;
+          data->pos.y = hmap.Height()/2.0f;
+
+          data->vel.x = 0.0f;
+          data->vel.y = 0.0f;
+          velLen = 0.0f;
+          bb::Error("%s", "Velocity Exploded!");
+        }
+
         bb::vec2_t velDir(0.0f);
         if (velLen != 0.0f)
         {
@@ -103,6 +114,10 @@ namespace sub3000
           * glm::mix(data->length, data->width, std::fabs(glm::dot(velDir, shipDir)));
       
         data->dragCoeff = 0.5f * velLen * 0.8f * data->crossSection;
+        if (std::isinf(data->dragCoeff))
+        {
+          data->dragCoeff = 0.0f;
+        }
 
         // dragForce - force applied to stop ship in direction of it moving
         bb::vec2_t dragForce( // drag - two times speed in opposite direction of vel
@@ -117,7 +132,15 @@ namespace sub3000
         bb::vec2_t linForce = shipDir * data->engineOutput * rudderDir.y 
           + dragForce;
 
+        assert(std::isfinite(linForce.x) && std::isfinite(linForce.y));
+
         float aVelLen = data->aVel*data->aVel;
+        if (std::isinf(aVelLen))
+        {
+          data->aVel = 0.0f;
+          aVelLen = 0.0f;
+        }
+
         float aVelDir = 0.0f;
         if (aVelLen != 0.0f)
         {
@@ -138,36 +161,47 @@ namespace sub3000
         float rotForce = (data->engineOutput + rotFromLinVel*10.0f) * rudderDir.x
           + rotDragForce;
 
+        assert(std::isfinite(rotForce));
+
         auto newPos = data->pos + data->vel * dt;
         auto newAngle = data->angle + data->aVel * dt;
 
         if (hmap.Sample(newPos - glm::vec2(0.5f))*63.0f > data->depth - data->width*0.2f)
         {
+          data->hasCollision = true;
           auto velLen = glm::length(data->vel);
           auto normal = glm::vec2(hmap.NormalAtPoint(newPos - glm::vec2(0.5f), 63.0f));
-          auto normLen = glm::length(normal);
 
-          if ((velLen != 0.0f) && (normLen != 0.0f))
+          if (std::isfinite(normal.x) && std::isfinite(normal.y) && std::isfinite(velLen*100.0f))
           {
-            auto normalVel = data->vel/velLen;
-            auto normal2D = normal/normLen;
+            auto normLen = glm::length(normal);
+            if ((velLen != 0.0f) && (normLen != 0.0f))
+            {
+              auto normalVel = data->vel/velLen;
+              auto normal2D = normal/normLen;
 
-            auto theta = atan2f(
-              glm::dot(glm::vec2(normal2D.y, -normal2D.x) , normalVel),
-              glm::dot(normal2D, normalVel)
-            );
+              auto theta = atan2f(
+                glm::dot(glm::vec2(normal2D.y, -normal2D.x) , normalVel),
+                glm::dot(normal2D, normalVel)
+              );
 
-            assert(std::isfinite(normal2D.x) && std::isfinite(normal2D.y));
-            assert(std::isfinite(theta));
+              assert(std::isfinite(normal2D.x) && std::isfinite(normal2D.y));
+              assert(std::isfinite(theta));
 
-            linForce += normal2D * velLen*100.0f;
-            rotForce += theta * 100.0f;
+              linForce += normal2D * velLen*100.0f;
+              rotForce += theta * 100.0f;
+
+              assert(std::isfinite(linForce.x) && std::isfinite(linForce.y));
+              assert(std::isfinite(rotForce));
+            }
           }
         }
+        else
+        {
+          data->hasCollision = false;
+        }
 
-        assert(std::isfinite(linForce.x) && std::isfinite(linForce.y));
         assert(std::isfinite(newPos.x) && std::isfinite(newPos.y));
-        assert(std::isfinite(rotForce));
         assert(std::isfinite(newAngle));
 
         data->pos = newPos;
@@ -175,6 +209,9 @@ namespace sub3000
 
         data->angle = newAngle;
         data->aVel += rotForce/data->rotMoment * dt;
+
+        assert(std::isfinite(data->vel.x) && std::isfinite(data->vel.y));
+        assert(std::isfinite(data->aVel));
 
         // force angle in 0 - 2*PI
         data->angle = fmodf(

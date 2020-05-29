@@ -80,6 +80,19 @@ namespace bb
     return 0.0f;
   }
 
+  template<typename data_t>
+  inline bool InsideBounds(data_t value, data_t lowerBound, data_t upperBound)
+  {
+    return (lowerBound <= value) && (value <= upperBound);
+  }
+
+  template<>
+  inline bool InsideBounds<glm::vec2>(glm::vec2 value, glm::vec2 lowerBound,glm::vec2 upperBound)
+  {
+    return (lowerBound.x <= value.x) && (value.x <= upperBound.x)
+      &&  (lowerBound.y <= value.y) && (value.y <= upperBound.y);
+  }
+
 }
 
 #endif /* __BB_RENDER_ALGEBRA_HEADER__ */

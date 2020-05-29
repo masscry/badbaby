@@ -172,12 +172,30 @@ namespace sub3000
     {
       auto points = bb::linePoints_t();
       float zpos = 0.0f;
-      for(auto zdepth: state.RadarZ())
+
+      this->mayCollide = false;
+
+      int totalRadarPoints = static_cast<int>(state.RadarZ().size());
+
+      for (int i = -totalRadarPoints/2; i < totalRadarPoints/2; ++i)
       {
+        auto zdepth = state.RadarZ()[static_cast<size_t>(i + totalRadarPoints/2)];
+
         points.emplace_back(
           glm::vec2(zpos - 0.5f, zdepth)
         );
         zpos += 0.05f;
+
+        if ((state.Player().engine - engine::mode_t::stop) <= 0)
+        {
+          this->mayCollide = this->mayCollide
+            || ((zdepth <= 0.0f) && i >= 0);
+        }
+        else
+        {
+          this->mayCollide = this->mayCollide
+            || ((zdepth <= 0.0f) && i <= 0);
+        }
       }
 
       auto tmap = 
@@ -195,9 +213,21 @@ namespace sub3000
       }
 
       auto zpoints = bb::DefinePoints(
-        this->pointSize * 0.01f,
+        this->pointSize * ((this->mayCollide)?(0.07f):(0.01f)),
         points
       );
+
+      if (this->mayCollide)
+      {
+        zpoints.Append(
+          bb::DefineNumber(
+            glm::vec3(0.655f, -0.76f, 0.0f),
+            this->pointSize * 0.01f,
+            glm::vec2(0.035f, 0.05f),
+            "warning"
+          )
+        );
+      }
 
       this->depthZ = bb::GenerateMesh(
         zpoints
@@ -403,6 +433,7 @@ namespace sub3000
         );
         this->depth = state->Depth();
 
+        this->hasCollision = state->Player().hasCollision;
       }
     }
 
@@ -432,17 +463,19 @@ namespace sub3000
         this->radarCamera.UniformBlock()
       );
 
+      this->shader.SetVector4f(
+        "lineColor",
+        (this->hasCollision)
+          ?glm::vec4(1.3f, 0.1f, 0.1f, 1.0f)
+          :glm::vec4(0.1f, 1.3f, 0.1f, 1.0f)
+      );
+
       this->radar.Render();
       if (this->units.Good())
       {
         this->units.Render();
       }
       this->radarLine.Render();
-
-      if (this->depthZ.Good())
-      {
-        this->depthZ.Render();
-      }
 
       if (this->rudder.Good())
       {
@@ -459,6 +492,17 @@ namespace sub3000
       if (this->speedMultMesh.Good() && (this->speedMult != 1))
       {
         this->speedMultMesh.Render();
+      }
+
+      this->shader.SetVector4f(
+        "lineColor",
+        (this->mayCollide)
+          ?glm::vec4(1.3f, 0.1f, 0.1f, 1.0f)
+          :glm::vec4(0.1f, 1.3f, 0.1f, 1.0f)
+      );
+      if (this->depthZ.Good())
+      {
+        this->depthZ.Render();
       }
     }
 
