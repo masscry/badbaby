@@ -17,7 +17,7 @@ namespace sub3000
       this->mapDims.x = 64.0f;
       this->mapDims.y = 64.0f;
 
-      this->camera = bb::camera_t::Orthogonal(
+      this->mapCamera = bb::camera_t::Orthogonal(
         0.0f, this->mapDims.x, this->mapDims.y, 0.0f
       );
 
@@ -100,7 +100,7 @@ namespace sub3000
 
         if (auto status = bb::As<player::status_t>(msg))
         {
-          camera.View() = glm::translate(
+          mapCamera.View() = glm::translate(
             glm::mat4(1.0f),
             glm::vec3(-status->Data().pos + this->mapDims/2.0f, 0.0f)
           );
@@ -136,12 +136,12 @@ namespace sub3000
 
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-      camera.Update();
+      mapCamera.Update();
 
       bb::shader_t::Bind(this->mapShader);
       this->mapShader.SetBlock(
         this->mapShader.UniformBlockIndex("camera"),
-        this->camera.UniformBlock()
+        this->mapCamera.UniformBlock()
       );
       this->mapShader.SetFloat("border", 28.0f/63.0f);
 
@@ -151,7 +151,7 @@ namespace sub3000
       bb::shader_t::Bind(this->mapPointsShader);
       this->mapPointsShader.SetBlock(
         this->mapPointsShader.UniformBlockIndex("camera"),
-        this->camera.UniformBlock()
+        this->mapCamera.UniformBlock()
       );
       if (this->mapPoints.Good())
       {

@@ -25,7 +25,7 @@ namespace sub3000
     class status_t final: public scene_t
     {
       bb::framebuffer_t fb;
-      bb::camera_t camera;
+      bb::camera_t mapCamera;
       bb::mailbox_t::shared_t box;
 
       bb::shader_t mapShader;

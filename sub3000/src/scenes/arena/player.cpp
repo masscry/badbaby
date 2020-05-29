@@ -68,6 +68,10 @@ namespace sub3000
         return;
       }
 
+      bb::context_t::Instance().Title(
+        std::to_string(data->pos.x) + ' ' + std::to_string(data->pos.y)
+      );
+
       if (data->clip)
       {
         data->depth += ControlVal(GLFW_KEY_KP_ADD, GLFW_KEY_KP_SUBTRACT)*dt*10.0f;

@@ -93,7 +93,6 @@ namespace sub3000
           this->radarXY.pop_front();
         }
 
-        auto start = glfwGetTime();
         auto dir = bb::Dir(glm::radians(this->player.RadarAngle())-this->player.angle);
 
         bb::vec3_t isec;
@@ -125,14 +124,6 @@ namespace sub3000
             }
             break;
         }
-
-        auto finish = glfwGetTime();
-
-        bb::context_t::Instance().Title(
-          std::to_string(
-            finish - start
-          )
-        );
       }
     }
   }
@@ -235,7 +226,8 @@ namespace sub3000
     this->player.width = static_cast<float>(config.Value("player.width", 1.0f));
     this->player.length =  static_cast<float>(config.Value("player.length", 1.0f));
 
-    this->player.pos = glm::vec2(240.0f, 117.0f);
+    this->player.pos.x = static_cast<float>(config.Value("player.pos.x", 240.0f));
+    this->player.pos.y = static_cast<float>(config.Value("player.pos.y", 117.0f));
     this->player.angle = 0.0f;
     this->player.clip = (config.Value("clip", 1.0f) != 0.0f);
 
