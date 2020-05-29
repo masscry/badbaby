@@ -22,6 +22,8 @@ namespace sub3000
     player::data_t player;
   public:
 
+    int simSpeed;
+
     player::data_t& Player();
 
     const player::data_t& Player() const;
@@ -41,7 +43,7 @@ namespace sub3000
 
     const std::vector<float>& RadarZ() const;
 
-    state_t(bb::linePoints_t&& units, const std::vector<float>& radarZ, const player::data_t& player);
+    state_t(bb::linePoints_t&& units, const std::vector<float>& radarZ, const player::data_t& player, int simSpeed);
 
     state_t(const state_t&) = default;
     state_t& operator=(const state_t&) = default;
@@ -52,10 +54,11 @@ namespace sub3000
     ~state_t() override = default;
   };
 
-  inline state_t::state_t(bb::linePoints_t&& units, const std::vector<float>& radarZ, const player::data_t& player)
+  inline state_t::state_t(bb::linePoints_t&& units, const std::vector<float>& radarZ, const player::data_t& player, int simSpeed)
   : units(std::move(units)),
     radarZ(radarZ),
-    player(player)
+    player(player),
+    simSpeed(simSpeed)
   {
     ;
   }

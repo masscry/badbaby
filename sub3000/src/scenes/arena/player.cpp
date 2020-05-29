@@ -22,6 +22,22 @@ namespace sub3000
   namespace player
   {
 
+    void data_t::Dump(FILE* output) const
+    {
+      fprintf(
+        output,
+        "[%+e;%+e]\t[%+e;%+e]\t%+e\t%+e\t%+e\t%+e\t%+e\t%+e\n",
+        pos.x, pos.y,
+        vel.x, vel.y,
+        angle,
+        aVel,
+        engineOutput,
+        rudderPos,
+        crossSection,
+        depth
+      );
+    }
+
     float ControlVal(uint16_t left, uint16_t right)
     {
       auto& context = bb::context_t::Instance();
@@ -152,9 +168,14 @@ namespace sub3000
         if (hmap.Sample(newPos - glm::vec2(0.5f))*63.0f > data->depth - data->width*0.2f)
         {
           auto normal2D = glm::normalize(glm::vec2(NormalAtPoint(hmap, newPos - glm::vec2(0.5f), 63.0f)));
-          linForce += normal2D * glm::length(data->vel)*100.0f;
+          auto normalVel = glm::normalize(data->vel);
 
-          auto theta = acosf(glm::dot(data->vel, normal2D)/glm::length(data->vel)); // normal length is always 1.0
+          auto theta =  atan2f(
+            glm::dot(glm::vec2(normal2D.y, -normal2D.x) , normalVel),
+            glm::dot(normal2D, normalVel)
+          );
+
+          linForce += normal2D * glm::length(data->vel)*100.0f;
           rotForce += theta * 100.0f;
         }
 
@@ -228,7 +249,7 @@ namespace sub3000
         return 0;
       }
 
-      if (key.Key() == GLFW_KEY_F2)
+      if (key.Key() == GLFW_KEY_C)
       {
         data->clip = !data->clip;
       }
@@ -265,11 +286,6 @@ namespace sub3000
         {
           data->ballast = static_cast<ballast::mode_t>(newBal);
         }
-      }
-
-      if (key.Key() == GLFW_KEY_ESCAPE)
-      {
-        sub3000::PostChangeScene(sub3000::sceneID_t::mainMenu);
       }
       return 1;
     }

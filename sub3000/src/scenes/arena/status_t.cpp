@@ -41,8 +41,6 @@ namespace sub3000
         true
       );
 
-      this->statCounter = 0;
-
     }
 
     namespace
@@ -109,25 +107,20 @@ namespace sub3000
 
           this->mapShip = bb::GenerateMesh(ShipTriangle(10.0f, status->Data().pos, status->Data().angle));
 
-          ++this->statCounter;
-          if ((this->statCounter > 30))
+          if ((this->coursePoints.empty()) || (glm::length(this->coursePoints.back() - status->Data().pos) >= 0.4f))
           {
-            if ((this->coursePoints.empty()) || (glm::length(this->coursePoints.back() - status->Data().pos) >= 0.4f))
+            this->coursePoints.emplace_back(
+              status->Data().pos
+            );
+
+            if (this->coursePoints.size() > 200)
             {
-              this->statCounter = 0;
-              this->coursePoints.emplace_back(
-                status->Data().pos
-              );
-
-              if (this->coursePoints.size() > 200)
-              {
-                this->coursePoints.pop_front();
-              }
-
-              this->mapPoints = bb::GenerateMesh(
-                bb::DefinePoints(0.2f, this->coursePoints)
-              );
+              this->coursePoints.pop_front();
             }
+
+            this->mapPoints = bb::GenerateMesh(
+              bb::DefinePoints(0.2f, this->coursePoints)
+            );
           }
         }
       }

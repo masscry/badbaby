@@ -69,6 +69,8 @@ namespace sub3000
 
       float RadarAngle() const;
 
+      void Dump(FILE* output) const;
+
       data_t();
 
       data_t(const data_t&) = default;

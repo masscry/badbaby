@@ -299,9 +299,13 @@ namespace sub3000
       auto destRudder = rudder::Output(state.Player().rudder)/maxRudder*0.175f;
 
       auto actualRudderTri = RudderTriangle(this->pointSize * 0.02f, normRudder, glm::vec2(1.0f));
-      actualRudderTri.Append(
-        RudderTriangle(this->pointSize * 0.02f, destRudder, glm::vec2(1.0f, -1.0f))
-      );
+
+      if (this->speedMult == 1)
+      {
+        actualRudderTri.Append(
+          RudderTriangle(this->pointSize * 0.02f, destRudder, glm::vec2(1.0f, -1.0f))
+        );
+      }
 
       this->rudder = bb::GenerateMesh(
         actualRudderTri
@@ -315,9 +319,12 @@ namespace sub3000
       auto destEngineOutput = state.Player().engineModeList.Output(state.Player().engine)/maxEngine*0.15f;
 
       auto actualOutputTri = EngineTriangle(this->pointSize * 0.02f, normEngineOutput, glm::vec2(1.0f));
-      actualOutputTri.Append(
-        EngineTriangle(this->pointSize * 0.02f, destEngineOutput, glm::vec2(-1.0f, 1.0f))
-      );
+      if (this->speedMult == 1)
+      {
+        actualOutputTri.Append(
+          EngineTriangle(this->pointSize * 0.02f, destEngineOutput, glm::vec2(-1.0f, 1.0f))
+        );
+      }
 
       this->engine = bb::GenerateMesh(
         actualOutputTri
@@ -331,9 +338,12 @@ namespace sub3000
       auto destBallastOutput = ballast::Output(state.Player().ballast)/maxBallast*0.15f;
 
       auto actualOutputTri = BallastTriangle(this->pointSize * 0.02f, normBallastOutput, glm::vec2(1.0f));
-      actualOutputTri.Append(
-        BallastTriangle(this->pointSize * 0.02f, destBallastOutput, glm::vec2(-1.0f, 1.0f))
-      );
+      if (this->speedMult == 1)
+      {
+        actualOutputTri.Append(
+          BallastTriangle(this->pointSize * 0.02f, destBallastOutput, glm::vec2(-1.0f, 1.0f))
+        );
+      }
 
       this->ballast = bb::GenerateMesh(
         actualOutputTri
@@ -350,13 +360,26 @@ namespace sub3000
       auto msg = this->box->Wait();
       if (auto state = bb::As<state_t>(msg))
       {
+        this->speedMult = state->simSpeed;
+        if (this->speedMult != 1)
+        {
+          this->speedMultMesh = bb::GenerateMesh(
+            bb::DefineNumber(
+              glm::vec3(-0.95f, -0.7f, 0.0f),
+              0.01f, 
+              glm::vec2(0.10f),
+              (std::to_string(state->simSpeed) + "x").c_str()
+            )
+          );
+        }
+
         this->UpdateUnits(
           std::move(state->Units()),
           state->RadarAngle(),
           dt
         );
-
         this->UpdateDepthRadar(*state);
+
         this->UpdateRudder(*state);
         this->UpdateEngine(*state);
         this->UpdateBallast(*state);
@@ -379,6 +402,7 @@ namespace sub3000
           glm::vec3(-state->Pos(), 0.0f)
         );
         this->depth = state->Depth();
+
       }
     }
 
@@ -431,6 +455,10 @@ namespace sub3000
       if (this->ballast.Good())
       {
         this->ballast.Render();
+      }
+      if (this->speedMultMesh.Good() && (this->speedMult != 1))
+      {
+        this->speedMultMesh.Render();
       }
     }
 

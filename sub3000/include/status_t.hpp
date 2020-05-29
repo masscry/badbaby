@@ -39,8 +39,6 @@ namespace sub3000
 
       bb::vec2_t mapDims;
 
-      int statCounter;
-
       status_t(const status_t&) = delete;
       status_t& operator=(const status_t&) = delete;
 

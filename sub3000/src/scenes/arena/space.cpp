@@ -46,9 +46,21 @@ namespace sub3000
     while (this->cumDT > SPACE_TIME_STEP)
     {
       this->cumDT -= SPACE_TIME_STEP;
-      this->newPointCount += 10;
+      this->newPointCount += 10*this->simSpeed;
       this->renderDepth = true;
-      player::Update(&this->player, this->heightMap, static_cast<float>(SPACE_TIME_STEP));
+
+      FILE* output = fopen("ship.txt", "at");
+      BB_DEFER(if (output != nullptr) { fclose(output); });
+
+      for (int i = 0; i < this->simSpeed; ++i)
+      {
+        player::Update(&this->player, this->heightMap, static_cast<float>(SPACE_TIME_STEP));
+        if (output != nullptr)
+        {
+          this->player.Dump(output);
+        }
+      }
+
     }
 
     if (this->renderDepth)
@@ -138,7 +150,8 @@ namespace sub3000
           bb::Issue<state_t>(
             std::move(this->radarXY),
             this->radarZ,
-            this->player
+            this->player,
+            this->simSpeed
           )
         );
       }
@@ -147,7 +160,34 @@ namespace sub3000
 
     if (auto key = bb::msg::As<bb::msg::keyEvent_t>(msg))
     {
-      player::Control(&this->player, *key);
+      if (key->Press() != GLFW_RELEASE)
+      {
+        int changeSimSpeed = (key->Key() == GLFW_KEY_RIGHT_BRACKET) - (key->Key() == GLFW_KEY_LEFT_BRACKET);
+        if (changeSimSpeed != 0)
+        {
+          int newSimSpeed = this->simSpeed + changeSimSpeed;
+          if ((newSimSpeed >= 1) && (newSimSpeed <= 4))
+          {
+            this->simSpeed = newSimSpeed;
+          }
+          return bb::msg::result_t::complete;
+        }
+
+        if (key->Key() == GLFW_KEY_F1)
+        {
+          this->simSpeed = 1;
+          return bb::msg::result_t::complete;
+        }
+        if (key->Key() == GLFW_KEY_ESCAPE)
+        {
+          sub3000::PostChangeScene(sub3000::sceneID_t::mainMenu);
+          return bb::msg::result_t::complete;
+        }
+      }
+      if (this->simSpeed == 1)
+      {
+        player::Control(&this->player, *key);
+      }
       return bb::msg::result_t::complete;
     }
 
@@ -200,6 +240,26 @@ namespace sub3000
     this->player.clip = (config.Value("clip", 1.0f) != 0.0f);
 
     this->radarZ.resize(20, 0.0f);
+
+    this->simSpeed = 1;
+
+    if (FILE* output = fopen("ship.txt", "wt"))
+    {
+      BB_DEFER(fclose(output));
+      fprintf(output, "%s\n", "=== Sim Start ===");
+      fprintf(output, "%s\n",
+        "         POSITION            \t          VELOCITY           \t    ANGLE    \t  ANGLE VEL  \t    OUTPUT   \t   RUDDER    \t CROSSSECTION\t    DEPTH    "
+      );
+    }
+  }
+
+  space_t::~space_t()
+  {
+    if (FILE* output = fopen("ship.txt", "at"))
+    {
+      BB_DEFER(fclose(output));
+      fprintf(output, "%s\n", "=== Sim Finish ===");
+    }
   }
 
 }

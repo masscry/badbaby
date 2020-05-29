@@ -49,6 +49,7 @@ namespace sub3000
     int newPointCount;
     bool renderDepth;
     player::data_t player;
+    int simSpeed;
 
     bb::linePoints_t radarXY;
     std::vector<float> radarZ;
@@ -65,7 +66,7 @@ namespace sub3000
     const char* DefaultName() const override;
 
     space_t();
-    ~space_t() override = default;
+    ~space_t() override;
 
   };
 

@@ -48,6 +48,9 @@ namespace sub3000
       bb::mesh_t engine;
       bb::mesh_t ballast;
 
+      bb::mesh_t speedMultMesh;
+      int speedMult;
+
       float depth;
       float pointSize;
       float worldScale;
