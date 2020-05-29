@@ -64,6 +64,8 @@ namespace bb
 
       bool IsGood() const;
 
+      bb::vec3_t NormalAtPoint(bb::vec2_t pos, float zScale) const;
+
       int Serialize(bb::ext::binstore_t& output);
 
       heightMap_t(bb::ext::binstore_t& input);

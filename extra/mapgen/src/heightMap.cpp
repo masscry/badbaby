@@ -226,6 +226,29 @@ namespace bb
       }
     }
 
+    bb::vec3_t heightMap_t::NormalAtPoint(bb::vec2_t pos, float zScale) const
+    {
+      auto p0 = glm::vec3(pos, this->Sample(pos)*zScale);
+
+      auto p1 = glm::vec3(pos + glm::vec2(-1.0f,  0.0f), this->Sample(pos + glm::vec2(-1.0f,  0.0f))*zScale);
+      auto p2 = glm::vec3(pos + glm::vec2( 0.0f, -1.0f), this->Sample(pos + glm::vec2( 0.0f, -1.0f))*zScale);
+      auto p3 = glm::vec3(pos + glm::vec2( 1.0f,  0.0f), this->Sample(pos + glm::vec2( 1.0f,  0.0f))*zScale);
+      auto p4 = glm::vec3(pos + glm::vec2( 0.0f,  1.0f), this->Sample(pos + glm::vec2( 0.0f,  1.0f))*zScale);
+
+      auto v1 = p1 - p0;
+      auto v2 = p2 - p0;
+      auto v3 = p3 - p0;
+      auto v4 = p4 - p0;
+
+      auto v12 = glm::cross(v1, v2);
+      auto v23 = glm::cross(v2, v3);
+      auto v34 = glm::cross(v3, v4);
+      auto v41 = glm::cross(v4, v1);
+
+      return glm::normalize(
+        v12 + v23 + v34 + v41
+      );
+    }
 
   } // namespace ext
   

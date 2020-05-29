@@ -37,30 +37,6 @@ public:
   }
 };
 
-glm::vec3 NormalAtPoint(const bb::ext::heightMap_t& hmap, glm::vec2 pos)
-{
-  auto p0 = glm::vec3(pos, hmap.Sample(pos)*2.0f);
-
-  auto p1 = glm::vec3(pos + glm::vec2(-1.0f,  0.0f), hmap.Sample(pos + glm::vec2(-1.0f,  0.0f))*2.0f);
-  auto p2 = glm::vec3(pos + glm::vec2( 0.0f, -1.0f), hmap.Sample(pos + glm::vec2( 0.0f, -1.0f))*2.0f);
-  auto p3 = glm::vec3(pos + glm::vec2( 1.0f,  0.0f), hmap.Sample(pos + glm::vec2( 1.0f,  0.0f))*2.0f);
-  auto p4 = glm::vec3(pos + glm::vec2( 0.0f,  1.0f), hmap.Sample(pos + glm::vec2( 0.0f,  1.0f))*2.0f);
-
-  auto v1 = p1 - p0;
-  auto v2 = p2 - p0;
-  auto v3 = p3 - p0;
-  auto v4 = p4 - p0;
-
-  auto v12 = glm::cross(v1, v2);
-  auto v23 = glm::cross(v2, v3);
-  auto v34 = glm::cross(v3, v4);
-  auto v41 = glm::cross(v4, v1);
-
-  return glm::normalize(
-    v12 + v23 + v34 + v41
-  );
-}
-
 bb::mesh_t Plane(const bb::ext::heightMap_t& hmap)
 {
   bb::meshDesc_t desc;
@@ -95,7 +71,7 @@ bb::mesh_t Plane(const bb::ext::heightMap_t& hmap)
         )
       );
       vnorm.emplace_back(
-        NormalAtPoint(hmap, glm::vec2(x, y))
+        hmap.NormalAtPoint(glm::vec2(x, y), 2.0f)
       );
 
       if ((y + 1 < hmap.Height()) && (x + 1 < hmap.Width()))

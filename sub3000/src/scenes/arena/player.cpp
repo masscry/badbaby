@@ -60,33 +60,9 @@ namespace sub3000
       return bb::vec2_t(0.0f);
     }
 
-    glm::vec3 NormalAtPoint(const bb::ext::heightMap_t& hmap, glm::vec2 pos, float zScale)
-    {
-      auto p0 = glm::vec3(pos, hmap.Sample(pos)*zScale);
-
-      auto p1 = glm::vec3(pos + glm::vec2(-1.0f,  0.0f), hmap.Sample(pos + glm::vec2(-1.0f,  0.0f))*zScale);
-      auto p2 = glm::vec3(pos + glm::vec2( 0.0f, -1.0f), hmap.Sample(pos + glm::vec2( 0.0f, -1.0f))*zScale);
-      auto p3 = glm::vec3(pos + glm::vec2( 1.0f,  0.0f), hmap.Sample(pos + glm::vec2( 1.0f,  0.0f))*zScale);
-      auto p4 = glm::vec3(pos + glm::vec2( 0.0f,  1.0f), hmap.Sample(pos + glm::vec2( 0.0f,  1.0f))*zScale);
-
-      auto v1 = p1 - p0;
-      auto v2 = p2 - p0;
-      auto v3 = p3 - p0;
-      auto v4 = p4 - p0;
-
-      auto v12 = glm::cross(v1, v2);
-      auto v23 = glm::cross(v2, v3);
-      auto v34 = glm::cross(v3, v4);
-      auto v41 = glm::cross(v4, v1);
-
-      return glm::normalize(
-        v12 + v23 + v34 + v41
-      );
-    }
-
     void Update(data_t* data, const bb::ext::heightMap_t& hmap, float dt)
     {
-      if (data == nullptr)
+      if ((data == nullptr) || (!std::isfinite(dt)))
       { // programmer's mistake
         assert(0);
         return;
@@ -99,7 +75,7 @@ namespace sub3000
         data->angle += ControlVal(GLFW_KEY_Q, GLFW_KEY_E)*dt;
         auto cdir = ControlDir(GLFW_KEY_RIGHT, GLFW_KEY_LEFT, GLFW_KEY_DOWN, GLFW_KEY_UP);
 
-        auto dir = data->Dir();
+        auto dir = -data->Dir();
         auto side = bb::vec2_t(dir.y, -dir.x);
 
         auto moveDir = dir*cdir.y + side*cdir.x;
@@ -167,17 +143,32 @@ namespace sub3000
 
         if (hmap.Sample(newPos - glm::vec2(0.5f))*63.0f > data->depth - data->width*0.2f)
         {
-          auto normal2D = glm::normalize(glm::vec2(NormalAtPoint(hmap, newPos - glm::vec2(0.5f), 63.0f)));
-          auto normalVel = glm::normalize(data->vel);
+          auto velLen = glm::length(data->vel);
+          auto normal = glm::vec2(hmap.NormalAtPoint(newPos - glm::vec2(0.5f), 63.0f));
+          auto normLen = glm::length(normal);
 
-          auto theta =  atan2f(
-            glm::dot(glm::vec2(normal2D.y, -normal2D.x) , normalVel),
-            glm::dot(normal2D, normalVel)
-          );
+          if ((velLen != 0.0f) && (normLen != 0.0f))
+          {
+            auto normalVel = data->vel/velLen;
+            auto normal2D = normal/normLen;
 
-          linForce += normal2D * glm::length(data->vel)*100.0f;
-          rotForce += theta * 100.0f;
+            auto theta = atan2f(
+              glm::dot(glm::vec2(normal2D.y, -normal2D.x) , normalVel),
+              glm::dot(normal2D, normalVel)
+            );
+
+            assert(std::isfinite(normal2D.x) && std::isfinite(normal2D.y));
+            assert(std::isfinite(theta));
+
+            linForce += normal2D * velLen*100.0f;
+            rotForce += theta * 100.0f;
+          }
         }
+
+        assert(std::isfinite(linForce.x) && std::isfinite(linForce.y));
+        assert(std::isfinite(newPos.x) && std::isfinite(newPos.y));
+        assert(std::isfinite(rotForce));
+        assert(std::isfinite(newAngle));
 
         data->pos = newPos;
         data->vel += linForce/data->mass * dt;
