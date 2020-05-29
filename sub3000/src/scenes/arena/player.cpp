@@ -94,7 +94,7 @@ namespace sub3000
       else
       {
         float velLen = glm::dot(data->vel, data->vel); // two times velocity
-        if (std::isinf(velLen) || !bb::InsideBounds(data->pos, bb::vec2_t(0.0f), hmap.Dimensions()))
+        if (std::isinf(velLen) || std::isinf(data->pos.x) || std::isinf(data->pos.y))
         {
           data->pos.x = hmap.Width()/2.0f;
           data->pos.y = hmap.Height()/2.0f;

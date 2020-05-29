@@ -143,12 +143,20 @@ namespace bb
       }
 
       auto posInCell = modulo(pos, vec2_t(1.0f));
-      auto topLeftX = static_cast<size_t>(modulo(pos.x, this->Width()));
-      auto topLeftY = static_cast<size_t>(modulo(pos.y, this->Height()));
+
+      auto tl = glm::uvec2(
+        modulo(pos.x, this->Width()),
+        modulo(pos.y, this->Height())
+      );
+
+      auto br = glm::uvec2(
+        modulo(pos.x+1.0f, this->Width()),
+        modulo(pos.y+1.0f, this->Height())
+      );
 
       float hmatrix[2][2] = {
-        { this->Data(topLeftX, topLeftY),   this->Data(topLeftX+1, topLeftY)   },
-        { this->Data(topLeftX, topLeftY+1), this->Data(topLeftX+1, topLeftY+1) }
+        { this->Data(tl.x, tl.y), this->Data(br.x, tl.y) },
+        { this->Data(tl.x, br.y), this->Data(br.x, br.y) }
       };
 
       return hmatrix[0][0]*(1.0f-posInCell.x)*(1.0f-posInCell.y)
