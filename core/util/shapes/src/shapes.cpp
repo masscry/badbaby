@@ -65,7 +65,7 @@ namespace bb
     ;
   }
 
-  void mesh_t::Breaking(bool enable, uint32_t index)
+  void mesh_t::Breaking(uint32_t enable, uint32_t index)
   {
     this->flags = (this->flags & ~MF_BREAK) | (-enable & MF_BREAK);
     this->breakIndex = index;
