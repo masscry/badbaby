@@ -8,6 +8,17 @@
 #include <common.hpp>
 #include <worker.hpp>
 
+#ifdef _WIN32
+
+// Enable high perfomance video card by default
+
+extern "C"
+{
+  _declspec(dllexport) uint32_t NvOptimusEnablement = 0x00000001;
+}
+
+#endif
+
 namespace
 {
   const char* vShader = R"shader(
