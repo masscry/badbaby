@@ -80,9 +80,9 @@ namespace bb
       char* inputCursor = input;
       size_t inputLeft = 1;
 
-      uint32_t output[1];
+      wchar_t output[1];
       char* outputCursor = reinterpret_cast<char*>(output);
-      size_t outputLeft = 4;
+      size_t outputLeft = sizeof(wchar_t);
 
       size_t outputSize = iconv(code, &inputCursor, &inputLeft, &outputCursor, &outputLeft);
       if (outputSize == ((size_t)-1))
