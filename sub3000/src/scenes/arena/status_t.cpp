@@ -100,9 +100,12 @@ namespace sub3000
 
         if (auto status = bb::As<player::status_t>(msg))
         {
+          auto newMapPos = status->Data().pos - this->mapDims/2.0f;
+          newMapPos.y = glm::clamp(newMapPos.y, this->mapDims.y, 255.0f-this->mapDims.y);
+
           mapCamera.View() = glm::translate(
             glm::mat4(1.0f),
-            glm::vec3(-status->Data().pos + this->mapDims/2.0f, 0.0f)
+            glm::vec3(-newMapPos, 0.0f)
           );
 
           this->mapShip = bb::GenerateMesh(ShipTriangle(10.0f, status->Data().pos, status->Data().angle));
