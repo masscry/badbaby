@@ -1,8 +1,8 @@
-#include <cstring>
-#include <cstdlib>
-#include <stdexcept>
-#include <cstdio>
 #include <cassert>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <stdexcept>
 
 #include <common.hpp>
 #include <image.hpp>
@@ -10,9 +10,10 @@
 namespace
 {
 
-  enum tgaErrors {
-    TGA_OK  = 0, /**< No errors */
-    TGA_IO  = 1, /**< IO error  */
+  enum tgaErrors
+  {
+    TGA_OK = 0, /**< No errors */
+    TGA_IO = 1, /**< IO error  */
     TGA_SIG = 2
   };
 
@@ -22,7 +23,7 @@ namespace
   {
     uint16_t first;
     uint16_t len;
-    uint8_t  size;
+    uint8_t size;
   };
 
   struct tgaImageSpec
@@ -31,32 +32,32 @@ namespace
     uint16_t yorig;
     uint16_t width;
     uint16_t height;
-    uint8_t  depth;
-    uint8_t  alpha:4; // 3-0
-    uint8_t  _zero:1; // 4
-    uint8_t  orig:1;  // 5
-    uint8_t  _res:2;
+    uint8_t depth;
+    uint8_t alpha : 4; // 3-0
+    uint8_t _zero : 1; // 4
+    uint8_t orig : 1;  // 5
+    uint8_t _res : 2;
   };
 
   struct tgaHeader
   {
-    uint8_t         idlen;
-    uint8_t         cmtype;
-    uint8_t         imtype;
+    uint8_t idlen;
+    uint8_t cmtype;
+    uint8_t imtype;
     tgaColorMapSpec cms;
-    tgaImageSpec    is;
+    tgaImageSpec is;
   };
 
   struct tgaFooter
   {
     uint32_t extoff;
     uint32_t devoff;
-    char     sig[18];
+    char sig[18];
   };
 
 #pragma pack(pop)
 
-const char TGA_SIGNATURE[] = "TRUEVISION-XFILE.";
+  const char TGA_SIGNATURE[] = "TRUEVISION-XFILE.";
 
   enum class tgaColorMode_t
   {
@@ -67,7 +68,7 @@ const char TGA_SIGNATURE[] = "TRUEVISION-XFILE.";
 
   tgaColorMode_t tgaGetColorMode(uint8_t imtype)
   {
-    switch(imtype & 0x3)
+    switch (imtype & 0x3)
     {
       case 0x2:
         return tgaColorMode_t::rgba;
@@ -83,11 +84,11 @@ const char TGA_SIGNATURE[] = "TRUEVISION-XFILE.";
     return (imtype & 0x8) == 0x8;
   }
 
-  void tgaRLEReadRGBA(uint8_t* data, const tgaHeader head, FILE* input)
+  void tgaRLEReadRGBA(uint8_t *data, const tgaHeader head, FILE *input)
   {
-    uint8_t* cursor = data;
+    uint8_t *cursor = data;
 
-    while (cursor - data < head.is.width*head.is.height*4)
+    while (cursor - data < static_cast<off_t>(head.is.width) * head.is.height * 4)
     {
       int rc = fgetc(input);
       if (rc == EOF)
@@ -104,7 +105,7 @@ const char TGA_SIGNATURE[] = "TRUEVISION-XFILE.";
         {
           throw std::runtime_error("TGA: fread RLE failed (RGBA)");
         }
-        while(pixCount-->0)
+        while (pixCount-- > 0)
         {
           memcpy(cursor, &copyPixel, sizeof(uint32_t));
           cursor += 4;
@@ -116,16 +117,16 @@ const char TGA_SIGNATURE[] = "TRUEVISION-XFILE.";
         {
           throw std::runtime_error("TGA: fread raw failed (RGBA)");
         }
-        cursor += 4*pixCount;
+        cursor += 4 * pixCount;
       }
     }
   }
 
-  void tgaRLEReadBW(uint8_t* data, const tgaHeader head, FILE* input)
+  void tgaRLEReadBW(uint8_t *data, const tgaHeader head, FILE *input)
   {
-    uint8_t* cursor = data;
+    uint8_t *cursor = data;
 
-    while (cursor - data < head.is.width*head.is.height*4)
+    while (cursor - data < head.is.width * head.is.height * 4)
     {
       int rc = fgetc(input);
       if (rc == EOF)
@@ -142,7 +143,7 @@ const char TGA_SIGNATURE[] = "TRUEVISION-XFILE.";
         {
           throw std::runtime_error("TGA: fread RLE failed (BW)");
         }
-        while(pixCount-->0)
+        while (pixCount-- > 0)
         {
           cursor[0] = copyPixel[0];
           cursor[1] = copyPixel[0];
@@ -153,7 +154,7 @@ const char TGA_SIGNATURE[] = "TRUEVISION-XFILE.";
       }
       else // RAW-packet
       {
-        while (pixCount-->0)
+        while (pixCount-- > 0)
         {
           uint8_t copyPixel[2];
           if (fread(copyPixel, 2, 1, input) != 1)
@@ -175,9 +176,9 @@ const char TGA_SIGNATURE[] = "TRUEVISION-XFILE.";
 namespace bb
 {
 
-  image_t LoadTGA(const std::string& filename)
+  image_t LoadTGA(const std::string &filename)
   {
-    FILE* input = fopen(filename.c_str(), "rb");
+    FILE *input = fopen(filename.c_str(), "rb");
     if (input == nullptr)
     {
       throw std::runtime_error(std::string("TGA: image not found") + filename);
@@ -202,13 +203,15 @@ namespace bb
     }
 
     clearerr(input);
-    if (fseek(input, 0, SEEK_SET) != 0) {
+    if (fseek(input, 0, SEEK_SET) != 0)
+    {
       throw std::runtime_error("TGA: fseek failed");
     }
 
     tgaHeader head;
 
-    if (fread(&head, sizeof(tgaHeader), 1, input) != 1) {
+    if (fread(&head, sizeof(tgaHeader), 1, input) != 1)
+    {
       throw std::runtime_error("TGA: fread failed");
     }
 
@@ -217,7 +220,8 @@ namespace bb
       throw std::runtime_error("TGA: invalid idlen");
     }
 
-    if (head.cmtype != 0) {
+    if (head.cmtype != 0)
+    {
       throw std::runtime_error("TGA: invalid cmtype");
     }
 
@@ -227,11 +231,12 @@ namespace bb
       throw std::runtime_error("TGA: only RGB and BW images supported");
     }
 
-    if (head.cms.size != 0) {
+    if (head.cms.size != 0)
+    {
       throw std::runtime_error("TGA: invalid cms.size");
     }
 
-    switch(colorMode)
+    switch (colorMode)
     {
       case tgaColorMode_t::rgba:
         if (head.is.depth != 32)
@@ -252,30 +257,29 @@ namespace bb
 
     std::unique_ptr<uint8_t[]> pixels;
 
-    pixels.reset(new uint8_t[head.is.width*head.is.height*4]); // always allocate full 32-bit image
+    pixels.reset(new uint8_t[head.is.width * head.is.height * 4]); // always allocate full 32-bit image
 
     if (!tgaIsRLE(head.imtype))
     {
       switch (colorMode)
       {
-      case tgaColorMode_t::rgba:
+        case tgaColorMode_t::rgba:
         {
-          size_t expectRead = head.is.width*head.is.height;
+          size_t expectRead = head.is.width * head.is.height;
           size_t totalRead = fread(
-            pixels.get(), 4, expectRead, input
-          );
-          if (totalRead  != expectRead) 
+            pixels.get(), 4, expectRead, input);
+          if (totalRead != expectRead)
           {
             throw std::runtime_error("TGA: not enough RGB data");
           }
         }
         break;
-      case tgaColorMode_t::bw:
+        case tgaColorMode_t::bw:
         {
-          size_t expectRead = head.is.width*head.is.height;
-          uint8_t* cursor = pixels.get();
+          size_t expectRead = head.is.width * head.is.height;
+          uint8_t *cursor = pixels.get();
           uint8_t tmpPixel[2];
-          while (expectRead-->0)
+          while (expectRead-- > 0)
           {
             size_t totalRead = fread(tmpPixel, 2, 1, input);
             if (totalRead != 1)
@@ -290,52 +294,54 @@ namespace bb
           }
         }
         break;
-      default:
-        // can't reach here.
-        assert(0);
+        default:
+          // can't reach here.
+          assert(0);
       }
     }
     else
     {
       switch (colorMode)
       {
-      case tgaColorMode_t::rgba:
-        tgaRLEReadRGBA(pixels.get(), head, input);
-        break;
-      case tgaColorMode_t::bw:
-        tgaRLEReadBW(pixels.get(), head, input);
-        break;
-      default:
-        // can't reach here.
-        assert(0);
+        case tgaColorMode_t::rgba:
+          tgaRLEReadRGBA(pixels.get(), head, input);
+          break;
+        case tgaColorMode_t::bw:
+          tgaRLEReadBW(pixels.get(), head, input);
+          break;
+        default:
+          // can't reach here.
+          assert(0);
       }
-
     }
 
     auto bgra = pixels.get();
 
-    for (int index = 0; index < head.is.width*head.is.height; ++index) {
+    for (int index = 0; index < head.is.width * head.is.height; ++index)
+    {
       uint8_t temp = bgra[index * 4];
       bgra[index * 4] = bgra[index * 4 + 2];
       bgra[index * 4 + 2] = temp;
     }
 
-    if (head.is.orig == 0) {
+    if (head.is.orig == 0)
+    {
       // image origin in lower left corner
       // so loader must invert line order
       std::unique_ptr<uint8_t[]> tempLine;
-      tempLine.reset(new uint8_t[head.is.width*4]);
+      tempLine.reset(new uint8_t[head.is.width * 4]);
 
-      size_t byteWidth = head.is.width*4;
+      size_t byteWidth = head.is.width * 4;
 
-      for (uint32_t line = 0; line < head.is.height/2; ++line) {
-        memcpy(tempLine.get(), pixels.get() + line*byteWidth, byteWidth);
-        memcpy(pixels.get() + line*byteWidth, pixels.get() + (head.is.height - line - 1)*byteWidth, byteWidth);
-        memcpy(pixels.get() + (head.is.height - line - 1)*byteWidth, tempLine.get(), byteWidth);
+      for (uint32_t line = 0; line < static_cast<uint32_t>(head.is.height) / 2; ++line)
+      {
+        memcpy(tempLine.get(), pixels.get() + line * byteWidth, byteWidth);
+        memcpy(pixels.get() + line * byteWidth, pixels.get() + (head.is.height - line - 1) * byteWidth, byteWidth);
+        memcpy(pixels.get() + (head.is.height - line - 1) * byteWidth, tempLine.get(), byteWidth);
       }
     }
 
     return bb::image_t(std::move(pixels), head.is.width, head.is.height, 4);
   }
 
-} // namespace draw
+} // namespace bb
