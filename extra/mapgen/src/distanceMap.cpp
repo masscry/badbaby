@@ -104,7 +104,7 @@ namespace bb
 
       struct compareIvecPair_t
       {
-        bool operator()(const ivecPair_t& a, const ivecPair_t& b)
+        bool operator()(const ivecPair_t& a, const ivecPair_t& b) const
         {
           if (a.first == b.first)
           {

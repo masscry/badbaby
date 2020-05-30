@@ -5,6 +5,7 @@
 #include <cmath>
 
 #include <limits>
+#include <algorithm>
 
 #include <common.hpp>
 
