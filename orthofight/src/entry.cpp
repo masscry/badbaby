@@ -180,14 +180,11 @@ int main(int argc, char* argv[])
       (context.IsKeyDown(GLFW_KEY_DOWN) - context.IsKeyDown(GLFW_KEY_UP))
     };
 
-    float sinv;
-    float cosv;
-
-    sincosf(glm::radians(45.0f), &sinv, &cosv);
+    auto v = bb::Dir(glm::radians(45.0f));
 
     moveCam = glm::mat2(
-      cosv, -sinv,
-      sinv, cosv
+      v.y, -v.x,
+      v.x,  v.y
     ) * moveCam;
 
     moveCam *= frameTimer.Delta()*10.0f;
