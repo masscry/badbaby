@@ -92,8 +92,8 @@ namespace bb
 
       auto smbPos = bb::vec2_t(smb%this->width, smb/this->width);
 
-      this->offsets[output[0]] = vec2_t { smbPos.x * (size.x + xstride), smbPos.y * (size.y + ystride) };
-      this->sizes[output[0]] = size;
+      this->offsets[static_cast<uint32_t>(output[0])] = vec2_t { smbPos.x * (size.x + xstride), smbPos.y * (size.y + ystride) };
+      this->sizes[static_cast<uint32_t>(output[0])] = size;
     }
   }
 
