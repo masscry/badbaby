@@ -328,8 +328,10 @@ rule_t waterRules[] =
   }
 };
 
+#ifndef _WIN32
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-conversion"
+#endif
 
 int ApplyRule(array2D_t<int>& world, size_t x, size_t y, const rule_t& rule)
 {
@@ -398,7 +400,9 @@ int ApplyRule(array2D_t<int>& world, size_t x, size_t y, const rule_t& rule)
   return 0;
 }
 
+#ifndef _WIN32
 #pragma GCC diagnostic pop
+#endif
 
 void UpdateWorld(array2D_t<int>& world)
 {
