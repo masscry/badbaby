@@ -299,6 +299,11 @@ namespace bb
 #define BBssize_t "%zd"
 #endif
 
+#if _MSC_VER >= 1800
+#define BBsize_t "%zu"
+#define BBssize_t "%zd"
+#endif
+
 #ifndef BBsize_t
 #error "Unsupported platform! Must defined BBsize_t for size_t types"
 #endif /* BBsize_t */
