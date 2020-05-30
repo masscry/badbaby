@@ -244,7 +244,7 @@ void Render()
 
 int UpdateScene(const char* scriptName)
 {
-  FILE* input = fopen(scriptName, "rt");
+  FILE* input = fopen(scriptName, "rb");
   if (input == nullptr)
   {
     return -1;
