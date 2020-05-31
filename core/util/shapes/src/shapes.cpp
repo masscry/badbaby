@@ -17,7 +17,7 @@ namespace bb
   {
     bb::vao_t::Bind(this->vao);
 
-    if ((this->breakIndex & MF_BREAK) != 0)
+    if (this->flags.BREAK != 0)
     {
       glEnable(GL_PRIMITIVE_RESTART);
       glPrimitiveRestartIndex(this->breakIndex);
@@ -38,7 +38,7 @@ namespace bb
       glDisableVertexAttribArray(i);
     }
 
-    if ((this->breakIndex & MF_BREAK) != 0)
+    if (this->flags.BREAK != 0)
     {
       glDisable(GL_PRIMITIVE_RESTART);
     }
@@ -48,10 +48,9 @@ namespace bb
   : totalVerts(0),
     drawMode(GL_TRIANGLES),
     activeBuffers(2),
-    flags(MF_NONE),
     breakIndex(0)
   {
-    ;
+    flags.BREAK = 0;
   }
 
   mesh_t::mesh_t(vao_t&& vao, size_t totalVerts, GLenum drawMode, GLuint activeBuffers)
@@ -59,15 +58,14 @@ namespace bb
     totalVerts(totalVerts),
     drawMode(drawMode),
     activeBuffers(activeBuffers),
-    flags(MF_NONE),
     breakIndex(0)
   {
-    ;
+    this->flags.BREAK = 0;
   }
 
-  void mesh_t::Breaking(int32_t enable, uint32_t index)
+  void mesh_t::Breaking(bool enable, uint32_t index)
   {
-    this->flags = (this->flags & ~MF_BREAK) | (-enable & MF_BREAK);
+    this->flags.BREAK = enable;
     this->breakIndex = index;
   }
 
