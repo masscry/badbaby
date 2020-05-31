@@ -141,8 +141,8 @@ namespace bb
     glBindVertexArray(this->self);
     glBindBuffer(GL_ARRAY_BUFFER, vbo.self);
     glVertexAttribPointer(index, size, type, normalized, stride, pOffset);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
   }
 
   void vao_t::BindIndecies(const vbo_t& vbo)
