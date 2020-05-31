@@ -239,7 +239,7 @@ int main(int argc, char* argv[])
   auto& pool = bb::workerPool_t::Instance();
   auto menuActor = pool.Register<menu::model_t>();
 
-  context.RegisterActorCallback(menuActor, bb::cmfKeyboard);
+  context.RegisterActorCallback(menuActor, bb::context_t::keyboard);
 
   auto renderProgram = bb::shader_t::LoadProgramFromFiles(
     "007menu_vp.glsl",

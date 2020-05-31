@@ -54,7 +54,7 @@ namespace sub3000
 
       bb::context_t::Instance().RegisterActorCallback(
         this->spaceActorID,
-        bb::cmfKeyboard
+        bb::context_t::keyboard
       );
 
       if (auto worldMapFile = bb::ext::binstore_t::Read("world.bbw"))
@@ -108,7 +108,7 @@ namespace sub3000
       return result;
     }
 
-    void screen_t::UpdateUnits(bb::linePoints_t&& units, float radarAngle, double dt)
+    void screen_t::UpdateUnits(bb::linePoints_t&& units, float radarAngle, float dt)
     {
       auto defLine = bb::DefineLine(
         glm::vec3(0.0f), 0.02f, 
@@ -406,7 +406,7 @@ namespace sub3000
         this->UpdateUnits(
           std::move(state->Units()),
           state->RadarAngle(),
-          dt
+          static_cast<float>(dt)
         );
         this->UpdateDepthRadar(*state);
 

@@ -41,7 +41,7 @@ namespace sub3000
     float ControlVal(uint16_t left, uint16_t right)
     {
       auto& context = bb::context_t::Instance();
-      return context.IsKeyDown(left) - context.IsKeyDown(right);
+      return static_cast<float>(context.IsKeyDown(left) - context.IsKeyDown(right));
     }
 
     bb::vec2_t ControlDir(uint16_t left, uint16_t right, uint16_t down, uint16_t up)

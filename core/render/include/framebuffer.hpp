@@ -45,8 +45,8 @@ namespace bb
       return this->tex;
     }
 
-    framebuffer_t(framebuffer_t&&);
-    framebuffer_t& operator=(framebuffer_t&&);
+    framebuffer_t(framebuffer_t&&) noexcept;
+    framebuffer_t &operator=(framebuffer_t &&) noexcept;
 
     framebuffer_t();
     framebuffer_t(int width, int height);
