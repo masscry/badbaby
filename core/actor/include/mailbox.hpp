@@ -33,15 +33,16 @@ namespace bb
     storage_t storage;
     postAddress_t address;
 
+  public:
+
+    explicit mailbox_t(postAddress_t address);
+    ~mailbox_t();
+
     mailbox_t(const mailbox_t&) = delete;
     mailbox_t(mailbox_t&&) = delete;
 
     mailbox_t& operator=(const mailbox_t&) = delete;
     mailbox_t& operator=(mailbox_t&&) = delete;
-
-    explicit mailbox_t(postAddress_t address);
-
-  public:
 
     using shared_t = std::shared_ptr<mailbox_t>;
     using weak_t = std::weak_ptr<mailbox_t>;
@@ -58,8 +59,6 @@ namespace bb
 
     void Put(msg_t&& msg);
 
-    ~mailbox_t();
-
   };
 
   class postOffice_t final
@@ -71,8 +70,8 @@ namespace bb
     std::mutex guard;
     storage_t storage;
 
-    postOffice_t() = default;
-    ~postOffice_t() = default;
+    postOffice_t();
+    ~postOffice_t();
 
     postOffice_t(const postOffice_t&) = delete;
     postOffice_t& operator=(const postOffice_t&) = delete;
@@ -88,10 +87,8 @@ namespace bb
     static postOffice_t& Instance();
 
     mailbox_t::shared_t New(const std::string& address);
-
     int Post(const std::string& address, msg_t&& msg);
     int Post(postAddress_t address, msg_t&& msg);
-
   };
 
   inline postAddress_t mailbox_t::Address() const

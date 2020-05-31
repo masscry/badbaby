@@ -114,14 +114,16 @@ namespace bb
         Info("%s", "Stop Requested");
         break;
       }
-      DoProcessActors();
+      this->DoProcessActors();
       info.notify.wait(lock, [&info, this](){ return (info.stop) || this->HasActorsInQueue(); });
     }
     Info("%s", "Worker Stopped");
   }
 
-  workerPool_t::workerPool_t()
+  workerPool_t::workerPool_t(postOffice_t& postOffice)
+  : postOffice(postOffice)
   {
+    bb::Debug("%s", "Worker Pool Created");
     config_t config;
     try
     {
@@ -165,11 +167,17 @@ namespace bb
     {
       worker.join();
     }
+    bb::Debug("%s", "Worker Pool Died");
   }
 
   workerPool_t& workerPool_t::Instance()
   {
-    static workerPool_t self;
+    //
+    // When workerPool dies, it must cleanup it's actor data
+    // each actor delete itself from postOffice, which may already die
+    // so here we pre-creating postOffice, so it always be deleted after workerPool_t.
+    //
+    static workerPool_t self(postOffice_t::Instance());
     return self;
   }
 
@@ -217,12 +225,12 @@ namespace bb
   {
     if (actorID == INVALID_ACTOR)
     {
-      bb::Error("%s", "Can't send message to INVALID_ACTOR");
+      bb::Error("%s", "Can't post message to INVALID_ACTOR");
       assert(0);
       return -1;
     }
 
-    if (bb::postOffice_t::Instance().Post(ActorIDToPostbox(actorID), std::move(message)) != 0)
+    if (this->postOffice.Post(ActorIDToPostbox(actorID), std::move(message)) != 0)
     {
       bb::Error("Actor (%08lx) is no longer exists!", actorID);
       assert(0);
