@@ -7,6 +7,9 @@
       "label": "Build All (Debug)",
       "type": "shell",
       "command": "cmake --build ${workspaceFolder}/.debug -- -j4",
+      "windows": {
+        "command": "cmake --build ${workspaceFolder}\\.debug -j4 -- /p:GenerateFullPaths=true"
+      },
       "group": {
         "kind": "build",
         "isDefault": true
@@ -16,12 +19,18 @@
       "label": "Build Painter (Debug)",
       "type": "shell",
       "command": "cmake --build ${workspaceFolder}/.debug --target painter -- -j4",
+      "windows": {
+        "command": "cmake --build ${workspaceFolder}\\.debug -j4"
+      },
       "group": "build"
     },
     {
       "label": "Build All (Release)",
       "type": "shell",
-      "command": "cmake --build ./.release --clean-first",
+      "command": "cmake --build ${workspaceFolder}/.release --clean-first -- -j4",
+      "windows": {
+        "command": "cmake --build ${workspaceFolder}\\.release --clean-first -j4"
+      },
       "group": "build"
     }
   ]
