@@ -134,7 +134,7 @@ namespace sub3000
   void mainMenuScene_t::OnPrepare()
   {
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-    glEnable(GL_DEPTH_TEST);
+    glDisable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -200,7 +200,7 @@ namespace sub3000
 
     auto& pool = bb::workerPool_t::Instance();
     this->menuModelID = pool.Register<sub3000::mainMenuModel_t>(this->textList, *this->mailbox);
-    this->pContext->RegisterActorCallback(menuModelID, bb::cmfKeyboard);
+    this->pContext->RegisterActorCallback(menuModelID, bb::context_t::keyboard);
   }
 
   void mainMenuScene_t::OnUpdate(double)
@@ -233,14 +233,16 @@ namespace sub3000
 
   void mainMenuScene_t::OnRender()
   {
-    bb::framebuffer_t::Bind(this->pContext->Canvas());
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     bb::shader_t::Bind(this->shader);
     this->camera.Update();
     this->shader.SetBlock(
       this->camBindBlock,
       this->camera.UniformBlock()
     );
+
+    bb::framebuffer_t::Bind(this->pContext->Canvas());
+    
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     uint32_t line = 0;
     for(auto&& item: this->textList)

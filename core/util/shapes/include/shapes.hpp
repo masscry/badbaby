@@ -42,7 +42,7 @@ namespace bb
 
   public:
 
-    void Breaking(uint32_t enable, uint32_t index);
+    void Breaking(int32_t enable, uint32_t index);
 
     bool Good() const;
 

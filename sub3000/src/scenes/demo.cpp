@@ -35,7 +35,7 @@ namespace sub3000
     this->space = bb::workerPool_t::Instance().Register<sub3000::space_t>();
     bb::context_t::Instance().RegisterActorCallback(
       this->space,
-      bb::cmfKeyboard
+      bb::context_t::keyboard
     );
 
     if (auto worldMapFile = bb::ext::binstore_t::Read("world.bbw"))

@@ -5,7 +5,7 @@
 
 namespace bb
 {
-  framebuffer_t::framebuffer_t(framebuffer_t&& move)
+  framebuffer_t::framebuffer_t(framebuffer_t &&move) noexcept
   :tex(std::move(move.tex)),self(move.self),width(move.width),height(move.height)
   {
     move.self = 0;
@@ -13,7 +13,7 @@ namespace bb
     move.height = 0;
   }
 
-  framebuffer_t& framebuffer_t::operator=(framebuffer_t&& move)
+  framebuffer_t &framebuffer_t::operator=(framebuffer_t &&move) noexcept
   {
     if (this == &move)
     {
@@ -39,7 +39,9 @@ namespace bb
   }
 
   framebuffer_t::framebuffer_t()
-  :self(0)
+  : self(0),
+    width(0),
+    height(0)
   {
     ;
   }

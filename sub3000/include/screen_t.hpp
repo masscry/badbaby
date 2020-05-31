@@ -69,7 +69,7 @@ namespace sub3000
 
     public:
 
-      void UpdateUnits(bb::linePoints_t&& units, float radarAngle, double dt);
+      void UpdateUnits(bb::linePoints_t&& units, float radarAngle, float dt);
       void UpdateDepthRadar(const state_t& state);
       void UpdateRudder(const state_t& state);
       void UpdateEngine(const state_t& state);
