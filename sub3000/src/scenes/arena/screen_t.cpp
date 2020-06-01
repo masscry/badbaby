@@ -57,22 +57,36 @@ namespace sub3000
         bb::context_t::keyboard
       );
 
+      bool worldMapReady = false;
+
       if (auto worldMapFile = bb::ext::binstore_t::Read("world.bbw"))
       {
-        auto worldMap = bb::ext::distanceMap_t(worldMapFile);
-        if (worldMap.IsGood())
+        try
         {
-          bb::workerPool_t::Instance().PostMessage(
-            this->spaceActorID,
-            bb::Issue<bb::ext::hmDone_t>(
-              -1, 
-              bb::ext::heightMap_t(worldMap.HeightMap()),
-              std::move(worldMap)
-            )
+          auto worldMap = bb::ext::distanceMap_t(worldMapFile);
+          if (worldMap.IsGood())
+          {
+            bb::workerPool_t::Instance().PostMessage(
+              this->spaceActorID,
+              bb::Issue<bb::ext::hmDone_t>(
+                -1,
+                bb::ext::heightMap_t(worldMap.HeightMap()),
+                std::move(worldMap)
+                )
+            );
+            worldMapReady = true;
+          }
+        }
+        catch (const std::runtime_error& error)
+        {
+          bb::Error(
+            "Can't load worldMap: %s. REGENERATE!",
+            error.what()
           );
         }
       }
-      else
+
+      if (worldMapReady == false)
       {
         if (!sub3000::RequestGenerateMap(this->spaceActorID))
         {
