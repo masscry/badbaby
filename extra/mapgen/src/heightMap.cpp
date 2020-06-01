@@ -28,6 +28,8 @@ namespace bb
       {
         maxPixel = std::max(this->data[pixel], maxPixel);
       }
+
+      assert(std::isfinite(maxPixel));
       return maxPixel;
     }
 
@@ -44,6 +46,8 @@ namespace bb
       {
         minPixel = std::min(this->data[pixel], minPixel);
       }
+
+      assert(std::isfinite(minPixel));
       return minPixel;
     }
 

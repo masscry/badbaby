@@ -64,6 +64,7 @@ namespace bb
             octave[round] = pow(fabs(octave[round]), params.power) * bb::signum(octave[round]);
           }
 
+          heightMap[cursor] = 0.0f;
           for (auto octaveVal : octave)
           {
             heightMap[cursor] += static_cast<float>(octaveVal);
