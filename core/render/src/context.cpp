@@ -170,7 +170,7 @@ namespace bb
 {
 
   context_t::context_t()
-      : wnd(nullptr), width(800), height(600), canvas(), insideWnd(false), relativeCursor(false)
+      : wnd(nullptr), width(800), height(600), canvas(), insideWnd(false), relativeCursor(false), hasNewTitle(false)
   {
     if (glfwInit() == GLFW_FALSE)
     {
@@ -308,6 +308,14 @@ namespace bb
 
   bool context_t::Update()
   {
+    std::unique_lock<std::mutex> lock(this->mutex);
+
+    if (this->hasNewTitle)
+    {
+      glfwSetWindowTitle(this->wnd, this->title.c_str());
+      this->hasNewTitle = false;
+    }
+   
     framebuffer_t::RenderToScreen();
     shader_t::Bind(this->shader);
     vao_t::Bind(this->vao);
@@ -330,11 +338,14 @@ namespace bb
 
   void context_t::Title(const std::string &newTitle)
   {
-    glfwSetWindowTitle(this->wnd, newTitle.c_str());
+    std::unique_lock<std::mutex> lock(this->mutex);
+    this->title = newTitle;
+    this->hasNewTitle = true;
   }
 
   void context_t::RelativeCursor(bool enable)
   {
+    std::unique_lock<std::mutex> lock(this->mutex);
     this->relativeCursor = enable;
     if (this->relativeCursor)
     {
@@ -348,7 +359,6 @@ namespace bb
 
   void context_t::OnCursorEnter(GLFWwindow *wnd, int entered)
   {
-    Debug("CursorEnter: %d", entered);
     context_t *self = reinterpret_cast<context_t *>(glfwGetWindowUserPointer(wnd));
     self->insideWnd = (entered != 0);
     if (self->relativeCursor)
@@ -360,25 +370,28 @@ namespace bb
   void context_t::OnKey(GLFWwindow *window, int key, int /*scancode*/, int action, int /*mods*/)
   {
     context_t *self = reinterpret_cast<context_t *>(glfwGetWindowUserPointer(window));
-
     for (auto actorPair : self->actorCallbackList)
     {
       if ((actorPair.second & msgFlag_t::keyboard) != 0)
       {
         workerPool_t::Instance().PostMessage(actorPair.first,
           bb::msg_t(
-            new bb::msg::keyEvent_t(key, action)));
+            new bb::msg::keyEvent_t(key, action)
+          )
+        );
       }
     }
   }
 
   void context_t::RegisterActorCallback(actorPID_t actorID, context_t::msgFlag_t flags)
   {
+    std::unique_lock<std::mutex> lock(this->mutex);
     this->actorCallbackList.emplace_back(std::make_pair(actorID, flags));
   }
 
   void context_t::UnregisterActorCallbacks(actorPID_t actorID)
   {
+    std::unique_lock<std::mutex> lock(this->mutex);
     this->actorCallbackList.remove_if(
       [actorID](const pairOfFlags &pof) -> bool {
         return (pof.first == actorID);

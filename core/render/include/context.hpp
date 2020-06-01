@@ -54,6 +54,10 @@ namespace bb
     bool                insideWnd;
     bool                relativeCursor;
 
+    std::mutex          mutex;
+    std::string         title;
+    bool                hasNewTitle;
+
     context_t();
     ~context_t();
 
