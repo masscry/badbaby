@@ -127,7 +127,9 @@ namespace bb
 
     inline float& heightMap_t::Data(size_t x, size_t y)
     {
-      return this->data[y * this->width + x];
+      auto& dataPoint = this->data[y * this->width + x];
+      assert(std::isfinite(dataPoint));
+      return dataPoint;
     }
 
     inline float heightMap_t::Data(size_t x, size_t y) const
