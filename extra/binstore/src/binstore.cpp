@@ -94,6 +94,10 @@ int ftruncate(int fd, off_t length)
 #define close _close
 #define fdopen _fdopen
 
+#else
+
+#define O_BINARY (0)
+
 #endif
 
 namespace
@@ -208,7 +212,7 @@ namespace bb
 
     binstore_t binstore_t::Read(const char *filename)
     {
-      int inputHandle = open(filename, O_RDONLY | O_CLOEXEC | O_NOFOLLOW);
+      int inputHandle = open(filename, O_RDONLY | O_BINARY | O_CLOEXEC | O_NOFOLLOW);
       if (inputHandle == -1)
       {
         char errorbuf[1024];
@@ -248,7 +252,7 @@ namespace bb
     binstore_t binstore_t::Create(const char *filename)
     {
       int outputHandle = open(filename,
-        O_WRONLY | O_CREAT | O_CLOEXEC | O_NOFOLLOW,
+        O_WRONLY | O_BINARY | O_CREAT | O_CLOEXEC | O_NOFOLLOW,
         S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
       if (outputHandle == -1)
