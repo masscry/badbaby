@@ -42,6 +42,13 @@ namespace sub3000
 
   void space_t::Step(double dt)
   {
+    if (!this->distMap.IsGood())
+    {
+      // while map is not ready, 
+      // time do not advance
+      return;
+    }
+
     this->cumDT += dt;
     while (this->cumDT > SPACE_TIME_STEP)
     {
@@ -60,7 +67,6 @@ namespace sub3000
           this->player.Dump(output);
         }
       }
-
     }
 
     if (this->renderDepth)
@@ -86,44 +92,41 @@ namespace sub3000
 
     while (this->newPointCount-->0)
     {
-      if (this->distMap.IsGood())
+      if (this->radarXY.size() >= 720)
       {
-        if (this->radarXY.size() >= 720)
-        {
-          this->radarXY.pop_front();
-        }
+        this->radarXY.pop_front();
+      }
 
-        auto dir = bb::Dir(glm::radians(this->player.RadarAngle())-this->player.angle);
+      auto dir = bb::Dir(glm::radians(this->player.RadarAngle())-this->player.angle);
 
-        bb::vec3_t isec;
+      bb::vec3_t isec;
 
-        if (this->distMap.CastRay(
-            bb::vec3_t(this->player.pos - bb::vec2_t(0.5f), this->player.depth),
-            glm::normalize(bb::vec3_t(dir, 0.0f)),
-            &isec, 10.0f
-          )
+      if (this->distMap.CastRay(
+          bb::vec3_t(this->player.pos - bb::vec2_t(0.5f), this->player.depth),
+          glm::normalize(bb::vec3_t(dir, 0.0f)),
+          &isec, 10.0f
         )
-        {
-          this->radarXY.emplace_back(bb::vec2_t(isec) + bb::vec2_t(0.5f));
-        }
+      )
+      {
+        this->radarXY.emplace_back(bb::vec2_t(isec) + bb::vec2_t(0.5f));
+      }
 
-        this->player.radarAngle += this->player.radarAngleDelta;
-        switch(this->player.radar)
-        {
-          case radar::radius360:
-            this->player.radarAngle %= bb::deci_t(360);
-            break;
-          case radar::front90:
-            if (this->player.radarAngle > 225)
-            {
-              this->player.radarAngleDelta = -1;
-            }
-            if (this->player.radarAngle < 135)
-            {
-              this->player.radarAngleDelta = +1;
-            }
-            break;
-        }
+      this->player.radarAngle += this->player.radarAngleDelta;
+      switch(this->player.radar)
+      {
+        case radar::radius360:
+          this->player.radarAngle %= bb::deci_t(360);
+          break;
+        case radar::front90:
+          if (this->player.radarAngle > 225)
+          {
+            this->player.radarAngleDelta = -1;
+          }
+          if (this->player.radarAngle < 135)
+          {
+            this->player.radarAngleDelta = +1;
+          }
+          break;
       }
     }
   }
