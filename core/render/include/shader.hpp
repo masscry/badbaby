@@ -57,6 +57,7 @@ namespace bb
 
     GLuint UniformBlockIndex(const char* name) const;
     void SetBlock(GLuint blockIndex, const uniformBlock_t& block);
+    void SetBlock(const char* blockName, const uniformBlock_t& block);
 
     shader_t();
     shader_t(const char* vpSource, const char* fpSource);
@@ -67,6 +68,11 @@ namespace bb
     static shader_t LoadProgramFromFiles(const char* vpFilename, const char* fpFilename);
 
   };
+
+  inline void shader_t::SetBlock(const char* blockName, const uniformBlock_t& block)
+  {
+    this->SetBlock(this->UniformBlockIndex(blockName), block);
+  }
 
   inline void shader_t::SetFloat(const char* name, float value) const
   {

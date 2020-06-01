@@ -26,7 +26,7 @@ namespace bb
     camera_t(const camera_t&) = delete;
     camera_t& operator =(const camera_t&) = delete;
 
-    camera_t(mat4_t&& proj, mat4_t&& view, uniformBlock_t&& ubo);
+    camera_t(const mat4_t& proj, const mat4_t& view, uniformBlock_t&& ubo);
 
   public:
 
@@ -57,8 +57,8 @@ namespace bb
 
     void Update();
 
-    camera_t(camera_t&&);
-    camera_t& operator =(camera_t&&);
+    camera_t(camera_t&&) noexcept;
+    camera_t& operator =(camera_t&&) noexcept;
 
     camera_t();
     ~camera_t();

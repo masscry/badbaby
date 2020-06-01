@@ -110,6 +110,18 @@ namespace bb
     return std::unique_ptr<basicVertexBuffer_t>(new vertexBuffer_t<data_t>(std::move(src)));
   }
 
+  template<typename data_t, size_t size>
+  std::unique_ptr<basicVertexBuffer_t> MakeVertexBuffer(const data_t (&data)[size])
+  {
+    return std::unique_ptr<basicVertexBuffer_t>(
+      new vertexBuffer_t<data_t>(
+        std::vector<data_t>(
+          data, data + size
+        )
+      )
+    );
+  }
+
   template<typename data_t>
   vertexBuffer_t<data_t>::vertexBuffer_t()
   : isNormalized(GL_FALSE)

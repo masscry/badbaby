@@ -100,6 +100,16 @@ namespace bb
     return std::unique_ptr<basicIndexBuffer_t>(new indexBuffer_t<data_t>(std::move(src)));
   }
 
+  template <typename data_t, size_t size>
+  std::unique_ptr<basicIndexBuffer_t> MakeIndexBuffer(const data_t(&data)[size])
+  {
+    return std::unique_ptr<basicIndexBuffer_t>(
+      new indexBuffer_t<data_t>(
+        std::vector<data_t>(data, data + size)
+      )
+    );
+  }
+
   template <typename data_t>
   indexBuffer_t<data_t>::indexBuffer_t()
   {
