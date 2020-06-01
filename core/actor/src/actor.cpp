@@ -14,6 +14,13 @@
  * 
  */
 
+//#define BB_DEBUG_ACTOR_PROCESSING
+#ifdef BB_DEBUG_ACTOR_PROCESSING
+#define DEBUG_ACTOR(...) bb::Debug(__VA_ARGS__)
+#else
+#define DEBUG_ACTOR(...)
+#endif
+
 namespace bb
 {
 
@@ -32,7 +39,7 @@ namespace bb
       return msg::result_t::skipped;
     }
 
-    Debug("Process \"%s\" (%08lx)", this->Name().c_str(), this->ID());
+    DEBUG_ACTOR("Process \"%s\" (%08lx)", this->Name().c_str(), this->ID());
 
     auto result = msg::result_t::complete;
     while(msgAlreadyInQueue-->0)
@@ -41,7 +48,7 @@ namespace bb
 
       if (bb::As<bb::msg::poison_t>(msg) != nullptr)
       {
-        bb::Debug("Actor \"%s\" (%08lx) is poisoned", this->Name().c_str(), this->ID());
+        DEBUG_ACTOR("Actor \"%s\" (%08lx) is poisoned", this->Name().c_str(), this->ID());
         context_t::UnregisterActorCallbacksIfContextExists(this->ID());
         this->sick = true;
         return msg::result_t::poisoned;
@@ -56,7 +63,7 @@ namespace bb
       auto tmpResult = curRole.ProcessMessage(*this, *msg.get());
       if (tmpResult == msg::result_t::poisoned)
       {
-        bb::Debug("Actor \"%s\" (%08lx) poisoned himself", this->Name().c_str(), this->ID());
+        DEBUG_ACTOR("Actor \"%s\" (%08lx) poisoned himself", this->Name().c_str(), this->ID());
         this->sick = true;
         return msg::result_t::poisoned;
       }
