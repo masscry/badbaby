@@ -172,7 +172,7 @@ namespace bb
 
     int heightMap_t::Dump(const std::string& fname) const
     {
-      FILE* output = fopen((fname + ".pgm").c_str(), "w");
+      FILE* output = fopen((fname + ".pgm").c_str(), "wb");
       if (output == nullptr)
       {
         return -1;
@@ -234,7 +234,10 @@ namespace bb
         this->data.reset(new float[this->width*this->height]);
         for (size_t index = 0; index < this->DataSize(); ++index)
         {
-          input.Read(this->data[index]);
+          if (input.Read(this->data[index]) != 0)
+          {
+            throw std::runtime_error("Invalid height map format!");
+          }
         }
       }
     }

@@ -338,7 +338,7 @@ namespace bb
 
       for (size_t z = 0; z < this->Depth(); ++z)
       {
-        FILE* output = fopen((fname + std::to_string(z) + ".pgm") .c_str(), "w");
+        FILE* output = fopen((fname + std::to_string(z) + ".pgm") .c_str(), "wb");
         if (output == nullptr)
         {
           return -1;
@@ -582,7 +582,10 @@ namespace bb
 
         for (size_t index = 0; index < this->DataSize(); ++index)
         {
-          input.Read(this->data[index]);
+          if (input.Read(this->data[index]) != 0)
+          {
+            throw std::runtime_error("Invalid distance map format!");
+          }
         }
         if (head.hasHeightMap != false)
         {
