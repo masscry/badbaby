@@ -20,6 +20,7 @@ namespace sub3000
     authors,
     exit,
     settings,
+    demo,
     totalItems
   };
 

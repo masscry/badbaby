@@ -22,19 +22,16 @@
 namespace bb
 {
 
-  enum meshFlag_t: uint32_t
-  {
-    MF_NONE  = 0x00,
-    MF_BREAK = 0x01
-  };
-
   class mesh_t final
   {
     vao_t vao;
     size_t totalVerts;
     GLenum drawMode;
     GLuint activeBuffers;
-    uint32_t flags;
+
+    struct {
+      uint32_t BREAK:1;
+    } flags;
     uint32_t breakIndex;
 
     mesh_t(const mesh_t&) = delete;

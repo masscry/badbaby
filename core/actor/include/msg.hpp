@@ -47,8 +47,8 @@ namespace bb
       basic_t(const basic_t&) = default;
       basic_t& operator=(const basic_t&) = default;
 
-      basic_t(basic_t&&) = default;
-      basic_t& operator=(basic_t&&) = default;
+      basic_t(basic_t&&) noexcept = default;
+      basic_t& operator=(basic_t&&) noexcept = default;
 
       virtual ~basic_t() = 0;
     };
@@ -68,6 +68,45 @@ namespace bb
       return static_cast<const castType_t*>(&msg);
     }
 
+    template<typename data_t>
+    class dataMsg_t final: public basic_t
+    {
+      data_t data;
+    public:
+
+      const data_t& Data() const
+      {
+        return this->data;
+      }
+
+      data_t& Data()
+      {
+        return this->data;
+      }
+
+      dataMsg_t(data_t&& data, actorPID_t src)
+      : basic_t(src),
+        data(std::move(data))
+      {
+        ;
+      }
+
+      dataMsg_t(const data_t& data, actorPID_t src)
+      : basic_t(src),
+        data(data)
+      {
+        ;
+      }
+
+      dataMsg_t(const dataMsg_t<data_t>&) = default;
+      dataMsg_t& operator=(const dataMsg_t<data_t>&) = default;
+
+      dataMsg_t(dataMsg_t<data_t>&&) noexcept = default;
+      dataMsg_t& operator=(dataMsg_t<data_t>&&) noexcept= default;
+
+      ~dataMsg_t() override = default;
+    };
+
     class poison_t final: public basic_t
     {
     public:
@@ -75,8 +114,8 @@ namespace bb
       poison_t(const poison_t&) = default;
       poison_t& operator=(const poison_t&) = default;
 
-      poison_t(poison_t&&) = default;
-      poison_t& operator=(poison_t&&) = default;
+      poison_t(poison_t&&) noexcept = default;
+      poison_t& operator=(poison_t&&) noexcept = default;
 
       ~poison_t() override = default;
     };
@@ -90,8 +129,8 @@ namespace bb
       basicExecTask_t(const basicExecTask_t&) = default;
       basicExecTask_t& operator= (const basicExecTask_t&) = default;
 
-      basicExecTask_t(basicExecTask_t&&) = default;
-      basicExecTask_t& operator=(basicExecTask_t&&) = default;
+      basicExecTask_t(basicExecTask_t&&) noexcept = default;
+      basicExecTask_t& operator=(basicExecTask_t&&) noexcept = default;
 
       ~basicExecTask_t() override = default;
     };
@@ -109,8 +148,8 @@ namespace bb
       execTask_t(const execTask_t&) = default;
       execTask_t& operator= (const execTask_t&) = default;
 
-      execTask_t(execTask_t&&) = default;
-      execTask_t& operator=(execTask_t&&) = default;
+      execTask_t(execTask_t&&) noexcept = default;
+      execTask_t& operator=(execTask_t&&) noexcept = default;
 
       ~execTask_t() override = default;
     };
@@ -138,7 +177,7 @@ namespace bb
         return this->title;
       }
 
-      updateTitle_t(std::string&& title)
+      updateTitle_t(std::string&& title) noexcept
       : title(std::move(title))
       {
         ;
@@ -160,8 +199,8 @@ namespace bb
       setName_t(const setName_t&) = default;
       setName_t& operator=(const setName_t&) = default;
 
-      setName_t(setName_t&&) = default;
-      setName_t& operator=(setName_t&&) = default;
+      setName_t(setName_t&&) noexcept = default;
+      setName_t& operator=(setName_t&&) noexcept = default;
 
       ~setName_t() override = default;
     };
@@ -181,8 +220,8 @@ namespace bb
       keyEvent_t(const keyEvent_t&) = default;
       keyEvent_t& operator=(const keyEvent_t&) = default;
 
-      keyEvent_t(keyEvent_t&&) = default;
-      keyEvent_t& operator=(keyEvent_t&&) = default;
+      keyEvent_t(keyEvent_t&&) noexcept = default;
+      keyEvent_t& operator=(keyEvent_t&&) noexcept = default;
 
       ~keyEvent_t() override = default;
     };

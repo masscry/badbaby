@@ -104,7 +104,7 @@ namespace bb
 
       struct compareIvecPair_t
       {
-        bool operator()(const ivecPair_t& a, const ivecPair_t& b)
+        bool operator()(const ivecPair_t& a, const ivecPair_t& b) const
         {
           if (a.first == b.first)
           {
@@ -260,18 +260,26 @@ namespace bb
       }
 
       auto posInCell = modulo(pos, vec3_t(1.0f));
-      auto topLeftX = static_cast<size_t>(modulo(pos.x, this->Width()));
-      auto topLeftY = static_cast<size_t>(modulo(pos.y, this->Height()));
-      auto topLeftZ = static_cast<size_t>(modulo(pos.z, this->Depth()));
+      auto tl = glm::uvec3(
+        static_cast<unsigned int>(modulo(pos.x, this->Width()-1.0f)),
+        static_cast<unsigned int>(modulo(pos.y, this->Height()-1.0f)),
+        static_cast<unsigned int>(modulo(pos.z, this->Depth()-1.0f))
+      );
+
+      auto br = glm::uvec3(
+        static_cast<unsigned int>(modulo(pos.x+1.0f, this->Width()-1.0f)),
+        static_cast<unsigned int>(modulo(pos.y+1.0f, this->Height()-1.0f)),
+        static_cast<unsigned int>(modulo(pos.z+1.0f, this->Depth()-1.0f))
+      );
 
       float c[2][2][2] = {
         {
-          { this->Data(topLeftX, topLeftY, topLeftZ), this->Data(topLeftX, topLeftY, topLeftZ+1) }, 
-          { this->Data(topLeftX+1, topLeftY, topLeftZ), this->Data(topLeftX+1, topLeftY, topLeftZ+1) } 
+          { this->Data(tl.x, tl.y, tl.z), this->Data(tl.x, tl.y, br.z) }, 
+          { this->Data(br.x, tl.y, tl.z), this->Data(br.x, tl.y, br.z) } 
         },
         { 
-          { this->Data(topLeftX, topLeftY+1, topLeftZ), this->Data(topLeftX, topLeftY+1, topLeftZ+1) }, 
-          { this->Data(topLeftX+1, topLeftY+1, topLeftZ), this->Data(topLeftX+1, topLeftY+1, topLeftZ+1) } 
+          { this->Data(tl.x, br.y, tl.z), this->Data(tl.x, br.y, br.z) }, 
+          { this->Data(br.x, br.y, tl.z), this->Data(br.x, br.y, br.z) } 
         }
       };
 
@@ -330,7 +338,7 @@ namespace bb
 
       for (size_t z = 0; z < this->Depth(); ++z)
       {
-        FILE* output = fopen((fname + std::to_string(z) + ".pgm") .c_str(), "w");
+        FILE* output = fopen((fname + std::to_string(z) + ".pgm") .c_str(), "wb");
         if (output == nullptr)
         {
           return -1;
@@ -435,11 +443,7 @@ namespace bb
 
     bool distanceMap_t::CastRay(vec3_t pos, vec3_t dir, vec3_t* isec, float maxDist) const
     {
-      if (
-           (!Border(pos.x, 0.0f, static_cast<float>(this->Width())))
-        || (!Border(pos.y, 0.0f, static_cast<float>(this->Height())))
-        || (!Border(pos.z, 0.0f, static_cast<float>(this->Depth())))
-      )
+      if (!Border(pos.z, 0.0f, static_cast<float>(this->Depth())))
       {
         return false;
       }
@@ -487,7 +491,7 @@ namespace bb
         prevCursor = cursor;
         cursor += dir*moveDist;
 
-        if (!Border(cursor, bb::vec3_t(0.0f), bb::vec3_t(this->Dimensions())))
+        if (!Border(cursor.z, 0.0f, this->Dimensions().z))
         {
           return false;
         }
@@ -578,7 +582,10 @@ namespace bb
 
         for (size_t index = 0; index < this->DataSize(); ++index)
         {
-          input.Read(this->data[index]);
+          if (input.Read(this->data[index]) != 0)
+          {
+            throw std::runtime_error("Invalid distance map format!");
+          }
         }
         if (head.hasHeightMap != false)
         {

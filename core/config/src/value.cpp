@@ -19,6 +19,11 @@ namespace
       return std::to_string(this->value);
     }
 
+    std::string AsString() const override
+    {
+      return std::to_string(this->value);
+    }
+
     bb::type_t Type() const override
     {
       return bb::type_t::number;
@@ -69,6 +74,11 @@ namespace
     std::string ToString() const override
     {
       return std::string("\"") + this->value + std::string("\"");
+    }
+
+    std::string AsString() const override
+    {
+      return this->value;
     }
 
     bb::type_t Type() const override

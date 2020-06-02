@@ -12,7 +12,11 @@
 namespace 
 {
 
-  bb::mailbox_t::shared_t mail = bb::postOffice_t::Instance().New("sub3000");
+  bb::mailbox_t::shared_t& Mailbox()
+  {
+    static bb::mailbox_t::shared_t mail = bb::postOffice_t::Instance().New("sub3000");
+    return mail;
+  }
 
   std::mutex g_mapGenLock;
   bb::actorPID_t g_mapGenActorID = -1;
@@ -24,7 +28,7 @@ namespace sub3000
 
   void PostToMain(bb::msg_t&& msg)
   {
-    mail->Put(std::move(msg));
+    Mailbox()->Put(std::move(msg));
   }
 
   bool RequestGenerateMap(bb::actorPID_t sendResultToID)
@@ -86,6 +90,9 @@ void ProcessGameAction(bb::actorPID_t src, sub3000::gameAction_t action)
     break;
   case sub3000::gameAction_t::settings:
     break;
+  case sub3000::gameAction_t::demo:
+    sub3000::PostChangeScene(sub3000::sceneID_t::demo);
+    break;
   default:
     assert(0);
   }
@@ -135,7 +142,7 @@ int main(int argc, char* argv[])
       break;
     }
 
-    if (mail->Poll(&msgToMain))
+    if (Mailbox()->Poll(&msgToMain))
     {
       if (auto newWinTitle = bb::As<bb::msg::updateTitle_t>(msgToMain))
       {

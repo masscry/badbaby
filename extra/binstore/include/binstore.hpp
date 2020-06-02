@@ -94,8 +94,8 @@ namespace bb
       static binstore_t Read(const char* filename);
       static binstore_t Create(const char* filename);
 
-      binstore_t(binstore_t&&);
-      binstore_t& operator=(binstore_t&&);
+      binstore_t(binstore_t &&) noexcept;
+      binstore_t &operator=(binstore_t &&) noexcept;
 
       binstore_t(const binstore_t&) = delete;
       binstore_t& operator=(const binstore_t&) = delete;

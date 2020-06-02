@@ -225,6 +225,26 @@
       "preLaunchTask": "Build All (Debug)"
     },
     {
+      "name": "Launch 012deci (Debug)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/.debug/bin/012deci",
+      "args": [ ],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}/runtime/tests",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      "preLaunchTask": "Build All (Debug)"
+    },
+    {
       "name": "Launch Painter (Debug)",
       "type": "cppdbg",
       "request": "launch",
@@ -242,7 +262,7 @@
           "ignoreFailures": true
         }
       ],
-      "preLaunchTask": "Build All (Debug)"
+      "preLaunchTask": "Build Painter (Debug)"
     },
     {
       "name": "Launch Submarine-3000 (Debug)",

@@ -63,17 +63,8 @@ namespace bb
   template<typename data_t>
   data_t CheckValueBounds(data_t value, data_t lowerBound, data_t upperBound)
   {
-    if (value < lowerBound)
-    {
-      bb::Warning("%s", "Lower bound check failed");
-      return lowerBound;
-    }
-    if (value > upperBound)
-    {
-      bb::Warning("%s", "Upper bound check failed");
-      return upperBound;
-    }
-    return value;
+    return (value < lowerBound) ? (lowerBound) :
+      ((value > upperBound) ? (upperBound) : value);
   }
 
   const std::string& GetThisThreadName();
@@ -295,6 +286,11 @@ namespace bb
 #define BB_DEFER(CODE) auto BB_CALL_SCOPE_NAME_3(_bb_defer_) = bb::callOnScopeExit([&](){ CODE; })
 
 #if defined(__LP64__) && defined(__linux__)
+#define BBsize_t "%zu"
+#define BBssize_t "%zd"
+#endif
+
+#if _MSC_VER >= 1800
 #define BBsize_t "%zu"
 #define BBssize_t "%zd"
 #endif

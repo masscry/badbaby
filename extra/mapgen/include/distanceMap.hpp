@@ -27,9 +27,9 @@ namespace bb
 
       bool Improve(vec3_t start, vec3_t finish, vec3_t* isec) const;
 
-      float SampleHeightMap(vec3_t pos) const;
-
     public:
+
+      float SampleHeightMap(vec3_t pos) const;
 
       const heightMap_t& HeightMap() const;
 
@@ -91,7 +91,7 @@ namespace bb
 
     inline size_t distanceMap_t::DataSize() const
     {
-      return this->Width() * this->Height() * this->Depth();
+      return static_cast<size_t>(this->Width()) * static_cast<size_t>(this->Height()) * static_cast<size_t>(this->Depth());
     }
 
     inline uint16_t distanceMap_t::Width() const

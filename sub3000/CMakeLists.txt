@@ -10,6 +10,7 @@ add_executable(sub3000
   include/authors.hpp
   include/arena.hpp
   include/space.hpp
+  include/demo.hpp
 
 # Sources
   src/sub3000.cpp
@@ -20,6 +21,7 @@ add_executable(sub3000
   src/scenes/splash.cpp
   src/scenes/authors.cpp
   src/scenes/arena.cpp
+  src/scenes/demo.cpp
 
   src/scenes/arena/player.cpp
   src/scenes/arena/space.cpp

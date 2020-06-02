@@ -5,6 +5,7 @@
 #include <cmath>
 
 #include <limits>
+#include <algorithm>
 
 #include <common.hpp>
 
@@ -27,6 +28,8 @@ namespace bb
       {
         maxPixel = std::max(this->data[pixel], maxPixel);
       }
+
+      assert(std::isfinite(maxPixel));
       return maxPixel;
     }
 
@@ -43,6 +46,8 @@ namespace bb
       {
         minPixel = std::min(this->data[pixel], minPixel);
       }
+
+      assert(std::isfinite(minPixel));
       return minPixel;
     }
 
@@ -143,12 +148,20 @@ namespace bb
       }
 
       auto posInCell = modulo(pos, vec2_t(1.0f));
-      auto topLeftX = static_cast<size_t>(modulo(pos.x, this->Width()));
-      auto topLeftY = static_cast<size_t>(modulo(pos.y, this->Height()));
+
+      auto tl = glm::uvec2(
+        modulo(pos.x, this->Width()),
+        modulo(pos.y, this->Height())
+      );
+
+      auto br = glm::uvec2(
+        modulo(pos.x+1.0f, this->Width()),
+        modulo(pos.y+1.0f, this->Height())
+      );
 
       float hmatrix[2][2] = {
-        { this->Data(topLeftX, topLeftY),   this->Data(topLeftX+1, topLeftY)   },
-        { this->Data(topLeftX, topLeftY+1), this->Data(topLeftX+1, topLeftY+1) }
+        { this->Data(tl.x, tl.y), this->Data(br.x, tl.y) },
+        { this->Data(tl.x, br.y), this->Data(br.x, br.y) }
       };
 
       return hmatrix[0][0]*(1.0f-posInCell.x)*(1.0f-posInCell.y)
@@ -159,7 +172,7 @@ namespace bb
 
     int heightMap_t::Dump(const std::string& fname) const
     {
-      FILE* output = fopen((fname + ".pgm").c_str(), "w");
+      FILE* output = fopen((fname + ".pgm").c_str(), "wb");
       if (output == nullptr)
       {
         return -1;
@@ -221,11 +234,37 @@ namespace bb
         this->data.reset(new float[this->width*this->height]);
         for (size_t index = 0; index < this->DataSize(); ++index)
         {
-          input.Read(this->data[index]);
+          if (input.Read(this->data[index]) != 0)
+          {
+            throw std::runtime_error("Invalid height map format!");
+          }
         }
       }
     }
 
+    bb::vec3_t heightMap_t::NormalAtPoint(bb::vec2_t pos, float zScale) const
+    {
+      auto p0 = glm::vec3(pos, this->Sample(pos)*zScale);
+
+      auto p1 = glm::vec3(pos + glm::vec2(-1.0f,  0.0f), this->Sample(pos + glm::vec2(-1.0f,  0.0f))*zScale);
+      auto p2 = glm::vec3(pos + glm::vec2( 0.0f, -1.0f), this->Sample(pos + glm::vec2( 0.0f, -1.0f))*zScale);
+      auto p3 = glm::vec3(pos + glm::vec2( 1.0f,  0.0f), this->Sample(pos + glm::vec2( 1.0f,  0.0f))*zScale);
+      auto p4 = glm::vec3(pos + glm::vec2( 0.0f,  1.0f), this->Sample(pos + glm::vec2( 0.0f,  1.0f))*zScale);
+
+      auto v1 = p1 - p0;
+      auto v2 = p2 - p0;
+      auto v3 = p3 - p0;
+      auto v4 = p4 - p0;
+
+      auto v12 = glm::cross(v1, v2);
+      auto v23 = glm::cross(v2, v3);
+      auto v34 = glm::cross(v3, v4);
+      auto v41 = glm::cross(v4, v1);
+
+      return glm::normalize(
+        v12 + v23 + v34 + v41
+      );
+    }
 
   } // namespace ext
   

@@ -46,10 +46,13 @@ namespace sub3000
   class space_t final: public bb::role_t
   {
     double cumDT;
-    double newPointDT;
+    int newPointCount;
+    bool renderDepth;
     player::data_t player;
+    int simSpeed;
 
-    bb::linePoints_t units;
+    bb::linePoints_t radarXY;
+    std::vector<float> radarZ;
 
     bb::ext::heightMap_t heightMap;
     bb::ext::distanceMap_t distMap;
@@ -63,7 +66,7 @@ namespace sub3000
     const char* DefaultName() const override;
 
     space_t();
-    ~space_t() override = default;
+    ~space_t() override;
 
   };
 

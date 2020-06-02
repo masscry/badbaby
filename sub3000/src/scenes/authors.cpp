@@ -85,7 +85,7 @@ namespace sub3000
 
     auto& pool = bb::workerPool_t::Instance();
     this->model = pool.Register<sub3000::authorsModel_t>();
-    this->pContext->RegisterActorCallback(this->model, bb::cmfKeyboard);
+    this->pContext->RegisterActorCallback(this->model, bb::context_t::keyboard);
   }
 
   void authorsScene_t::OnUpdate(double)

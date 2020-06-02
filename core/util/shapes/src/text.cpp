@@ -407,13 +407,19 @@ namespace bb
   textDynamic_t::textDynamic_t()
   : font(nullptr),
     totalV(0),
-    totalI(0)
+    totalI(0),
+    renderI(0)
   {
     ;
   }
 
   textDynamic_t::textDynamic_t(const font_t& font, const vec2_t& chSize)
-  :vao(vao_t::CreateVertexAttribObject()),font(&font),chSize(chSize),totalV(0),totalI(0)
+  : vao(vao_t::CreateVertexAttribObject()),
+    font(&font),
+    chSize(chSize),
+    totalV(0),
+    totalI(0),
+    renderI(0)
   {
     ;
   }

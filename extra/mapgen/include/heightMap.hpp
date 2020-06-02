@@ -41,6 +41,8 @@ namespace bb
         return this->Sample(vec2_t(std::forward<args_t>(args)...));
       }
 
+      bb::vec2_t Dimensions() const;
+
       size_t DataSize() const;
 
       uint16_t Width() const;
@@ -64,6 +66,8 @@ namespace bb
 
       bool IsGood() const;
 
+      bb::vec3_t NormalAtPoint(bb::vec2_t pos, float zScale) const;
+
       int Serialize(bb::ext::binstore_t& output);
 
       heightMap_t(bb::ext::binstore_t& input);
@@ -77,6 +81,14 @@ namespace bb
       heightMap_t(heightMap_t&&) = default;
       heightMap_t& operator=(heightMap_t&&) = default;
     };
+
+    inline bb::vec2_t heightMap_t::Dimensions() const
+    {
+      return bb::vec2_t(
+        static_cast<float>(this->width),
+        static_cast<float>(this->height)
+      );
+    }
 
     inline float& heightMap_t::operator[](size_t pos)
     {
@@ -115,7 +127,9 @@ namespace bb
 
     inline float& heightMap_t::Data(size_t x, size_t y)
     {
-      return this->data[y * this->width + x];
+      auto& dataPoint = this->data[y * this->width + x];
+      assert(std::isfinite(dataPoint));
+      return dataPoint;
     }
 
     inline float heightMap_t::Data(size_t x, size_t y) const

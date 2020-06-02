@@ -92,8 +92,8 @@ const char* fpShader =
 
   void main()
   {
-    float fragDist = length(vec2(1.0)-2.0*abs(fragPos - vec2(0.5f)));
-    pixColor = mix(vec4(0.0f), lineColor, fragDist);
+    float pct = 1.0f - 2.0f*distance(fragPos, vec2(0.5));
+    pixColor = mix(vec4(0.0f), lineColor, pct);
   }
 )shader";
 
@@ -179,11 +179,7 @@ class painterVM_t: public bb::vm_t
           this->cursor,
           this->brushWidth,
           this->textScale,
-          std::to_string(
-            static_cast<uint32_t>(
-              bb::Argument(refs, 0)
-            )
-          ).c_str()
+          bb::StringArg(refs, 0).c_str()
         )
       );
       break;
@@ -248,7 +244,7 @@ void Render()
 
 int UpdateScene(const char* scriptName)
 {
-  FILE* input = fopen(scriptName, "rt");
+  FILE* input = fopen(scriptName, "rb");
   if (input == nullptr)
   {
     return -1;

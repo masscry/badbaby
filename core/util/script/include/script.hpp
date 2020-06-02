@@ -19,6 +19,8 @@ namespace bb
 
   double Argument(const listOfRefs_t& refs, uint32_t id);
 
+  std::string StringArg(const listOfRefs_t& refs, uint32_t id);
+
   class vm_t
   {
     listOfRefs_t listOfRefs;

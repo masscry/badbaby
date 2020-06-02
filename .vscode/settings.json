@@ -58,7 +58,8 @@
     "set": "cpp",
     "regex": "cpp",
     "cerrno": "cpp",
-    "typeindex": "cpp"
+    "typeindex": "cpp",
+    "complex": "cpp"
   },
   "files.exclude": {
     "**/.classpath": true,

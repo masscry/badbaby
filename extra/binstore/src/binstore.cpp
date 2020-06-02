@@ -1,20 +1,108 @@
 #include <binstore.hpp>
 #include <common.hpp>
 
-#include <cstdint>
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#include <Windows.h>
+#include <WinSock2.h>
+#endif
+
 #include <cassert>
+#include <cstdint>
 #include <cstring>
 
-#include <arpa/inet.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/file.h>
 #include <fcntl.h>
-#include <unistd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
-namespace 
+#ifdef __linux__
+#include <arpa/inet.h>
+#include <sys/file.h>
+#include <unistd.h>
+#endif
+
+#ifdef _WIN32
+
+#include <io.h>
+
+#define O_NOFOLLOW (0)
+#define O_CLOEXEC (0)
+
+int strerror_r(int errnum, char *buf, size_t buflen)
 {
-  enum 
+  return strerror_s(buf, buflen, errnum);
+}
+
+#define LOCK_UN (0x0)
+#define LOCK_EX (0x1)
+#define LOCK_SH (0x2)
+#define LOCK_MASK (0x3)
+#define LOCK_NB (0x4)
+
+#define S_IRUSR (_S_IREAD)
+#define S_IWUSR (_S_IWRITE)
+#define S_IRGRP (0)
+#define S_IROTH (0)
+
+int flock(int fd, int operation)
+{
+  OVERLAPPED overlapped = {0};
+  HANDLE osHandle = reinterpret_cast<HANDLE>(_get_osfhandle(fd));
+  DWORD lockFlag = 0;
+
+  switch (operation & LOCK_MASK)
+  {
+    case LOCK_UN:
+      if (UnlockFileEx(osHandle, 0, 0xFFFFFFFF, 0xFFFFFFFF, &overlapped) == 0)
+      { // TODO: make proper error handling
+        errno = EINVAL;
+        return -1;
+      }
+      return 0;
+    case LOCK_EX:
+      lockFlag = LOCKFILE_EXCLUSIVE_LOCK;
+      /* FALLTHROUGH */
+    case LOCK_SH:
+      if ((operation & LOCK_NB) != 0)
+      {
+        lockFlag |= LOCKFILE_FAIL_IMMEDIATELY;
+      }
+      if (LockFileEx(osHandle, lockFlag, 0, 0xFFFFFFFF, 0xFFFFFFFF, &overlapped) == 0)
+      { // TODO: make proper error handling
+        errno = EINVAL;
+        return -1;
+      }
+      return 0;
+  }
+
+  return 0;
+}
+
+int ftruncate(int fd, off_t length)
+{
+  auto result = _chsize_s(fd, length);
+  if (result != 0)
+  {
+    errno = result;
+    return -1;
+  }
+  return 0;
+}
+
+#define open _open
+#define close _close
+#define fdopen _fdopen
+
+#else
+
+#define O_BINARY (0)
+
+#endif
+
+namespace
+{
+  enum
   {
     BINSTORE_MAGIC = 0xABADBABEL,
     BINSTORE_VERSION = 0x1L
@@ -29,7 +117,7 @@ namespace
   };
 
   static_assert(sizeof(serialHeader_t) == 16, "serialHeader_t must be 16 bytes long");
-} // namespace 
+} // namespace
 
 namespace bb
 {
@@ -38,21 +126,22 @@ namespace bb
   {
 
     binstore_t::binstore_t()
-    : om(binstore_t::openMode_t::undef),
-      stream(nullptr),
-      tag(0),
-      dirty(false),
-      dataSize(0)
+        : om(binstore_t::openMode_t::undef),
+          stream(nullptr),
+          headPos(),
+          tag(0),
+          dirty(false),
+          dataSize(0)
     {
       ;
     }
 
-    binstore_t::binstore_t(FILE* stream, binstore_t::openMode_t om)
-    : om(om),
-      stream(stream),
-      tag(0),
-      dirty(false),
-      dataSize(0)
+    binstore_t::binstore_t(FILE *stream, binstore_t::openMode_t om)
+        : om(om),
+          stream(stream),
+          tag(0),
+          dirty(false),
+          dataSize(0)
     {
       // programmer's mistakes
       assert(this->om != openMode_t::undef);
@@ -63,12 +152,11 @@ namespace bb
         bb::Error("%s:%d: error: %s (%d)",
           __FILE__,
           __LINE__,
-          strerror_r(errno, errorbuf, sizeof(errorbuf)) ,
-          errno
-        );
+          strerror_r(errno, errorbuf, sizeof(errorbuf)),
+          errno);
       }
 
-      switch(this->om)
+      switch (this->om)
       {
         case binstore_t::openMode_t::create:
           this->PutHeader();
@@ -79,7 +167,6 @@ namespace bb
         default: // programmer's mistake
           assert(0);
       }
-
     }
 
     binstore_t::~binstore_t()
@@ -87,13 +174,13 @@ namespace bb
       this->Reset();
     }
 
-    binstore_t::binstore_t(binstore_t&& mv)
-    : om(mv.om),
-      stream(mv.stream),
-      headPos(mv.headPos),
-      tag(mv.tag),
-      dirty(mv.dirty),
-      dataSize(mv.dataSize)
+    binstore_t::binstore_t(binstore_t &&mv) noexcept
+        : om(mv.om),
+          stream(mv.stream),
+          headPos(mv.headPos),
+          tag(mv.tag),
+          dirty(mv.dirty),
+          dataSize(mv.dataSize)
     {
       mv.om = binstore_t::openMode_t::undef;
       mv.stream = nullptr;
@@ -102,7 +189,7 @@ namespace bb
       mv.dataSize = 0;
     }
 
-    binstore_t& binstore_t::operator=(binstore_t&& mv)
+    binstore_t &binstore_t::operator=(binstore_t &&mv) noexcept
     {
       if (this != &mv)
       {
@@ -123,35 +210,33 @@ namespace bb
       return *this;
     }
 
-    binstore_t binstore_t::Read(const char* filename)
+    binstore_t binstore_t::Read(const char *filename)
     {
-      int inputHandle = open(filename, O_RDONLY|O_CLOEXEC|O_NOFOLLOW);
+      int inputHandle = open(filename, O_RDONLY | O_BINARY | O_CLOEXEC | O_NOFOLLOW);
       if (inputHandle == -1)
       {
         char errorbuf[1024];
         bb::Error("%s:%d: error: %s (%d)",
           __FILE__,
           __LINE__,
-          strerror_r(errno, errorbuf, sizeof(errorbuf)) ,
-          errno
-        );
+          strerror_r(errno, errorbuf, sizeof(errorbuf)),
+          errno);
         return binstore_t();
       }
 
-      if (flock(inputHandle, LOCK_SH|LOCK_NB) != 0)
+      if (flock(inputHandle, LOCK_SH | LOCK_NB) != 0)
       {
         char errorbuf[1024];
         bb::Error("%s:%d: error: %s (%d)",
           __FILE__,
           __LINE__,
-          strerror_r(errno, errorbuf, sizeof(errorbuf)) ,
-          errno
-        );
+          strerror_r(errno, errorbuf, sizeof(errorbuf)),
+          errno);
         close(inputHandle);
         return binstore_t();
       }
 
-      FILE* input = fdopen(inputHandle, "rb");
+      FILE *input = fdopen(inputHandle, "rb");
       if (input == nullptr)
       {
         flock(inputHandle, LOCK_UN);
@@ -161,16 +246,14 @@ namespace bb
 
       return binstore_t(
         input,
-        binstore_t::openMode_t::read
-      );
+        binstore_t::openMode_t::read);
     }
 
-    binstore_t binstore_t::Create(const char* filename)
+    binstore_t binstore_t::Create(const char *filename)
     {
       int outputHandle = open(filename,
-        O_WRONLY|O_CREAT|O_CLOEXEC|O_NOFOLLOW, 
-        S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH
-      );
+        O_WRONLY | O_BINARY | O_CREAT | O_CLOEXEC | O_NOFOLLOW,
+        S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
       if (outputHandle == -1)
       {
@@ -178,21 +261,19 @@ namespace bb
         bb::Error("%s:%d: error: %s (%d)",
           __FILE__,
           __LINE__,
-          strerror_r(errno, errorbuf, sizeof(errorbuf)) ,
-          errno
-        );
+          strerror_r(errno, errorbuf, sizeof(errorbuf)),
+          errno);
         return binstore_t();
       }
 
-      if (flock(outputHandle, LOCK_EX|LOCK_NB) != 0)
+      if (flock(outputHandle, LOCK_EX | LOCK_NB) != 0)
       {
         char errorbuf[1024];
         bb::Error("%s:%d: error: %s (%d)",
           __FILE__,
           __LINE__,
-          strerror_r(errno, errorbuf, sizeof(errorbuf)) ,
-          errno
-        );
+          strerror_r(errno, errorbuf, sizeof(errorbuf)),
+          errno);
         close(outputHandle);
         return binstore_t();
       }
@@ -203,15 +284,14 @@ namespace bb
         bb::Error("%s:%d: error: %s (%d)",
           __FILE__,
           __LINE__,
-          strerror_r(errno, errorbuf, sizeof(errorbuf)) ,
-          errno
-        );
+          strerror_r(errno, errorbuf, sizeof(errorbuf)),
+          errno);
         flock(outputHandle, LOCK_UN);
         close(outputHandle);
         return binstore_t();
       }
 
-      FILE* output = fdopen(outputHandle, "wb");
+      FILE *output = fdopen(outputHandle, "wb");
       if (output == nullptr)
       {
         flock(outputHandle, LOCK_UN);
@@ -221,8 +301,7 @@ namespace bb
 
       return binstore_t(
         output,
-        binstore_t::openMode_t::create
-      );
+        binstore_t::openMode_t::create);
     }
 
     int binstore_t::GetHeader()
@@ -235,9 +314,8 @@ namespace bb
         bb::Error("%s:%d: error: %s (%d)",
           __FILE__,
           __LINE__,
-          strerror_r(errno, errorbuf, sizeof(errorbuf)) ,
-          errno
-        );
+          strerror_r(errno, errorbuf, sizeof(errorbuf)),
+          errno);
         return -1;
       }
 
@@ -262,9 +340,8 @@ namespace bb
         bb::Error("%s:%d: error: %s (%d)",
           __FILE__,
           __LINE__,
-          strerror_r(errno, errorbuf, sizeof(errorbuf)) ,
-          errno
-        );
+          strerror_r(errno, errorbuf, sizeof(errorbuf)),
+          errno);
         return -1;
       }
       BB_DEFER(fsetpos(this->stream, &filePos));
@@ -275,9 +352,8 @@ namespace bb
         bb::Error("%s:%d: error: %s (%d)",
           __FILE__,
           __LINE__,
-          strerror_r(errno, errorbuf, sizeof(errorbuf)) ,
-          errno
-        );
+          strerror_r(errno, errorbuf, sizeof(errorbuf)),
+          errno);
         return -1;
       }
 
@@ -298,9 +374,8 @@ namespace bb
         bb::Error("%s:%d: error: %s (%d)",
           __FILE__,
           __LINE__,
-          strerror_r(errno, errorbuf, sizeof(errorbuf)) ,
-          errno
-        );
+          strerror_r(errno, errorbuf, sizeof(errorbuf)),
+          errno);
         return -1;
       }
       return 0;
@@ -319,9 +394,8 @@ namespace bb
           bb::Error("%s:%d: error: %s (%d)",
             __FILE__,
             __LINE__,
-            strerror_r(errno, errorbuf, sizeof(errorbuf)) ,
-            errno
-          );
+            strerror_r(errno, errorbuf, sizeof(errorbuf)),
+            errno);
           return -1;
         }
         BB_DEFER(fsetpos(this->stream, &filePos));
@@ -332,9 +406,8 @@ namespace bb
           bb::Error("%s:%d: error: %s (%d)",
             __FILE__,
             __LINE__,
-            strerror_r(errno, errorbuf, sizeof(errorbuf)) ,
-            errno
-          );
+            strerror_r(errno, errorbuf, sizeof(errorbuf)),
+            errno);
           return -1;
         }
 
@@ -378,7 +451,7 @@ namespace bb
       return this->om;
     }
 
-    int binstore_t::Write(const void* buffer, size_t bufferSize)
+    int binstore_t::Write(const void *buffer, size_t bufferSize)
     {
       if (this->om != binstore_t::openMode_t::create)
       {
@@ -392,9 +465,8 @@ namespace bb
         bb::Error("%s:%d: error: %s (%d)",
           __FILE__,
           __LINE__,
-          strerror_r(errno, errorbuf, sizeof(errorbuf)) ,
-          errno
-        );
+          strerror_r(errno, errorbuf, sizeof(errorbuf)),
+          errno);
         return -1;
       }
 
@@ -403,7 +475,7 @@ namespace bb
       return 0;
     }
 
-    int binstore_t::Read(void* buffer, size_t bufferSize)
+    int binstore_t::Read(void *buffer, size_t bufferSize)
     {
       if (this->om != binstore_t::openMode_t::read)
       {
@@ -423,9 +495,8 @@ namespace bb
         bb::Error("%s:%d: error: %s (%d)",
           __FILE__,
           __LINE__,
-          strerror_r(errno, errorbuf, sizeof(errorbuf)) ,
-          errno
-        );
+          strerror_r(errno, errorbuf, sizeof(errorbuf)),
+          errno);
         return -1;
       }
 
@@ -433,7 +504,7 @@ namespace bb
       return 0;
     }
 
-    int binstore_t::Write(const char* str)
+    int binstore_t::Write(const char *str)
     {
       auto strLen = strlen(str);
       if (strLen > 0xFFFF)
@@ -449,7 +520,7 @@ namespace bb
       return this->Write(str, strLen);
     }
 
-    int binstore_t::Write(const std::string& str)
+    int binstore_t::Write(const std::string &str)
     {
       if (str.size() > 0xFFFF)
       {
@@ -464,7 +535,7 @@ namespace bb
       return this->Write(str.c_str(), str.size());
     }
 
-    int binstore_t::Read(std::string& str)
+    int binstore_t::Read(std::string &str)
     {
       uint16_t strSize;
 
@@ -474,7 +545,7 @@ namespace bb
         return result;
       }
 
-      char* tempResult = new (std::nothrow) char[static_cast<size_t>(strSize)+1];
+      char *tempResult = new (std::nothrow) char[static_cast<size_t>(strSize) + 1];
       if (tempResult == nullptr)
       {
         return -1;

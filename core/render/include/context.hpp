@@ -25,19 +25,23 @@ namespace bb
 
   size_t TypeSize(GLenum type);
 
-  enum contextMsgFlag_t: uint32_t 
-  {
-    cmfNone     = 0x0000,
-    cmfKeyboard = 0x0001
-  };
-
   using actorPID_t = int64_t;
 
   class context_t final
   {
+  public:
+    
+    enum msgFlag_t : uint32_t
+    {
+      none = 0x0000,
+      keyboard = 0x0001
+    };
+
+  private:
+
     static bool isAlreadyExists;
 
-    using pairOfFlags = std::pair<actorPID_t, contextMsgFlag_t>;
+    using pairOfFlags = std::pair<actorPID_t, msgFlag_t>;
     using actorCallbackList_t = std::list<pairOfFlags>;
 
     GLFWwindow*         wnd;
@@ -49,6 +53,10 @@ namespace bb
     actorCallbackList_t actorCallbackList;
     bool                insideWnd;
     bool                relativeCursor;
+
+    std::mutex          mutex;
+    std::string         title;
+    bool                hasNewTitle;
 
     context_t();
     ~context_t();
@@ -89,7 +97,7 @@ namespace bb
 
     void Title(const std::string& newTitle);
 
-    void RegisterActorCallback(actorPID_t actorID, contextMsgFlag_t flags);
+    void RegisterActorCallback(actorPID_t actorID, context_t::msgFlag_t flags);
     void UnregisterActorCallbacks(actorPID_t actorID);
 
     static void UnregisterActorCallbacksIfContextExists(actorPID_t actorID)

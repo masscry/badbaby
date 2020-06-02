@@ -1,13 +1,24 @@
+#include <common.hpp>
 #include <mapGen.hpp>
 #include <simplex.hpp>
 #include <worker.hpp>
-#include <common.hpp>
 
 #include <cassert>
 #include <cmath>
 
 #include <glm/gtc/constants.hpp>
 #include <glm/vec3.hpp>
+
+#ifdef _WIN32
+
+void sincos(double x, double *sinVal, double *cosVal)
+{
+  assert((sinVal != nullptr) && (cosVal != nullptr));
+  *sinVal = sin(x);
+  *cosVal = cos(x);
+}
+
+#endif
 
 namespace bb
 {
@@ -53,9 +64,10 @@ namespace bb
             octave[round] = pow(fabs(octave[round]), params.power) * bb::signum(octave[round]);
           }
 
+          heightMap[cursor] = 0.0f;
           for (auto octaveVal : octave)
           {
-            heightMap[cursor] += octaveVal;
+            heightMap[cursor] += static_cast<float>(octaveVal);
           }
           ++cursor;
         }

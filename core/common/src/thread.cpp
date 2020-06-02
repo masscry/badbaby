@@ -105,32 +105,72 @@ namespace bb
 
   }
 
-  static std::mutex threadNamesMutex;
-  static std::unordered_map<std::thread::id, std::string> threadNames;
+  namespace
+  {
+
+    class threadNames_t final
+    {
+      std::mutex mutex;
+      std::unordered_map<std::thread::id, std::string> data;
+
+      threadNames_t()
+      {
+        ;
+      }
+
+      threadNames_t(const threadNames_t&) = delete;
+      threadNames_t(threadNames_t&&) = delete;
+
+      threadNames_t& operator=(const threadNames_t&) = delete;
+      threadNames_t& operator=(threadNames_t&&) = delete;
+
+      ~threadNames_t() = default;
+
+    public:
+
+      static threadNames_t& Instance()
+      {
+        static threadNames_t threadNames;
+        return threadNames;
+      }
+
+      void SetThisThreadName(const std::string& name)
+      {
+        // this part for internal bb mechanism (logs, etc...)
+        std::lock_guard<std::mutex> guard(this->mutex);
+        this->data[std::this_thread::get_id()] = name;
+
+        // this part for debugger names support
+        SetThisThreadNameForDebugger(name);
+      }
+
+      const std::string& GetThisThreadName()
+      {
+        static thread_local std::string cachedResult;
+        if (cachedResult.empty())
+        {
+          std::lock_guard<std::mutex> guard(this->mutex);
+          auto name = this->data.find(std::this_thread::get_id());
+          if (name != this->data.end())
+          {
+            cachedResult = name->second;
+          }
+        }
+        return cachedResult;
+      }
+
+    };
+
+  }
 
   void SetThisThreadName(const std::string& name)
   {
-    // this part for internal bb mechanism (logs, etc...)
-    std::lock_guard<std::mutex> guard(threadNamesMutex);
-    threadNames[std::this_thread::get_id()] = name;
-
-    // this part for debugger names support
-    SetThisThreadNameForDebugger(name);
+    threadNames_t::Instance().SetThisThreadName(name);
   }
 
   const std::string& GetThisThreadName()
   {
-    static thread_local std::string cachedResult;
-    if (cachedResult.empty())
-    {
-      std::lock_guard<std::mutex> guard(threadNamesMutex);
-      auto name = threadNames.find(std::this_thread::get_id());
-      if (name != threadNames.end())
-      {
-        cachedResult = name->second;
-      }
-    }
-    return cachedResult;
+    return threadNames_t::Instance().GetThisThreadName();
   }
 
 #define HAS_SetThisThreadName

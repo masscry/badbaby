@@ -36,6 +36,7 @@ namespace bb
 
     texture_t();
     texture_t(int width, int height);
+    texture_t(int width, int height, bool fp);
     texture_t(int width, int height, int depth, const uint8_t* data);
     texture_t(int width, int height, const float* data);
 

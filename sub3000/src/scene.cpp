@@ -3,6 +3,7 @@
 #include <mainMenu.hpp>
 #include <authors.hpp>
 #include <arena.hpp>
+#include <demo.hpp>
 
 #include <msg.hpp>
 #include <sub3000.hpp>
@@ -60,6 +61,11 @@ namespace sub3000
       {
         static arenaScene_t arena;
         return &arena;
+      }
+    case sceneID_t::demo:
+      {
+        static demoScene_t demo;
+        return &demo;
       }
     default:
       throw std::runtime_error("Unknown Scene Requested");
@@ -120,6 +126,10 @@ namespace sub3000
     if (str.compare("Arena") == 0)
     {
       return sceneID_t::arena;
+    }
+    if (str.compare("Demo") == 0)
+    {
+      return sceneID_t::demo;
     }
     return sceneID_t::undef;
   }

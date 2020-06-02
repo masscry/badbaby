@@ -85,6 +85,25 @@ namespace bb
     glBindTexture(GL_TEXTURE_2D, 0);
   }
 
+  texture_t::texture_t(int width, int height, bool fp)
+  :self(0)
+  {
+    glGenTextures(1, &this->self);
+    glBindTexture(GL_TEXTURE_2D, this->self);
+    if (fp)
+    {
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_HALF_FLOAT, nullptr);
+    }
+    else
+    {
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_FLOAT, nullptr);
+    }
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glBindTexture(GL_TEXTURE_2D, 0);
+  }
+
+
   texture_t::texture_t(int width, int height, int depth, const uint8_t* data)
   :self(0)
   {

@@ -46,13 +46,14 @@ namespace bb
     void DoProcessActors();
     void WorkerThread(workerID_t id);
      
+    postOffice_t& postOffice;
     vectorOfWorkers_t workers;
     vectorOfInfo_t    infos;
 
     rwMutex_t          actorsGuard;
     actorStorage_t     actors;
 
-    workerPool_t();
+    workerPool_t(postOffice_t& postOffice);
     ~workerPool_t();
 
     workerPool_t(const workerPool_t&) = delete;
@@ -83,6 +84,7 @@ namespace bb
     actorPID_t FindFirstByName(const std::string& name);
 
     int PostMessage(actorPID_t  actorID, msg_t&& message);
+
     int Unregister(actorPID_t  actorID);
 
   };

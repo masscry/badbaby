@@ -7,7 +7,28 @@
             "intelliSenseMode": "gcc-x64",
             "compileCommands": "${workspaceFolder}/.debug/compile_commands.json",
             "cStandard": "c99",
-            "cppStandard": "c++11"
+            "cppStandard": "c++11",
+            "includePath": [
+                "${default}",
+                "${workspaceFolder}/orthofight/include",
+                "${workspaceFolder}/.debug/core/render/contrib/GLAD/include",
+                "${workspaceFolder}/.debug/core/render/contrib/.pyenv/include",
+                "${workspaceFolder}/extra/binstore/include",
+                "${workspaceFolder}/extra/ship/include",
+                "${workspaceFolder}/extra/mapgen/include",
+                "${workspaceFolder}/core/actor/include",
+                "${workspaceFolder}/core/config/include",
+                "${workspaceFolder}/core/render/contrib/glfw/include",
+                "${workspaceFolder}/core/render/contrib/win-iconv/include",
+                "${workspaceFolder}/core/render/include",
+                "${workspaceFolder}/core/util/script/include",
+                "${workspaceFolder}/core/util/shapes/include",
+                "${workspaceFolder}/core/util/effects/include",
+                "${workspaceFolder}/core/util/simplex/include",
+                "${workspaceFolder}/core/common/include",
+                "${workspaceFolder}/sub3000/include",
+                "${workspaceFolder}/painter/include"
+            ]
         }
     ],
     "version": 4

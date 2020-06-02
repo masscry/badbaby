@@ -5,14 +5,14 @@
 namespace bb
 {
 
-  vbo_t::vbo_t(vbo_t&& move)
+  vbo_t::vbo_t(vbo_t &&move) noexcept
   :self(move.self),type(move.type)
   {
     move.self = 0;
     move.type = 0;
   }
 
-  vbo_t& vbo_t::operator =(vbo_t&& move)
+  vbo_t &vbo_t::operator=(vbo_t &&move) noexcept
   {
     if (this == &move)
     {
@@ -135,12 +135,14 @@ namespace bb
 
   void vao_t::BindVBO(const vbo_t& vbo, GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, GLsizei offset)
   {
+    void *pOffset = reinterpret_cast<void*>(static_cast<uintptr_t>(offset));
+
     assert(this->self != 0);
     glBindVertexArray(this->self);
     glBindBuffer(GL_ARRAY_BUFFER, vbo.self);
-    glVertexAttribPointer(index, size, type, normalized, stride, reinterpret_cast<void*>(offset));
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glVertexAttribPointer(index, size, type, normalized, stride, pOffset);
     glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
   }
 
   void vao_t::BindIndecies(const vbo_t& vbo)

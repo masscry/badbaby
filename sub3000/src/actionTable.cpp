@@ -13,7 +13,8 @@ namespace sub3000
     { "action.logo",     sub3000::gameAction_t::logo     },
     { "action.authors",  sub3000::gameAction_t::authors  },
     { "action.exit",     sub3000::gameAction_t::exit     },
-    { "action.settings", sub3000::gameAction_t::settings }
+    { "action.settings", sub3000::gameAction_t::settings },
+    { "action.demo",     sub3000::gameAction_t::demo     }
   };
 
   const char* GetTextForAction(gameAction_t action)

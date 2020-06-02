@@ -64,7 +64,7 @@ namespace bb
       return mailbox_t::shared_t();
     }
 
-    auto result = std::shared_ptr<mailbox_t>(new mailbox_t(address));
+    auto result = std::make_shared<mailbox_t>(address);
     this->storage[address] = result;
     return result;
   }
@@ -118,5 +118,16 @@ namespace bb
     mailbox->Put(std::move(msg));
     return 0;
   }
+
+  postOffice_t::postOffice_t()
+  {
+    bb::Debug("%s", "Post Office Created");
+  }
+
+  postOffice_t::~postOffice_t()
+  {
+    bb::Debug("%s", "Post Office Deleted");
+  }
+
 
 } // namespace bb

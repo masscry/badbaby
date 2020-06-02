@@ -23,6 +23,7 @@ set_target_properties(${TEST_NAME} PROPERTIES
 
 endmacro(SETUP_TEST)
 
+SETUP_TEST(000hello)
 SETUP_TEST(001render)
 SETUP_TEST(002config)
 SETUP_TEST(003font)
@@ -34,3 +35,4 @@ SETUP_TEST(008script)
 SETUP_TEST(009field)
 SETUP_TEST(010bin)
 SETUP_TEST(011automata)
+SETUP_TEST(012deci)

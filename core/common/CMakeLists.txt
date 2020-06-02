@@ -11,6 +11,7 @@ set(COMMON_SOURCES
   src/image.cpp
   src/utf8.cpp
   src/thread.cpp
+  src/deci.cpp
 )
 
 if (BB_LINUX)

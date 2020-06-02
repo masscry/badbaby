@@ -32,8 +32,8 @@ namespace bb
 
   public:
 
-    vbo_t(vbo_t&&);
-    vbo_t& operator =(vbo_t&&);
+    vbo_t(vbo_t&&) noexcept;
+    vbo_t &operator=(vbo_t &&) noexcept;
 
     vbo_t();
     ~vbo_t();
