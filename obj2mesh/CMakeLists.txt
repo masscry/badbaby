@@ -16,5 +16,5 @@ target_link_libraries(obj2mesh
 
 set_target_properties(obj2mesh PROPERTIES
 	VS_DEBUGGER_WORKING_DIRECTORY
-		"${CMAKE_SOURCE_DIR}/runtime/painter"
+		"${CMAKE_SOURCE_DIR}/runtime/obj2mesh"
 )
