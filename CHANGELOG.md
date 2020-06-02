@@ -4,6 +4,39 @@ All notable changes to this project will be documented in this file
 
 ## [Unreleased]
 
+## [0.2.1] - 2020-06-02
+
+### Added
+ - common: decimal numbers class added (deci_t)
+ - render: floating point framebuffer support 
+ - sub3000:
+    * depth meter
+    * ballast control
+    * collisions
+    * time scale
+    * warning
+    * control visuals (rudder, engine, ballast)
+    * depth countor map
+    * 'infinity' scrolling map
+ - util: vector letters support
+ - actor: template to box data in messages
+ - painter: support for negative numbers and text
+
+### Changed
+ - painter: synchronize shader with one used in sub3000
+ - sub3000: fix blending issues across different scenes
+ - util: better lines and points, can be stored in single mesh.
+ - win32:
+     * warning fixes
+     * fix postOffice early deletion bug
+     * fix camera bug
+     * fix map read bug
+ - render: fix context multithreading issues with window title on Win32
+
+### Removed
+ - sub3000: status text
+
+
 ## [0.2.0] - 2020-05-21
 
 ### Added
@@ -96,7 +129,8 @@ All notable changes to this project will be documented in this file
 - tests: 000hello, 001render, 002config, 003font
 - documentation: README.md, CHANGELOG.md, plan.md, LICENSE.md
 
-[Unreleased]: https://github.com/masscry/badbaby/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/masscry/badbaby/compare/v0.2.1...develop
+[0.2.1]: https://github.com/masscry/badbaby/releases/tag/v0.2.1
 [0.2.0]: https://github.com/masscry/badbaby/releases/tag/v0.2.0
 [0.1.1]: https://github.com/masscry/badbaby/releases/tag/v0.1.1
 [0.1.0]: https://github.com/masscry/badbaby/releases/tag/v0.1.0

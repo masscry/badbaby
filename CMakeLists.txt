@@ -6,7 +6,7 @@ set(CMAKE_C_STANDARD 99)
 set(CMAKE_CXX_STANDARD 11)
 
 project(badbaby
-  VERSION 0.2.0
+  VERSION 0.2.1
   LANGUAGES C CXX
 )
 
