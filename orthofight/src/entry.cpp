@@ -133,9 +133,22 @@ int main(int argc, char* argv[])
     glm::vec3(0.0f, 0.0f, 1.0f)
   );
 
+  bb::mesh_t unit;
+
+  if(FILE* unitMesh = fopen("green.obj.msh", "rb"))
+  {
+    BB_DEFER(fclose(unitMesh));
+    unit = bb::GenerateMesh(bb::meshDesc_t::Load(unitMesh));
+  }
+
   auto worldShader = bb::shader_t::LoadProgramFromFiles(
     "world.vp.glsl",
     "world.fp.glsl"
+  );
+
+  auto unitShader = bb::shader_t::LoadProgramFromFiles(
+    "obj2mesh.vp.glsl",
+    "obj2mesh.fp.glsl"
   );
 
   auto world = bb::ext::MakeHMapUsingOctaves(
@@ -158,7 +171,7 @@ int main(int argc, char* argv[])
   while(context.Update())
   {
     camera.View() = glm::lookAt(
-      camPos + glm::vec3(0.5f, 0.5f, 0.5f),
+      camPos + glm::vec3(2.0f, 2.0f, 2.0f),
       camPos,
       glm::vec3(0.0f, 0.0f, 1.0f)
     );
@@ -166,14 +179,35 @@ int main(int argc, char* argv[])
     camera.Update();
 
     bb::framebuffer_t::Bind(context.Canvas());
+    glEnable(GL_DEPTH_TEST);
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
     bb::shader_t::Bind(worldShader);
     worldShader.SetBlock(
-      worldShader.UniformBlockIndex("camera"),
+      "camera",
       camera.UniformBlock()
     );
     plane.Render();
+
+    bb::shader_t::Bind(unitShader);
+    unitShader.SetBlock(
+      "camera",
+      camera.UniformBlock()
+    );
+
+    unitShader.SetMatrix(
+      "model",
+      glm::translate(
+        glm::rotate(
+          glm::mat4(1.0f),
+          glm::radians(90.0f),
+          glm::vec3(1.0f, 0.0f, 0.0f)
+        ),
+        glm::vec3(0.0f, 1.4f, 0.0f)
+      )
+    );
+
+    unit.Render();
 
     auto moveCam = glm::vec2{
       (context.IsKeyDown(GLFW_KEY_LEFT) - context.IsKeyDown(GLFW_KEY_RIGHT)),
