@@ -520,8 +520,8 @@ int main(int argc, char* argv[])
 
   if (FILE* meshFile = fopen((std::string(absPathPtr) + ".msh").c_str(), "wb"))
   {
+    BB_DEFER(fclose(meshFile));
     meshDesc.Save(meshFile);
-    fclose(meshFile);
   }
 
   auto mesh = bb::GenerateMesh(meshDesc);
