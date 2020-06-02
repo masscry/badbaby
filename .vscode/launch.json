@@ -265,6 +265,26 @@
       "preLaunchTask": "Build Painter (Debug)"
     },
     {
+      "name": "Launch obj2mesh (Debug)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/.debug/bin/obj2mesh",
+      "args": [ "./green.obj" ],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}/runtime/obj2mesh",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      "preLaunchTask": "Build obj2mesh (Debug)"
+    },
+    {
       "name": "Launch Submarine-3000 (Debug)",
       "type": "cppdbg",
       "request": "launch",
