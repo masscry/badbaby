@@ -347,28 +347,30 @@ namespace bb
   {
     std::unique_lock<std::mutex> lock(this->mutex);
     this->relativeCursor = enable;
-    if (this->relativeCursor)
-    {
-      glfwSetInputMode(this->wnd, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    }
-    else
-    {
-      glfwSetInputMode(this->wnd, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-    }
+
+    glfwSetInputMode(this->wnd, GLFW_CURSOR,
+      ((this->relativeCursor) && (this->insideWnd)) ?(GLFW_CURSOR_DISABLED):(GLFW_CURSOR_NORMAL)
+    );
   }
 
   void context_t::OnCursorEnter(GLFWwindow *wnd, int entered)
-  {
+  { // this function called is called when glfwPollEvents happens
+    // at that moment context mutex is already aquired by update thread
+    // so, no lock here
+
     context_t *self = reinterpret_cast<context_t *>(glfwGetWindowUserPointer(wnd));
-    self->insideWnd = (entered != 0);
-    if (self->relativeCursor)
-    {
-      glfwSetInputMode(self->wnd, GLFW_CURSOR, (self->insideWnd) ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
-    }
+    self->insideWnd = (entered != GLFW_FALSE);
+    
+    glfwSetInputMode(self->wnd, GLFW_CURSOR,
+      ((self->relativeCursor) && (self->insideWnd)) ?(GLFW_CURSOR_DISABLED):(GLFW_CURSOR_NORMAL)
+    );
   }
 
   void context_t::OnKey(GLFWwindow *window, int key, int /*scancode*/, int action, int /*mods*/)
-  {
+  { // this function called is called when glfwPollEvents happens
+    // at that moment context mutex is already aquired by update thread
+    // so, no lock here
+
     context_t *self = reinterpret_cast<context_t *>(glfwGetWindowUserPointer(window));
     for (auto actorPair : self->actorCallbackList)
     {
