@@ -96,7 +96,7 @@ namespace bb
       auto hmapMin = hmap.Min();
       auto hmapMax = hmap.Max();
 
-      auto hmapStep = (hmapMax - hmapMin)/(depth-1);
+      auto hmapStep = (hmapMax - hmapMin)/static_cast<float>(depth-1);
 
       bb::Debug("Height Map Step: %f", hmapStep);
 
@@ -123,7 +123,7 @@ namespace bb
           auto height = this->hmap.Data(x, y);
           for (size_t z = 0; z < this->Depth(); ++z)
           {
-            auto hbias = fabsf(z*hmapStep - height);
+            auto hbias = fabsf(static_cast<float>(z)*hmapStep - height);
 
             this->Data(x, y, z) = hbias;
             mapOfDistance.emplace(
@@ -185,9 +185,9 @@ namespace bb
     }
 
     distanceMap_t::distanceMap_t(glm::ivec3 dim)
-    : width(dim.x & 0xFFFF),
-      height(dim.y & 0xFFFF),
-      depth(dim.z & 0xFFFF)
+    : width(static_cast<uint16_t>(dim.x & 0xFFFF)),
+      height(static_cast<uint16_t>(dim.y & 0xFFFF)),
+      depth(static_cast<uint16_t>(dim.z & 0xFFFF))
     {
       assert(this->width * this->height * this->depth != 0);
       if (this->width * this->height * this->depth != 0)
@@ -386,7 +386,7 @@ namespace bb
     {
       if (this->hmap.IsGood())
       {
-        return pos.z - this->hmap.Sample(pos.x, pos.y)*(this->Depth()-1);
+        return pos.z - this->hmap.Sample(pos.x, pos.y)*(static_cast<float>(this->Depth()-1));
       }
       else
       {
