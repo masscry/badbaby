@@ -1,4 +1,5 @@
 #include <common.hpp>
+#include <print.hpp>
 #include <context.hpp>
 
 #include <shapes.hpp>
@@ -22,11 +23,6 @@ public:
   {
     auto finish = glfwGetTime();
     auto delta = finish - this->start;
-
-    bb::context_t::Instance().Title(
-      std::to_string(delta)
-    );
-
     this->start = finish;
     return delta;
   }
@@ -119,8 +115,8 @@ int main(int argc, char* argv[])
   auto scrDims = context.Dimensions()/500.0f;
 
   auto camera = bb::camera_t::Orthogonal(
-    -scrDims.x, scrDims.x,
-    -scrDims.y, scrDims.y
+    -scrDims.x/2.0f, scrDims.x/2.0f,
+    -scrDims.y/2.0f, scrDims.y/2.0f
   );
 
   auto camPos = glm::vec3(
@@ -128,10 +124,12 @@ int main(int argc, char* argv[])
   );
 
   camera.View() = glm::lookAt(
-    camPos + glm::vec3(0.5f, 0.5f, 0.5f),
+    camPos + glm::vec3(2.0f, 2.0f, 2.0f),
     camPos,
     glm::vec3(0.0f, 0.0f, 1.0f)
   );
+
+  camera.Update();
 
   bb::mesh_t unit;
 
@@ -168,15 +166,12 @@ int main(int argc, char* argv[])
   auto plane = Plane(world);
 
   frameTimer_t frameTimer;
+
+  auto unitPos = glm::vec3(0.0f);
+
   while(context.Update())
   {
-    camera.View() = glm::lookAt(
-      camPos + glm::vec3(2.0f, 2.0f, 2.0f),
-      camPos,
-      glm::vec3(0.0f, 0.0f, 1.0f)
-    );
-
-    camera.Update();
+    auto deltaTime = frameTimer.Delta();
 
     bb::framebuffer_t::Bind(context.Canvas());
     glEnable(GL_DEPTH_TEST);
@@ -189,6 +184,33 @@ int main(int argc, char* argv[])
     );
     plane.Render();
 
+    if (context.IsCursorInside())
+    {
+      auto curPos = context.MousePos();
+      float pixValue;
+      glReadPixels(
+        static_cast<int>(curPos.x),
+        static_cast<int>(context.Height() - curPos.y), 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &pixValue
+      );
+
+      auto worldPos = glm::unProject(
+        glm::vec3(curPos.x, context.Height() - curPos.y, pixValue),
+        camera.View(),
+        camera.Projection(),
+        glm::vec4(0.0f, 0.0f, context.Width(), context.Height())
+      );
+
+      context.Title(
+        bb::Print(
+          '[', worldPos.x, ',', worldPos.y, ',', worldPos.z, ']'
+        )
+      );
+
+      unitPos.x = worldPos.x;
+      unitPos.y = worldPos.y;
+      unitPos.z = worldPos.z;
+    }
+
     bb::shader_t::Bind(unitShader);
     unitShader.SetBlock(
       "camera",
@@ -197,13 +219,20 @@ int main(int argc, char* argv[])
 
     unitShader.SetMatrix(
       "model",
-      glm::translate(
+      glm::scale(
         glm::rotate(
-          glm::mat4(1.0f),
-          glm::radians(90.0f),
-          glm::vec3(1.0f, 0.0f, 0.0f)
+          glm::rotate(
+            glm::translate(
+              glm::mat4(1.0f),
+              unitPos
+            ),
+            glm::radians(90.0f),
+            glm::vec3(1.0f, 0.0f, 0.0f)
+          ),
+          glm::radians(135.0f),
+          glm::vec3(0.0f, 1.0f, 0.0f)
         ),
-        glm::vec3(0.0f, 1.4f, 0.0f)
+        glm::vec3(0.5f)
       )
     );
 
@@ -214,15 +243,26 @@ int main(int argc, char* argv[])
       (context.IsKeyDown(GLFW_KEY_DOWN) - context.IsKeyDown(GLFW_KEY_UP))
     };
 
-    auto v = bb::Dir(glm::radians(45.0f));
+    if (glm::length(moveCam) != 0.0f)
+    {
+      auto v = bb::Dir(glm::radians(45.0f));
 
-    moveCam = glm::mat2(
-      v.y, -v.x,
-      v.x,  v.y
-    ) * moveCam;
+      moveCam = glm::mat2(
+        v.y, -v.x,
+        v.x,  v.y
+      ) * moveCam;
 
-    moveCam *= frameTimer.Delta()*10.0f;
-    camPos += glm::vec3(moveCam, 0.0f);
+      moveCam *= deltaTime*10.0f;
+      camPos += glm::vec3(moveCam, 0.0f);
+
+      camera.View() = glm::lookAt(
+        camPos + glm::vec3(2.0f, 2.0f, 2.0f),
+        camPos,
+        glm::vec3(0.0f, 0.0f, 1.0f)
+      );
+
+      camera.Update();
+    }
   }
   return 0;
 }
