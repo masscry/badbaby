@@ -45,6 +45,8 @@ namespace bb
       return this->tex;
     }
 
+    void BlitToScreen();
+
     framebuffer_t(framebuffer_t&&) noexcept;
     framebuffer_t &operator=(framebuffer_t &&) noexcept;
 

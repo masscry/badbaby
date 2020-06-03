@@ -48,8 +48,12 @@ namespace bb
     int                 width;
     int                 height;
     framebuffer_t       canvas;
+
+#ifdef BB_FB_BLIT_DISABLE
     shader_t            shader;
     vao_t               vao;
+#endif
+
     actorCallbackList_t actorCallbackList;
     bool                insideWnd;
     bool                relativeCursor;
