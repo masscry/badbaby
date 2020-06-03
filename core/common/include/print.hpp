@@ -1,7 +1,7 @@
 /**
  * @file print.hpp
  * 
- * Simple std::to_string wrapper for short string formatting in Pascal style
+ * Simple wrapper for short string formatting in Pascal/Python style
  */
 
 #pragma once
