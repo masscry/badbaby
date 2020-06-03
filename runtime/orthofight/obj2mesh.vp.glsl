@@ -20,5 +20,5 @@ void main()
 {
   fragCol = vCol;
   fragNormal = vec3(view * vec4(vNorm, 0.0f));
-  gl_Position = proj * view * model * vec4(vPos, 1.0f);
+  gl_Position = proj * view * model * vec4(vPos*0.5f, 1.0f);
 }
