@@ -8,14 +8,14 @@
 #include <limits>
 #include <cinttypes>
 
-#include <glm/glm.hpp>
-
 namespace bb
 {
 
-  void mesh_t::Render()
+  void mesh_t::SpecialRender(size_t renderVertecies)
   {
     bb::vao_t::Bind(this->vao);
+
+    renderVertecies = glm::min(renderVertecies, this->TotalVertecies());
 
     if (this->flags.BREAK != 0)
     {
@@ -29,7 +29,7 @@ namespace bb
     }
     glDrawElements(
       this->drawMode,
-      static_cast<GLsizei>(this->totalVerts),
+      static_cast<GLsizei>(renderVertecies),
       GL_UNSIGNED_SHORT,
       nullptr
     );
@@ -42,6 +42,12 @@ namespace bb
     {
       glDisable(GL_PRIMITIVE_RESTART);
     }
+  }
+
+
+  void mesh_t::Render()
+  {
+    this->SpecialRender(this->TotalVertecies());
   }
 
   mesh_t::mesh_t()

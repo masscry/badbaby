@@ -1,7 +1,5 @@
 #include <splash.hpp>
 
-#include <glm/glm.hpp>
-
 #include <config.hpp>
 
 namespace

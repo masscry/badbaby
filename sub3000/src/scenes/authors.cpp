@@ -1,7 +1,5 @@
 #include <authors.hpp>
 
-#include <glm/glm.hpp>
-
 #include <config.hpp>
 
 #include <actor.hpp>
