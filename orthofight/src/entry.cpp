@@ -1,37 +1,13 @@
 #include <common.hpp>
 #include <print.hpp>
 #include <context.hpp>
+#include <frameTimer.hpp>
 
 #include <shapes.hpp>
 #include <meshDesc.hpp>
 #include <camera.hpp>
 #include <shader.hpp>
 #include <mapGen.hpp>
-
-class frameTimer_t
-{
-  double start;
-
-public:
-  frameTimer_t()
-  : start(glfwGetTime())
-  {
-    ;
-  }
-
-  double Delta()
-  {
-    auto finish = glfwGetTime();
-    auto delta = finish - this->start;
-    this->start = finish;
-    return delta;
-  }
-
-  ~frameTimer_t()
-  {
-    ;
-  }
-};
 
 bb::mesh_t Plane(const bb::ext::heightMap_t& hmap)
 {
@@ -112,19 +88,25 @@ int main(int argc, char* argv[])
 
   auto& context = bb::context_t::Instance();
 
+#ifdef __USE_ORTHO_CAM__
+
   auto scrDims = context.Dimensions()/500.0f;
-/*
+
   auto camera = bb::camera_t::Orthogonal(
     -scrDims.x/2.0f, scrDims.x/2.0f,
     -scrDims.y/2.0f, scrDims.y/2.0f
   );
-*/
+
+#else
+
   auto camera = bb::camera_t::Perspective(
     45.0f,
     context.AspectRatio(),
     0.1f,
     1000.0f
   );
+
+#endif
 
   auto camPos = glm::vec3(
     12.7f, 12.7f, 0.0f
@@ -172,7 +154,7 @@ int main(int argc, char* argv[])
 
   auto plane = Plane(world);
 
-  frameTimer_t frameTimer;
+  bb::frameTimer_t frameTimer;
 
   auto unitPos = glm::vec3(0.0f);
 
