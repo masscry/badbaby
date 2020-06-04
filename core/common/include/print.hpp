@@ -17,11 +17,6 @@ namespace bb
   {
     std::string str;
 
-    void Prepare(std::stringstream&)
-    {
-      ;
-    }
-
     template<typename... args_t>
     void Prepare(std::stringstream& ss, args_t&& ... args);
 
