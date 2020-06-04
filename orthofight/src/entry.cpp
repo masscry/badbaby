@@ -58,7 +58,7 @@ bb::mesh_t Plane(const bb::ext::heightMap_t& hmap)
         glm::vec3{
           static_cast<float>(x)/10.0f,
           static_cast<float>(y)/10.0f, 
-          hmap.Data(x, y)*2.0f
+          roundf(hmap.Data(x, y)*4.0f)/4.0f*2.0f
         }
       );
       vcol.emplace_back(
@@ -113,14 +113,21 @@ int main(int argc, char* argv[])
   auto& context = bb::context_t::Instance();
 
   auto scrDims = context.Dimensions()/500.0f;
-
+/*
   auto camera = bb::camera_t::Orthogonal(
     -scrDims.x/2.0f, scrDims.x/2.0f,
     -scrDims.y/2.0f, scrDims.y/2.0f
   );
+*/
+  auto camera = bb::camera_t::Perspective(
+    45.0f,
+    context.AspectRatio(),
+    0.1f,
+    1000.0f
+  );
 
   auto camPos = glm::vec3(
-    0.0f, 0.0f, 0.0f
+    12.7f, 12.7f, 0.0f
   );
 
   camera.View() = glm::lookAt(
