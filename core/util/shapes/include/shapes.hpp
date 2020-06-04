@@ -39,9 +39,13 @@ namespace bb
 
   public:
 
+    size_t TotalVertecies() const;
+
     void Breaking(bool enable, uint32_t index);
 
     bool Good() const;
+
+    void SpecialRender(size_t renderVertecies);
 
     void Render();
 
@@ -53,6 +57,11 @@ namespace bb
     mesh_t& operator=(mesh_t&&) = default;
     ~mesh_t() = default;
   };
+
+  inline size_t mesh_t::TotalVertecies() const
+  {
+    return this->totalVerts;
+  }
 
   inline bool mesh_t::Good() const
   {

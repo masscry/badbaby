@@ -285,6 +285,25 @@
       "preLaunchTask": "Build obj2mesh (Debug)"
     },
     {
+      "name": "Launch cqc (Debug)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/.debug/bin/cqc",
+      "args": [ "./green.obj" ],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}/runtime/cqc",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      "preLaunchTask": "Build cqc (Debug)"
+    },    {
       "name": "Launch Submarine-3000 (Debug)",
       "type": "cppdbg",
       "request": "launch",

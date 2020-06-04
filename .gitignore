@@ -20,3 +20,4 @@ runtime/tests/test.bbf
 runtime/orthofight/*.log
 runtime/sub3000/ship.txt
 runtime/obj2mesh/*.log
+runtime/cqc/*.log

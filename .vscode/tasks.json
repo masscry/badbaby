@@ -34,6 +34,15 @@
       "group": "build"
     },
     {
+      "label": "Build cqc (Debug)",
+      "type": "shell",
+      "command": "cmake --build ${workspaceFolder}/.debug --target cqc -- -j4",
+      "windows": {
+        "command": "cmake --build ${workspaceFolder}\\.debug -j4"
+      },
+      "group": "build"
+    },
+    {
       "label": "Build All (Release)",
       "type": "shell",
       "command": "cmake --build ${workspaceFolder}/.release --clean-first -- -j4",
