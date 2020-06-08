@@ -21,7 +21,7 @@ namespace sub3000
         0.0f, this->mapDims.x, this->mapDims.y, 0.0f
       );
 
-      this->fb = bb::framebuffer_t(512, 512);
+      this->fb = bb::framebuffer_t(1024, 1024);
       this->box = bb::postOffice_t::Instance().New("arenaStatus");
 
       this->mapShader = bb::shader_t::LoadProgramFromFiles(
