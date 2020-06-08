@@ -14,7 +14,6 @@
                 "${workspaceFolder}/.debug/core/render/contrib/GLAD/include",
                 "${workspaceFolder}/.debug/core/render/contrib/.pyenv/include",
                 "${workspaceFolder}/extra/binstore/include",
-                "${workspaceFolder}/extra/ship/include",
                 "${workspaceFolder}/extra/mapgen/include",
                 "${workspaceFolder}/core/actor/include",
                 "${workspaceFolder}/core/config/include",
