@@ -19,23 +19,23 @@ int main(int argc, char* argv[])
   );
 
   auto title = bb::GenerateMesh(
-    bb::DefineNumber(glm::vec3(0.2f, 0.2f, 0.0f), 0.15f, glm::vec2(1.0f), "Close-Quarters Combat")
+    bb::DefineNumber(glm::vec3(0.2f, 0.2f, 0.0f), 0.15f, glm::vec2(1.0f), "Ближний Бой")
   );
 
   auto menu = bb::GenerateMesh(
-    bb::DefineNumber(glm::vec3(5.0f, 10.0f, 0.0f), 0.15f, glm::vec2(1.0f), "Menu")
+    bb::DefineNumber(glm::vec3(5.0f, 10.0f, 0.0f), 0.15f, glm::vec2(1.0f), "Меню")
   );
 
   auto newGame = bb::GenerateMesh(
-    bb::DefineNumber(glm::vec3(5.0f, 13.0f, 0.0f), 0.15f, glm::vec2(1.0f), "New Game")
+    bb::DefineNumber(glm::vec3(5.0f, 13.0f, 0.0f), 0.15f, glm::vec2(1.0f), "Новая Игра")
   );
 
   auto loadGame = bb::GenerateMesh(
-    bb::DefineNumber(glm::vec3(5.0f, 15.0f, 0.0f), 0.15f, glm::vec2(1.0f), "Load Game")
+    bb::DefineNumber(glm::vec3(5.0f, 15.0f, 0.0f), 0.15f, glm::vec2(1.0f), "Загрузить")
   );
 
   auto exitGame = bb::GenerateMesh(
-    bb::DefineNumber(glm::vec3(5.0f, 17.0f, 0.0f), 0.15f, glm::vec2(1.0f), "Exit")
+    bb::DefineNumber(glm::vec3(5.0f, 17.0f, 0.0f), 0.15f, glm::vec2(1.0f), "Выход")
   );
 
   auto aspect = context.AspectRatio();
