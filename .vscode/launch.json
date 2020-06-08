@@ -249,7 +249,7 @@
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/.debug/bin/painter",
-      "args": [ "./test.pvf" ],
+      "args": [ "./alphabet.pvf" ],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}/runtime/painter",
       "environment": [],
