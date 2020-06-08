@@ -138,6 +138,11 @@ namespace bb
       return ((symbol >= 0x0430) && (symbol <= 0x045F));
     }
 
+    if (symbol == U'№')
+    {
+      return false;
+    }
+
     assert(0);
     return false;
   }
@@ -152,6 +157,11 @@ namespace bb
     if ((symbol >= 0x0400) && (symbol <= 0x04FF))
     { // from U'Ѐ' to U'Я'
       return ((symbol >= 0x0400) && (symbol <= 0x042F));
+    }
+
+    if (symbol == U'№')
+    {
+      return false;
     }
 
     assert(0);

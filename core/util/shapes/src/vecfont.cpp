@@ -123,11 +123,16 @@ namespace
     { 0.25f, 0.75f }
   };
 
-  const glm::vec2 tUnderscore[] = {
+  const glm::vec2 tUndef[] = {
     { 0.0f, 0.75f },
     { 0.0f, 1.0f },
     { 0.5f, 1.0f },
     { 0.5f, 0.75f },
+  };
+
+  const glm::vec2 tUnderscore[] = {
+    { 0.0f, 1.0f },
+    { 0.5f, 1.0f }
   };
 
   const glm::vec2 tLetA[] = {
@@ -349,6 +354,22 @@ namespace
     { 0.50f, 0.00f }
   };
 
+  const glm::vec2 tNumero[] = {
+    { 0.00f, 1.00f },
+    { 0.00f, 0.00f },
+    { 0.20f, 1.00f },
+    { 0.20f, 0.00f },
+    BreakPoint,
+    { 0.30f, 1.00f },
+    { 0.50f, 1.00f },
+    BreakPoint,
+    { 0.30f, 0.80f },
+    { 0.50f, 0.80f },
+    { 0.50f, 0.50f },
+    { 0.30f, 0.50f },
+    { 0.30f, 0.80f },
+  };
+
   const glm::vec2 tLetCyrI[] = {
     { 0.00f, 0.00f },
     { 0.00f, 1.00f },
@@ -538,6 +559,12 @@ namespace
     { 0.50f, 0.00f }
   };
 
+  const glm::vec2 tPower[] = {
+    { 0.00f, 0.20f },
+    { 0.25f, 0.00f },
+    { 0.50f, 0.20f }
+  };
+
   const glm::vec2 tLetW[] = {
     { 0.00f, 0.00f },
     { 0.15f, 1.00f },
@@ -670,6 +697,18 @@ namespace
     { 0.10f, 1.00f }
   };
 
+  const glm::vec2 tLess[] = {
+    { 0.40f, 0.25f },
+    { 0.10f, 0.50f },
+    { 0.40f, 0.75f }
+  };
+
+  const glm::vec2 tGreater[] = {
+    { 0.10f, 0.25f },
+    { 0.40f, 0.50f },
+    { 0.10f, 0.75f }
+  };
+
   const glm::vec2 tSlash[] = {
     { 0.5f, 0.0f },
     { 0.0f, 1.0f },
@@ -723,6 +762,52 @@ namespace
     BreakPoint,
     { 0.45f, 0.2f },
     { 0.45f, 0.4f },
+  };
+
+  const glm::vec2 tPercent[] = {
+    { 0.5f, 0.0f },
+    { 0.0f, 1.0f },
+    BreakPoint,
+    { 0.0f, 0.0f },
+    { 0.0f, 0.3f },
+    BreakPoint,
+    { 0.5f, 0.7f },
+    { 0.5f, 1.0f },
+  };
+
+  const glm::vec2 tStar[] = {
+    {  0.25f, 0.75f},
+    {  0.25f, 0.25f},
+    BreakPoint,
+    {  0.00f, 0.67f},
+    {  0.50f, 0.33f},
+    BreakPoint,
+    {  0.00f, 0.33f},
+    {  0.50f, 0.67f}
+  };
+
+  const glm::vec2 tAt[] = {
+    { 0.35f, 0.80f },
+    { 0.35f, 0.30f },
+    { 0.10f, 0.30f },
+    { 0.10f, 0.80f },
+    { 0.50f, 0.80f },
+    { 0.50f, 0.00f },
+    { 0.00f, 0.00f },
+    { 0.00f, 1.00f },
+    { 0.50f, 1.00f }
+  };
+
+  const glm::vec2 tAmpersand[] = {
+    { 0.50f, 0.20f },
+    { 0.40f, 0.00f },
+    { 0.10f, 0.10f },
+    { 0.50f, 1.00f },
+    BreakPoint,
+    { 0.50f, 0.70f },
+    { 0.25f, 1.00f },
+    { 0.00f, 0.70f },
+    { 0.20f, 0.40f },
   };
 
   struct symbol_t
@@ -889,11 +974,19 @@ namespace
     SYMBOL(U'\'', tQuote),
     SYMBOL(U'\"', tDoubleQuote),
     SYMBOL(U'$', tDollar),
+    SYMBOL(U'^', tPower),
+    SYMBOL(U'%', tPercent),
+    SYMBOL(U'*', tStar),
+    SYMBOL(U'@', tAt),
+    SYMBOL(U'&', tAmpersand),
+    SYMBOL(U'<', tLess),
+    SYMBOL(U'>', tGreater),
+    SYMBOL(U'№', tNumero),
   };
 
   symbol_t dummy = {
-    tUnderscore,
-    bb::countof(tUnderscore)
+    tUndef,
+    bb::countof(tUndef)
   };
 
 } // namespace
