@@ -885,7 +885,7 @@ namespace
     SYMBOL(U'~', tTilde),
     SYMBOL(U'=', tEqual),
     SYMBOL(U'+', tPlus),
-    SYMBOL(U'A', tLetA),
+    SYMBOL(U'А', tLetA),
     SYMBOL(U'а', tLetA),
     SYMBOL(U'Б', tLetCyrB),
     SYMBOL(U'б', tLetCyrB),
