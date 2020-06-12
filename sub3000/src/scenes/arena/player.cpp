@@ -16,6 +16,8 @@
 
 #include <mapGen.hpp>
 
+#include <arena.hpp>
+
 namespace sub3000
 {
   
@@ -243,11 +245,33 @@ namespace sub3000
 
         float expectedOutput = data->engineModeList.Output(data->engine);
 
+        auto oldEngineOutput = data->engineOutput;
+
         data->engineOutput += glm::clamp(
           expectedOutput - data->engineOutput,
           -data->maxOutputChange,
           +data->maxOutputChange
         )*dt;
+
+        if ((fabsf(data->engineOutput) >= 0.01f) && (fabsf(oldEngineOutput) < 0.01f))
+        {
+          bb::postOffice_t::Instance().Post(
+            "arenaBox", 
+            bb::Issue<bb::msg::dataMsg_t<sub3000::sounds_t>>(
+              sub3000::sounds_t::engine_on, -1
+            )
+          );
+        }
+
+        if ((fabsf(data->engineOutput) < 0.01f) && (fabsf(oldEngineOutput) >= 0.01f) && (data->engine == engine::stop))
+        {
+          bb::postOffice_t::Instance().Post(
+            "arenaBox", 
+            bb::Issue<bb::msg::dataMsg_t<sub3000::sounds_t>>(
+              sub3000::sounds_t::engine_off, -1
+            )
+          );
+        }
 
         float expectedRudder = rudder::Output(data->rudder);
 
@@ -289,34 +313,65 @@ namespace sub3000
       if (key.Key() == GLFW_KEY_F3)
       {
         data->radar = radar::front90;
+        bb::postOffice_t::Instance().Post(
+          "arenaBox", 
+          bb::Issue<bb::msg::dataMsg_t<sub3000::sounds_t>>(
+            sub3000::sounds_t::button, -1
+          )
+        );
       }
+
       if (key.Key() == GLFW_KEY_F4)
       {
         data->radar = radar::radius360;
         data->radarAngleDelta = bb::deci_t(1);
+        bb::postOffice_t::Instance().Post(
+          "arenaBox", 
+          bb::Issue<bb::msg::dataMsg_t<sub3000::sounds_t>>(
+            sub3000::sounds_t::button, -1
+          )
+        );
       }
 
       if (data->clip == false)
       {
         int control = (key.Key() == GLFW_KEY_DOWN) - (key.Key() == GLFW_KEY_UP);
         int newOutput = control + data->engine;
-        if ((newOutput >= engine::full_ahead) && (newOutput <= engine::full_astern))
+        if ((newOutput >= engine::full_ahead) && (newOutput <= engine::full_astern) && (newOutput != data->engine))
         {
+          bb::postOffice_t::Instance().Post(
+            "arenaBox", 
+            bb::Issue<bb::msg::dataMsg_t<sub3000::sounds_t>>(
+              sub3000::sounds_t::button, -1
+            )
+          );
           data->engine = static_cast<engine::mode_t>(newOutput);
         }
 
         int rotate = (key.Key() == GLFW_KEY_RIGHT) - (key.Key() == GLFW_KEY_LEFT);
         int newRudder = rotate + data->rudder;
-        if ((newRudder >= rudder::left_40) && (newRudder <= rudder::right_40))
+        if ((newRudder >= rudder::left_40) && (newRudder <= rudder::right_40) && (newRudder != data->rudder))
         {
           data->rudder = static_cast<rudder::mode_t>(newRudder);
+          bb::postOffice_t::Instance().Post(
+            "arenaBox", 
+            bb::Issue<bb::msg::dataMsg_t<sub3000::sounds_t>>(
+              sub3000::sounds_t::button, -1
+            )
+          );
         }
 
         int bal = (key.Key() == GLFW_KEY_KP_ADD) - (key.Key() == GLFW_KEY_KP_SUBTRACT);
         int newBal = bal + data->ballast;
-        if ((newBal >= ballast::blow) && (newBal <= ballast::pump))
+        if ((newBal >= ballast::blow) && (newBal <= ballast::pump) && (newBal != data->ballast))
         {
           data->ballast = static_cast<ballast::mode_t>(newBal);
+          bb::postOffice_t::Instance().Post(
+            "arenaBox", 
+            bb::Issue<bb::msg::dataMsg_t<sub3000::sounds_t>>(
+              sub3000::sounds_t::button, -1
+            )
+          );
         }
       }
       return 1;

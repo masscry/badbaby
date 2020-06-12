@@ -208,6 +208,9 @@ namespace sub3000
     {
       if (auto selectedLine = bb::As<sub3000::selectLine_t>(msg))
       {
+        bb::sound_t::Instance().Play(
+          this->beep
+        );
         this->selectedMenuLine = selectedLine->Line();
         continue;
       }
@@ -296,11 +299,16 @@ namespace sub3000
     this->textLines = this->LoadMenuLines(menuConfig, "menu.text");
     this->msgLines  = this->LoadMenuLines(menuConfig, "menu.msg");
     this->gameInfo  = menuConfig["game.info"].String();
+
+    this->beep = bb::sound_t::Instance().CreateSample(
+      menuConfig.Value("beep", "menubeep.wav").c_str(), 3, false
+    );
+
   }
 
   mainMenuScene_t::~mainMenuScene_t()
   {
-
+    ;
   }
 
 } // namespace sub3000

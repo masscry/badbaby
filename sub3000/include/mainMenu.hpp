@@ -20,6 +20,7 @@
 #include <actor.hpp>
 #include <role.hpp>
 #include <mailbox.hpp>
+#include <sound.hpp>
 
 #include <sub3000.hpp>
 
@@ -98,6 +99,8 @@ namespace sub3000
 
     bb::textStatic_t gameInfoText;
     bb::node_t       gameInfoNode;
+
+    bb::sound_t::sample_t beep;
 
     void OnPrepare() override;
     void OnUpdate(double delta) override;
