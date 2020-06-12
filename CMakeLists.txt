@@ -73,6 +73,7 @@ set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib")
 
 add_subdirectory(core)
 add_subdirectory(extra)
+add_subdirectory(sound)
 add_subdirectory(tests)
 add_subdirectory(sub3000)
 add_subdirectory(painter)
