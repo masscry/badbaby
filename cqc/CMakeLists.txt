@@ -28,8 +28,3 @@ set_target_properties(cqc PROPERTIES
 	VS_DEBUGGER_WORKING_DIRECTORY
 		"${CMAKE_SOURCE_DIR}/runtime/cqc"
 )
-
-install(TARGETS cqc
-  RUNTIME DESTINATION bin
-  CONFIGURATIONS Release
-)
