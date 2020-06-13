@@ -361,7 +361,8 @@ namespace sub3000
           );
         }
 
-        int bal = (key.Key() == GLFW_KEY_KP_ADD) - (key.Key() == GLFW_KEY_KP_SUBTRACT);
+        int bal = ((key.Key() == GLFW_KEY_KP_ADD) || (key.Key() == GLFW_KEY_EQUAL)) - ((key.Key() == GLFW_KEY_KP_SUBTRACT) || (key.Key() == GLFW_KEY_MINUS));
+
         int newBal = bal + data->ballast;
         if ((newBal >= ballast::blow) && (newBal <= ballast::pump) && (newBal != data->ballast))
         {

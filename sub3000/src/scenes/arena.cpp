@@ -42,6 +42,9 @@ namespace sub3000
     bb::config_t menuConfig;
     menuConfig.Load("./arena.config");
 
+    auto streamVolume = static_cast<float>(menuConfig.Value("sound.stream.volume", 0.2));
+    auto sampleVolume = static_cast<float>(menuConfig.Value("sound.sample.volume", 0.3));
+
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
@@ -50,33 +53,24 @@ namespace sub3000
       menuConfig.Value("sound.ambient", "audio.ogg").c_str(),
       true
     );
-
-    this->humming = bb::sound_t::Instance().CreateSample(
-      menuConfig.Value("sound.humming", "hum.wav").c_str(),
-      1, true
-    );
+    this->music.SetVolume(streamVolume);
 
     this->engine = bb::sound_t::Instance().CreateSample(
       menuConfig.Value("sound.engine", "engine.wav").c_str(),
       1, true
     );
+    this->engine.SetVolume(sampleVolume);
 
     this->button = bb::sound_t::Instance().CreateSample(
       menuConfig.Value("sound.button", "button.wav").c_str(),
       5, false
     );
+    this->button.SetVolume(sampleVolume);
 
     if (this->music.IsGood())
     {
       bb::sound_t::Instance().Play(
         this->music
-      );
-    }
-
-    if (this->humming.IsGood())
-    {
-      bb::sound_t::Instance().Play(
-        this->humming
       );
     }
 
@@ -215,10 +209,6 @@ namespace sub3000
 
     bb::sound_t::Instance().Stop(
       this->button
-    );
-
-    bb::sound_t::Instance().Stop(
-      this->humming
     );
 
     bb::sound_t::Instance().Stop(

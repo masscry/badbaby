@@ -37,7 +37,6 @@ namespace sub3000
     bb::mailbox_t::shared_t box;
 
     bb::sound_t::stream_t music;
-    bb::sound_t::sample_t humming;
     bb::sound_t::sample_t engine;
     bb::sound_t::sample_t button;
 

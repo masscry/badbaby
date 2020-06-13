@@ -59,6 +59,8 @@ namespace sub3000
 
       bool mayCollide;
 
+      std::string warningText;
+
       screen_t(const screen_t&) = delete;
       screen_t& operator=(const screen_t&) = delete;
 

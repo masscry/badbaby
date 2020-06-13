@@ -303,6 +303,7 @@ namespace sub3000
     this->beep = bb::sound_t::Instance().CreateSample(
       menuConfig.Value("beep", "menubeep.wav").c_str(), 3, false
     );
+    this->beep.SetVolume(0.05f);
 
   }
 
