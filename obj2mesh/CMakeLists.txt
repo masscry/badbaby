@@ -1,8 +1,23 @@
 project(obj2mesh)
 
-add_executable(obj2mesh
-# Sources
+set (OBJ2MESH_SOURCES
   src/obj2mesh.cpp
+)
+
+if(WIN32)
+set(OBJ2MESH_PLATFORM_SOURCES
+  include/getline.hpp
+  src/getline.cpp
+)
+endif(WIN32)
+
+add_executable(obj2mesh
+  ${OBJ2MESH_SOURCES}
+  ${OBJ2MESH_PLATFORM_SOURCES}
+)
+
+target_include_directories(obj2mesh PRIVATE
+  include
 )
 
 target_link_libraries(obj2mesh

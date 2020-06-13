@@ -10,6 +10,23 @@
 #include <vector>
 #include <string>
 
+#ifdef _WIN32
+
+#include <getline.hpp>
+
+#include <cstdlib>
+#include <basetsd.h>
+
+char* realpath(const char* path, char* abs_path)
+{
+  return _fullpath(abs_path, path, 0);
+}
+
+using ssize_t = SSIZE_T;
+
+#endif
+
+
 using mtlLib_t = std::unordered_map<std::string, glm::vec3>;
 using vPos_t = std::vector<glm::vec3>;
 using vInd_t = std::vector<uint16_t>;
