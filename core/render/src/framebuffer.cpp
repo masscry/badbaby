@@ -13,6 +13,13 @@ namespace bb
     move.height = 0;
   }
 
+  void framebuffer_t::BlitToScreen()
+  {
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, this->self);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+    glBlitFramebuffer(0, 0, this->width, this->height, 0, 0, this->width, this->height, GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+  }
+
   framebuffer_t &framebuffer_t::operator=(framebuffer_t &&move) noexcept
   {
     if (this == &move)

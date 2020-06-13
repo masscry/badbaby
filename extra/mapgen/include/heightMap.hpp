@@ -139,7 +139,7 @@ namespace bb
 
     inline bool heightMap_t::IsGood() const
     {
-      return ((this->width * this->height) && (this->data));
+      return (((this->width * this->height) != 0) && (this->data));
     }
 
   } // namespace ext

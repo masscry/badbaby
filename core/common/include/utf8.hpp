@@ -39,6 +39,12 @@ namespace bb
 
   size_t utf8len(const char* str);
 
+  bool IsSpace(wint_t symbol);
+
+  bool IsLower(wint_t symbol);
+
+  bool IsUpper(wint_t symbol);
+
 } // namespace bb
 
 #endif /* __BB_CORE_COMMON_UTF8_HEADER__ */

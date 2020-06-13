@@ -21,6 +21,8 @@ extern "C"
 
 namespace
 {
+
+#ifdef BB_FB_BLIT_DISABLE
   const char *vShader = R"shader(
     #version 330 core
 
@@ -86,6 +88,7 @@ namespace
     0.0f,
     1.0f,
   };
+#endif
 
   const char *ErrorTypeToString(GLenum type)
   {
@@ -170,7 +173,7 @@ namespace bb
 {
 
   context_t::context_t()
-      : wnd(nullptr), width(800), height(600), canvas(), insideWnd(false), relativeCursor(false), hasNewTitle(false)
+      : wnd(nullptr), width(800), height(600), insideWnd(false), relativeCursor(false), hasNewTitle(false)
   {
     if (glfwInit() == GLFW_FALSE)
     {
@@ -264,6 +267,8 @@ namespace bb
       glGetString(GL_SHADING_LANGUAGE_VERSION));
 
     this->canvas = framebuffer_t(this->width, this->height);
+
+#ifdef BB_FB_BLIT_DISABLE
     this->shader = shader_t(vShader, fShader);
 
     vbo_t vPosBuffer = vbo_t::CreateArrayBuffer(vPos, sizeof(vPos), false);
@@ -272,6 +277,7 @@ namespace bb
     this->vao = vao_t::CreateVertexAttribObject();
     this->vao.BindVBO(vPosBuffer, 0, 3, GL_FLOAT, GL_FALSE, 0, 0);
     this->vao.BindVBO(vTexBuffer, 1, 2, GL_FLOAT, GL_FALSE, 0, 0);
+#endif
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -281,9 +287,12 @@ namespace bb
 
   context_t::~context_t()
   {
+#ifdef BB_FB_BLIT_DISABLE
     this->shader = shader_t();
-    this->canvas = framebuffer_t();
     this->vao = vao_t();
+#endif
+
+    this->canvas = framebuffer_t();
 
     if (this->wnd != nullptr)
     {
@@ -315,24 +324,26 @@ namespace bb
       glfwSetWindowTitle(this->wnd, this->title.c_str());
       this->hasNewTitle = false;
     }
-   
+
+#ifndef BB_FB_BLIT_DISABLE
+    this->canvas.BlitToScreen();
+#else
     framebuffer_t::RenderToScreen();
     shader_t::Bind(this->shader);
     vao_t::Bind(this->vao);
     texture_t::Bind(this->canvas.Texture());
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glDisableVertexAttribArray(0);
     glDisableVertexAttribArray(1);
+#endif
 
     glFinish();
     glfwSwapBuffers(this->wnd);
     glfwPollEvents();
-
     return (glfwWindowShouldClose(this->wnd) == 0);
   }
 
@@ -347,28 +358,30 @@ namespace bb
   {
     std::unique_lock<std::mutex> lock(this->mutex);
     this->relativeCursor = enable;
-    if (this->relativeCursor)
-    {
-      glfwSetInputMode(this->wnd, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    }
-    else
-    {
-      glfwSetInputMode(this->wnd, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-    }
+
+    glfwSetInputMode(this->wnd, GLFW_CURSOR,
+      ((this->relativeCursor) && (this->insideWnd)) ?(GLFW_CURSOR_DISABLED):(GLFW_CURSOR_NORMAL)
+    );
   }
 
   void context_t::OnCursorEnter(GLFWwindow *wnd, int entered)
-  {
+  { // this function called is called when glfwPollEvents happens
+    // at that moment context mutex is already aquired by update thread
+    // so, no lock here
+
     context_t *self = reinterpret_cast<context_t *>(glfwGetWindowUserPointer(wnd));
-    self->insideWnd = (entered != 0);
-    if (self->relativeCursor)
-    {
-      glfwSetInputMode(self->wnd, GLFW_CURSOR, (self->insideWnd) ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
-    }
+    self->insideWnd = (entered != GLFW_FALSE);
+    
+    glfwSetInputMode(self->wnd, GLFW_CURSOR,
+      ((self->relativeCursor) && (self->insideWnd)) ?(GLFW_CURSOR_DISABLED):(GLFW_CURSOR_NORMAL)
+    );
   }
 
   void context_t::OnKey(GLFWwindow *window, int key, int /*scancode*/, int action, int /*mods*/)
-  {
+  { // this function called is called when glfwPollEvents happens
+    // at that moment context mutex is already aquired by update thread
+    // so, no lock here
+
     context_t *self = reinterpret_cast<context_t *>(glfwGetWindowUserPointer(window));
     for (auto actorPair : self->actorCallbackList)
     {

@@ -43,6 +43,7 @@ target_link_libraries(sub3000
     shapes
     effects
     mapgen
+    sound
 )
 
 set_target_properties(sub3000 PROPERTIES

@@ -1,5 +1,6 @@
 #include <cassert>
 #include <stdexcept>
+#include <cwctype>
 
 #include <utf8.hpp>
 
@@ -118,6 +119,53 @@ namespace bb
       cursor += octets;
     }
     return result;
+  }
+
+  bool IsSpace(wint_t symbol)
+  {
+    return (std::iswspace(symbol) != 0);
+  }
+
+  bool IsLower(wint_t symbol)
+  {
+    if (symbol <= 127)
+    {
+      return std::iswlower(symbol) != 0;
+    }
+
+    if ((symbol >= 0x0400) && (symbol <= 0x04FF))
+    { // from U'а' to U'џ'
+      return ((symbol >= 0x0430) && (symbol <= 0x045F));
+    }
+
+    if (symbol == U'№')
+    {
+      return false;
+    }
+
+    assert(0);
+    return false;
+  }
+
+  bool IsUpper(wint_t symbol)
+  {
+    if (symbol <= 127)
+    {
+      return std::iswupper(symbol) != 0;
+    }
+
+    if ((symbol >= 0x0400) && (symbol <= 0x04FF))
+    { // from U'Ѐ' to U'Я'
+      return ((symbol >= 0x0400) && (symbol <= 0x042F));
+    }
+
+    if (symbol == U'№')
+    {
+      return false;
+    }
+
+    assert(0);
+    return false;
   }
 
 } // namespace bb

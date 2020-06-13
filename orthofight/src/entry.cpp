@@ -1,41 +1,13 @@
 #include <common.hpp>
+#include <print.hpp>
 #include <context.hpp>
+#include <frameTimer.hpp>
 
 #include <shapes.hpp>
 #include <meshDesc.hpp>
 #include <camera.hpp>
 #include <shader.hpp>
 #include <mapGen.hpp>
-
-class frameTimer_t
-{
-  double start;
-
-public:
-  frameTimer_t()
-  : start(glfwGetTime())
-  {
-    ;
-  }
-
-  double Delta()
-  {
-    auto finish = glfwGetTime();
-    auto delta = finish - this->start;
-
-    bb::context_t::Instance().Title(
-      std::to_string(delta)
-    );
-
-    this->start = finish;
-    return delta;
-  }
-
-  ~frameTimer_t()
-  {
-    ;
-  }
-};
 
 bb::mesh_t Plane(const bb::ext::heightMap_t& hmap)
 {
@@ -62,7 +34,7 @@ bb::mesh_t Plane(const bb::ext::heightMap_t& hmap)
         glm::vec3{
           static_cast<float>(x)/10.0f,
           static_cast<float>(y)/10.0f, 
-          hmap.Data(x, y)*2.0f
+          roundf(hmap.Data(x, y)*4.0f)/4.0f*2.0f
         }
       );
       vcol.emplace_back(
@@ -116,26 +88,54 @@ int main(int argc, char* argv[])
 
   auto& context = bb::context_t::Instance();
 
+#ifdef __USE_ORTHO_CAM__
+
   auto scrDims = context.Dimensions()/500.0f;
 
   auto camera = bb::camera_t::Orthogonal(
-    -scrDims.x, scrDims.x,
-    -scrDims.y, scrDims.y
+    -scrDims.x/2.0f, scrDims.x/2.0f,
+    -scrDims.y/2.0f, scrDims.y/2.0f
   );
 
+#else
+
+  auto camera = bb::camera_t::Perspective(
+    45.0f,
+    context.AspectRatio(),
+    0.1f,
+    1000.0f
+  );
+
+#endif
+
   auto camPos = glm::vec3(
-    0.0f, 0.0f, 0.0f
+    12.7f, 12.7f, 0.0f
   );
 
   camera.View() = glm::lookAt(
-    camPos + glm::vec3(0.5f, 0.5f, 0.5f),
+    camPos + glm::vec3(2.0f, 2.0f, 2.0f),
     camPos,
     glm::vec3(0.0f, 0.0f, 1.0f)
   );
 
+  camera.Update();
+
+  bb::mesh_t unit;
+
+  if(FILE* unitMesh = fopen("green.obj.msh", "rb"))
+  {
+    BB_DEFER(fclose(unitMesh));
+    unit = bb::GenerateMesh(bb::meshDesc_t::Load(unitMesh));
+  }
+
   auto worldShader = bb::shader_t::LoadProgramFromFiles(
     "world.vp.glsl",
     "world.fp.glsl"
+  );
+
+  auto unitShader = bb::shader_t::LoadProgramFromFiles(
+    "obj2mesh.vp.glsl",
+    "obj2mesh.fp.glsl"
   );
 
   auto world = bb::ext::MakeHMapUsingOctaves(
@@ -154,41 +154,104 @@ int main(int argc, char* argv[])
 
   auto plane = Plane(world);
 
-  frameTimer_t frameTimer;
+  bb::frameTimer_t frameTimer;
+
+  auto unitPos = glm::vec3(0.0f);
+
   while(context.Update())
   {
-    camera.View() = glm::lookAt(
-      camPos + glm::vec3(0.5f, 0.5f, 0.5f),
-      camPos,
-      glm::vec3(0.0f, 0.0f, 1.0f)
-    );
-
-    camera.Update();
+    auto deltaTime = frameTimer.Delta();
 
     bb::framebuffer_t::Bind(context.Canvas());
+    glEnable(GL_DEPTH_TEST);
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
     bb::shader_t::Bind(worldShader);
     worldShader.SetBlock(
-      worldShader.UniformBlockIndex("camera"),
+      "camera",
       camera.UniformBlock()
     );
     plane.Render();
+
+    if (context.IsCursorInside())
+    {
+      auto curPos = context.MousePos();
+      float pixValue;
+      glReadPixels(
+        static_cast<int>(curPos.x),
+        static_cast<int>(context.Height() - curPos.y), 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &pixValue
+      );
+
+      auto worldPos = glm::unProject(
+        glm::vec3(curPos.x, context.Height() - curPos.y, pixValue),
+        camera.View(),
+        camera.Projection(),
+        glm::vec4(0.0f, 0.0f, context.Width(), context.Height())
+      );
+
+      context.Title(
+        bb::Print(
+          '[', worldPos.x, ',', worldPos.y, ',', worldPos.z, ']'
+        )
+      );
+
+      unitPos.x = worldPos.x;
+      unitPos.y = worldPos.y;
+      unitPos.z = worldPos.z;
+    }
+
+    bb::shader_t::Bind(unitShader);
+    unitShader.SetBlock(
+      "camera",
+      camera.UniformBlock()
+    );
+
+    unitShader.SetMatrix(
+      "model",
+      glm::scale(
+        glm::rotate(
+          glm::rotate(
+            glm::translate(
+              glm::mat4(1.0f),
+              unitPos
+            ),
+            glm::radians(90.0f),
+            glm::vec3(1.0f, 0.0f, 0.0f)
+          ),
+          glm::radians(135.0f),
+          glm::vec3(0.0f, 1.0f, 0.0f)
+        ),
+        glm::vec3(0.5f)
+      )
+    );
+
+    unit.Render();
 
     auto moveCam = glm::vec2{
       (context.IsKeyDown(GLFW_KEY_LEFT) - context.IsKeyDown(GLFW_KEY_RIGHT)),
       (context.IsKeyDown(GLFW_KEY_DOWN) - context.IsKeyDown(GLFW_KEY_UP))
     };
 
-    auto v = bb::Dir(glm::radians(45.0f));
+    if (glm::length(moveCam) != 0.0f)
+    {
+      auto v = bb::Dir(glm::radians(45.0f));
 
-    moveCam = glm::mat2(
-      v.y, -v.x,
-      v.x,  v.y
-    ) * moveCam;
+      moveCam = glm::mat2(
+        v.y, -v.x,
+        v.x,  v.y
+      ) * moveCam;
 
-    moveCam *= frameTimer.Delta()*10.0f;
-    camPos += glm::vec3(moveCam, 0.0f);
+      moveCam *= deltaTime*10.0f;
+      camPos += glm::vec3(moveCam, 0.0f);
+
+      camera.View() = glm::lookAt(
+        camPos + glm::vec3(2.0f, 2.0f, 2.0f),
+        camPos,
+        glm::vec3(0.0f, 0.0f, 1.0f)
+      );
+
+      camera.Update();
+    }
   }
   return 0;
 }

@@ -7,8 +7,6 @@
 #include <memory>
 #include <limits>
 
-#include <glm/glm.hpp>
-
 namespace bb
 {
 

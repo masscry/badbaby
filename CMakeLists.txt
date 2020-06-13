@@ -6,7 +6,7 @@ set(CMAKE_C_STANDARD 99)
 set(CMAKE_CXX_STANDARD 11)
 
 project(badbaby
-  VERSION 0.2.1
+  VERSION 0.3.0
   LANGUAGES C CXX
 )
 
@@ -58,7 +58,11 @@ if (BB_WINDOWS)
 	target_compile_definitions(badbaby INTERFACE
 		_USE_MATH_DEFINES
 		_CRT_SECURE_NO_WARNINGS
-	)
+  )
+  
+  target_compile_options(badbaby INTERFACE
+    /source-charset:utf-8 
+  )
   
   set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS} /SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
   
@@ -73,10 +77,13 @@ set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib")
 
 add_subdirectory(core)
 add_subdirectory(extra)
+add_subdirectory(sound)
 add_subdirectory(tests)
 add_subdirectory(sub3000)
 add_subdirectory(painter)
 add_subdirectory(orthofight)
+add_subdirectory(obj2mesh)
+add_subdirectory(cqc)
 
 install(DIRECTORY runtime/sub3000
   DESTINATION share
@@ -87,20 +94,41 @@ install(DIRECTORY runtime/sub3000
     PATTERN "*.ipsum"
     PATTERN "*.tga"
     PATTERN "*.msh"
+    PATTERN "*.ogg"
+    PATTERN "*.wav"
+    PATTERN "*.bbw"
 )
 
+if (UNIX)
 install(FILES sub3000.sh
   DESTINATION ./
   PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
   CONFIGURATIONS Release
 )
+endif(UNIX)
 
-set(CPACK_PACKAGE_DESCRIPTION "Badbaby Submarine-3000")
+if (WIN32)
+install(FILES sub3000.bat
+  DESTINATION ./
+  CONFIGURATIONS Release
+)
+endif(WIN32)
+
+set(CPACK_PACKAGE_DESCRIPTION "Badbaby Demos")
 set(CPACK_PACKAGE_VERSION_MAJOR "${PROJECT_VERSION_MAJOR}")
 set(CPACK_PACKAGE_VERSION_MINOR "${PROJECT_VERSION_MINOR}")
 set(CPACK_PACKAGE_VERSION_PATCH "${PROJECT_VERSION_PATCH}")
 set(CPACK_PACKAGE_VENDOR "deci.space")
 set(CPACK_PACKAGE_CONTACT "masscry@deci.space")
 set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}")
+set(CPACK_PACKAGE_CHECKSUM SHA256)
+if(WIN32)
+set(CPACK_GENERATOR ZIP)
+else(WIN32)
+set(CPACK_GENERATOR TGZ)
+endif(WIN32)
+set(CPACK_MONOLITHIC_INSTALL ON)
+set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
+set(CPACK_NSIS_DISPLAY_NAME "Badbaby Demos")
 
 include (CPack)

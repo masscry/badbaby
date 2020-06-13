@@ -11,9 +11,17 @@
 
 #include <screen_t.hpp>
 #include <status_t.hpp>
+#include <sound.hpp>
 
 namespace sub3000
 {
+
+  enum class sounds_t: uint32_t
+  {
+    button,
+    engine_on,
+    engine_off
+  };
 
   class arenaScene_t final: public scene_t
   {
@@ -27,6 +35,10 @@ namespace sub3000
     bb::camera_t camera;
 
     bb::mailbox_t::shared_t box;
+
+    bb::sound_t::stream_t music;
+    bb::sound_t::sample_t engine;
+    bb::sound_t::sample_t button;
 
     int configWatch;
 

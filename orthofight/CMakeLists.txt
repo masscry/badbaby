@@ -28,8 +28,3 @@ set_target_properties(orthofight PROPERTIES
 	VS_DEBUGGER_WORKING_DIRECTORY
 		"${CMAKE_SOURCE_DIR}/runtime/orthofight"
 )
-
-install(TARGETS orthofight
-  RUNTIME DESTINATION bin
-  CONFIGURATIONS Release
-)

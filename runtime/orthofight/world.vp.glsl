@@ -12,11 +12,11 @@ uniform camera
 };
 
 out vec3 fragCol;
-out vec3 fragNorm;
+out vec3 fragNormal;
 
 void main()
 {
   fragCol = vCol;
-  fragNorm = vNorm;
-  gl_Position = proj * view * vec4(vPos, 1.0f);
+  fragNormal = vec3(view * vec4(vNorm, 0.0f));
+  gl_Position = proj * view * vec4(vPos.x*0.5f, vPos.y*0.5f, vPos.z*0.5f + vCol.r/5.0f, 1.0f);
 }

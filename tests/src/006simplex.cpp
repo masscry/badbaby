@@ -133,7 +133,7 @@ int main(int argc, char* argv[])
     bb::msg_t msg;
     if (mailbox->Poll(&msg))
     {
-      if (auto newShaderMsg = bb::As<newShader_t>(msg))
+      if (bb::As<newShader_t>(msg))
       {
         renderProgram = bb::shader_t::LoadProgramFromFiles(
           "006simplex_vp.glsl",
@@ -141,8 +141,9 @@ int main(int argc, char* argv[])
         );
       }
 
-      if (auto newConfigMsg = bb::As<newConfig_t>(msg))
+      if (bb::As<newConfig_t>(msg))
       {
+
         auto config = bb::config_t("006simplex.config");
 
         auto maxWidth = static_cast<uint16_t>(config.Value("map.width", 2048.0));
@@ -155,8 +156,8 @@ int main(int argc, char* argv[])
         auto mapFalloff = static_cast<float>(config.Value("map.falloff", 0.2));
         auto mapPower = static_cast<float>(config.Value("map.power", 2.0));
 
-        uint16_t cWidth = 64;
-        uint16_t cHeight = 64;
+        int cWidth = 64;
+        int cHeight = 64;
 
         do
         {
@@ -168,14 +169,14 @@ int main(int argc, char* argv[])
           {
             cHeight <<= 1;
           }
-          bb::Debug("[%u; %u]", cWidth, cHeight);
+          bb::Debug("[%d; %d]", cWidth, cHeight);
 
           bb::workerPool_t::Instance().PostMessage(
             mapGenActor,
             bb::Issue<bb::ext::generate_t>(
               mailbox->Address(),
-              cWidth,
-              cHeight,
+              static_cast<uint16_t>(cWidth),
+              static_cast<uint16_t>(cHeight),
               mapRadiusStart,
               mapRadiusFinish,
               mapSeed,

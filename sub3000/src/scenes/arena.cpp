@@ -39,12 +39,40 @@ namespace sub3000
 
   void arenaScene_t::OnPrepare()
   {
+    bb::config_t menuConfig;
+    menuConfig.Load("./arena.config");
+
+    auto streamVolume = static_cast<float>(menuConfig.Value("sound.stream.volume", 0.2));
+    auto sampleVolume = static_cast<float>(menuConfig.Value("sound.sample.volume", 0.3));
+
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
 
-    bb::config_t menuConfig;
-    menuConfig.Load("./arena.config");
+    this->music = bb::sound_t::Instance().CreateStream(
+      menuConfig.Value("sound.ambient", "audio.ogg").c_str(),
+      true
+    );
+    this->music.SetVolume(streamVolume);
+
+    this->engine = bb::sound_t::Instance().CreateSample(
+      menuConfig.Value("sound.engine", "engine.wav").c_str(),
+      1, true
+    );
+    this->engine.SetVolume(sampleVolume);
+
+    this->button = bb::sound_t::Instance().CreateSample(
+      menuConfig.Value("sound.button", "button.wav").c_str(),
+      5, false
+    );
+    this->button.SetVolume(sampleVolume);
+
+    if (this->music.IsGood())
+    {
+      bb::sound_t::Instance().Play(
+        this->music
+      );
+    }
 
     this->radarScreen.Prepare();
     this->radarPlane = bb::GeneratePlane(
@@ -112,11 +140,30 @@ namespace sub3000
   void arenaScene_t::OnUpdate(double dt)
   {
     bb::msg_t msg;
-    if (this->box->Poll(&msg))
+    while (this->box->Poll(&msg))
     {
       if (auto status = bb::As<sub3000::fs::status_t>(msg))
       {
         this->configWatch = status->Status();
+      }
+
+      if (auto sound = bb::As<bb::msg::dataMsg_t<sounds_t>>(msg))
+      {
+        switch (sound->Data())
+        {
+        case sounds_t::button:
+          bb::sound_t::Instance().Play(this->button);
+          break;
+        case sounds_t::engine_on:
+          bb::sound_t::Instance().Play(this->engine);
+          break;
+        case sounds_t::engine_off:
+          bb::sound_t::Instance().Stop(this->engine);
+          break;
+        default:
+          bb::Error("Unknown sound: %u", static_cast<uint32_t>(sound->Data()));
+          break;
+        }
       }
     }
 
@@ -159,6 +206,16 @@ namespace sub3000
       );
     }
     this->box.reset();
+
+    bb::sound_t::Instance().Stop(
+      this->button
+    );
+
+    bb::sound_t::Instance().Stop(
+      this->engine
+    );
+
+    this->music = bb::sound_t::stream_t();
   }
 
   arenaScene_t::arenaScene_t()

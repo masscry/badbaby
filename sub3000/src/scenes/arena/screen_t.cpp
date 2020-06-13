@@ -20,6 +20,8 @@ namespace sub3000
         screenConfig.Value("radar.shader.fp", "radar.fp.glsl").c_str()
       );
 
+      this->warningText = screenConfig.Value("radar.warning", "warning").c_str();
+
       FILE* input = fopen(screenConfig.Value("radar.mesh", "radar.msh").c_str(), "rb");
       if (input == nullptr)
       { // resource not found!
@@ -46,7 +48,7 @@ namespace sub3000
         -this->worldScale/4.0f
       );
 
-      this->fb = bb::framebuffer_t(512, 512);
+      this->fb = bb::framebuffer_t(1024, 1024);
 
       this->box = bb::postOffice_t::Instance().New("arenaScreen");
 
@@ -238,7 +240,7 @@ namespace sub3000
             glm::vec3(0.655f, -0.76f, 0.0f),
             this->pointSize * 0.01f,
             glm::vec2(0.035f, 0.05f),
-            "warning"
+            this->warningText.c_str()
           )
         );
       }
