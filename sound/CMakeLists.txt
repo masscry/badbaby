@@ -53,6 +53,13 @@ add_library(sound STATIC
   src/sound.cpp
 )
 
+if (WIN32)
+  add_custom_command(
+    TARGET sound POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:bass> ${CMAKE_BINARY_DIR}/bin/$<CONFIGURATION>
+  )
+endif(WIN32)
+
 target_include_directories(sound
 PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}/include
@@ -64,4 +71,9 @@ target_link_libraries(sound PUBLIC
   bass
   common
   config
+)
+
+install(FILES ${BASS_DLL_FULLPATH}
+  DESTINATION bin
+  CONFIGURATIONS Release
 )

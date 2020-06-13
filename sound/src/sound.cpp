@@ -29,6 +29,41 @@ namespace bb
     BASS_Free();
   }
 
+  void sound_t::stream_t::SetVolume(float value) const
+  {
+    if (this->IsGood())
+    {
+      if (BASS_ChannelSetAttribute(
+        this->handle,
+        BASS_ATTRIB_VOL,
+        value
+      ) == FALSE)
+      {
+        bb::Error("BASS_ChannelSetAttribute failed: error %d", BASS_ErrorGetCode());
+      }
+    }
+  }
+
+  void sound_t::sample_t::SetVolume(float value) const
+  {
+    if (this->IsGood())
+    {
+      BASS_SAMPLE info;
+      if (BASS_SampleGetInfo(this->handle, &info) != FALSE)
+      {
+        info.volume = value;
+        if (BASS_SampleSetInfo(this->handle, &info) == FALSE)
+        {
+          bb::Error("BASS_SampleSetInfo failed: error %d", BASS_ErrorGetCode());
+        }
+      }
+      else
+      {
+        bb::Error("BASS_SampleGetInfo failed: error %d", BASS_ErrorGetCode());
+      }
+    }
+  }
+
   sound_t::stream_t::stream_t() noexcept
   : handle(0)
   {

@@ -41,6 +41,8 @@ namespace bb
       stream_t(stream_t&&) noexcept;
       stream_t& operator=(stream_t&&) noexcept;
 
+      void SetVolume(float value) const;
+
       bool IsGood() const
       {
         return this->handle != 0;
@@ -66,6 +68,8 @@ namespace bb
 
       sample_t(sample_t&&) noexcept;
       sample_t& operator=(sample_t&&) noexcept;
+
+      void SetVolume(float value) const;
 
       bool IsGood() const
       {
