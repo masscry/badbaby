@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file
 
 ## [Unreleased]
 
+## [0.3.0] - 2020-06-13
+
+### Added
+ - sound: stream/sample playback using BASS
+ - util: cyr vector font
+ - sub3000: russian version
+ - cqc: vector menu example
+ - obj2mesh: obj format to msh converter
+ - orthofigh: uses simple obj model and unproject features
+
 ## [0.2.1] - 2020-06-02
 
 ### Added
@@ -129,7 +139,8 @@ All notable changes to this project will be documented in this file
 - tests: 000hello, 001render, 002config, 003font
 - documentation: README.md, CHANGELOG.md, plan.md, LICENSE.md
 
-[Unreleased]: https://github.com/masscry/badbaby/compare/v0.2.1...develop
+[Unreleased]: https://github.com/masscry/badbaby/compare/v0.3.0...develop
+[0.3.0]: https://github.com/masscry/badbaby/releases/tag/v0.3.0
 [0.2.1]: https://github.com/masscry/badbaby/releases/tag/v0.2.1
 [0.2.0]: https://github.com/masscry/badbaby/releases/tag/v0.2.0
 [0.1.1]: https://github.com/masscry/badbaby/releases/tag/v0.1.1
