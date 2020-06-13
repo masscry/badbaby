@@ -58,7 +58,11 @@ if (BB_WINDOWS)
 	target_compile_definitions(badbaby INTERFACE
 		_USE_MATH_DEFINES
 		_CRT_SECURE_NO_WARNINGS
-	)
+  )
+  
+  target_compile_options(badbaby INTERFACE
+    /source-charset:utf-8 
+  )
   
   set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS} /SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
   
