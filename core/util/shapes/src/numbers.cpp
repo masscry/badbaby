@@ -76,7 +76,7 @@ namespace bb
 
     for(auto smb: wideNumber)
     {
-      if (IsSpace(smb))
+      if (IsSpace(static_cast<wint_t>(smb)))
       {
         cursor.x += 1.0f;
         continue;
@@ -85,14 +85,14 @@ namespace bb
       auto smbScale = scale;
       auto smbCursor = cursor;
 
-      if (IsLower(smb))
+      if (IsLower(static_cast<wint_t>(smb)))
       {
         smbCursor.y += 0.6f;
         smbScale.y *= 0.6f;
       }
 
       size_t smbSize;
-      auto smbVerts = VectorFontSymbol(smb, &smbSize);
+      auto smbVerts = VectorFontSymbol(static_cast<wint_t>(smb), &smbSize);
       if (smbVerts == nullptr)
       { // This won't happen, if no regression happens
         bb::Error("Unknown symbol: %08x (%c)", smb, (smb & 0xFF));
