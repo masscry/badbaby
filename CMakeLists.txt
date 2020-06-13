@@ -73,7 +73,9 @@ target_link_libraries(badbaby INTERFACE
 )
 
 # Additional path to search for glfw
+if(UNIX)
 set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib")
+endif(UNIX)
 
 add_subdirectory(core)
 add_subdirectory(extra)
