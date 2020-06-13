@@ -1,5 +1,6 @@
 #include <sound.hpp>
 #include <common.hpp>
+#include <config.hpp>
 
 #include <stdexcept>
 #include <bass.h>
@@ -14,7 +15,9 @@ namespace bb
       throw std::runtime_error("Invalid BASS Version!");
     }
 
-    if (BASS_Init(-1, 44100, BASS_DEVICE_DMIX, nullptr, nullptr) == FALSE)
+    auto config = bb::config_t("default.config");
+    auto device = static_cast<int>(config.Value("sound.device", -1.0));
+    if (BASS_Init(device, 44100, BASS_DEVICE_DMIX, nullptr, nullptr) == FALSE)
     {
       bb::Error("BASS_Init failed: error %d", BASS_ErrorGetCode());
       throw std::runtime_error("Can't initialize BASS library!");
