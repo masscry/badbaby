@@ -303,12 +303,33 @@
         }
       ],
       "preLaunchTask": "Build cqc (Debug)"
-    },    {
+    },    
+    {
       "name": "Launch Submarine-3000 (Debug)",
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceFolder}/.debug/bin/sub3000",
       "args": [ "-c", "${workspaceFolder}/runtime/sub3000" ],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}/.debug/bin",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      "preLaunchTask": "Build All (Debug)"
+    },
+    {
+      "name": "Launch Star.RG (Debug)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/.debug/bin/starrg",
+      "args": [ "-c", "${workspaceFolder}/runtime/starrg" ],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}/.debug/bin",
       "environment": [],

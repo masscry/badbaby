@@ -1,0 +1,35 @@
+project(starrg)
+
+add_executable(starrg
+# Headers
+  include/starrg.hpp
+# Sources
+  src/starrg.cpp
+)
+
+target_include_directories(starrg
+  PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+target_link_libraries(starrg
+  PRIVATE
+    config
+    render
+    actor
+    simplex
+    shapes
+    effects
+    mapgen
+    sound
+)
+
+set_target_properties(starrg PROPERTIES
+	VS_DEBUGGER_WORKING_DIRECTORY
+		"${CMAKE_SOURCE_DIR}/runtime/starrg"
+)
+
+install(TARGETS starrg
+  RUNTIME DESTINATION bin
+  CONFIGURATIONS Release
+)

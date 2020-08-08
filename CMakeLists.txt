@@ -86,6 +86,7 @@ add_subdirectory(painter)
 add_subdirectory(orthofight)
 add_subdirectory(obj2mesh)
 add_subdirectory(cqc)
+add_subdirectory(star.rg)
 
 install(DIRECTORY runtime/sub3000
   DESTINATION share
