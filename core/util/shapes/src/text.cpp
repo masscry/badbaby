@@ -346,10 +346,6 @@ namespace bb
         true
       );
 
-      this->vao.BindVBO(vPosVBO, 0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-      this->vao.BindVBO(vUVVBO, 1, 2, GL_FLOAT, GL_FALSE, 0, 0);
-      this->vao.BindIndecies(indeciesVBO);
-
       this->totalI = textI;
       this->totalV = this->vertecies.vPos.size();
     }
@@ -361,6 +357,10 @@ namespace bb
       this->vUVVBO.Update(0,  sizeof(vec2_t)*textV, this->vertecies.vUV.data());
       this->indeciesVBO.Update(0, sizeof(uint16_t)*textI, this->vertecies.indecies.data());
     }
+
+    this->vao.BindVBO(vPosVBO, 0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    this->vao.BindVBO(vUVVBO, 1, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    this->vao.BindIndecies(indeciesVBO);
 
     this->renderI = textI;
   }
