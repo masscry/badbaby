@@ -74,6 +74,7 @@ namespace
     auto indIt = output.indecies.begin();
 
     const glm::vec2* pUVMatrix = (chSize.y < 0)?(uvInvertedMatrix):(uvMatrix);
+    chSize.y = fabsf(chSize.y);
 
     for (auto it: symbols)
     {

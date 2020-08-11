@@ -3,8 +3,12 @@ project(starrg)
 add_executable(starrg
 # Headers
   include/starrg.hpp
+  include/tileDB.hpp
 # Sources
   src/starrg.cpp
+  src/tileDB.cpp
+  src/entry.cpp
+  src/world.cpp
 )
 
 target_include_directories(starrg
