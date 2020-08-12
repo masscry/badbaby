@@ -10,6 +10,8 @@
 #include <text.hpp>
 #include <worker.hpp>
 
+#include <sstream>
+
 void world_t::UpdateMapUnits()
 {
   this->unitsOnMap.clear();
@@ -18,7 +20,8 @@ void world_t::UpdateMapUnits()
     this->unitsOnMap.insert(
       std::make_pair(
         it->pos,
-        it));
+        it)
+    );
   }
 }
 
@@ -46,14 +49,14 @@ void world_t::GenerateMap()
 
   for (auto x = 0; x < this->mapSize.x; ++x)
   {
-    this->tiles[x].tile = treeDist(engine);
-    this->tiles[this->mapSize.x * (this->mapSize.y - 1) + x].tile = treeDist(engine);
+    this->Tiles(glm::ivec2{x, 0}).tile = treeDist(engine);
+    this->Tiles(glm::ivec2{x, this->mapSize.y-1}).tile = treeDist(engine);
   }
 
   for (auto y = 1; y < this->mapSize.y - 1; ++y)
   {
-    this->tiles[y * this->mapSize.x].tile = treeDist(engine);
-    this->tiles[y * this->mapSize.x + this->mapSize.x - 1].tile = treeDist(engine);
+    this->Tiles(glm::ivec2{0, y}).tile = treeDist(engine);
+    this->Tiles(glm::ivec2{this->mapSize.x-1, y}).tile = treeDist(engine);
   }
 
   for (auto &item : this->tiles)
@@ -71,7 +74,7 @@ void world_t::GenerateMap()
   std::uniform_int_distribution<int> posXDist(1, this->mapSize.x - 2);
   std::uniform_int_distribution<int> posYDist(1, this->mapSize.y - 2);
 
-  this->tiles[posYDist(engine) * this->mapSize.x + posXDist(engine)].tile = T_LADDER;
+  this->Tiles(glm::ivec2{posXDist(engine), posYDist(engine)}).tile = T_LADDER;
 
   auto plPos = this->mapSize / 2;
   std::discrete_distribution<int> jumpDist{
@@ -92,7 +95,9 @@ void world_t::GenerateMap()
       80, // int skill; // probability to hit
       60, // int stren; // hit strenght
       60, // int tough; // unit toughness
-      95  // int armor; // armor rating
+      95, // int armor; // armor rating
+      US_NONE, // int status; // unit status
+      {0.0f, 0.0f}  // int side; // unit side 
     });
 
   for (int i = 0; i < 10; ++i)
@@ -114,7 +119,9 @@ void world_t::GenerateMap()
         20, // int skill; // probability to hit
         10, // int stren; // hit strenght
         10, // int tough; // unit toughness
-        5   // int armor; // armor rating
+        5,  // int armor; // armor rating
+        US_NONE, // int status; // unit status
+        {0.0f, 0.0f}  // int side; // unit side 
       });
     this->UpdateMapUnits();
   }
@@ -171,7 +178,18 @@ void world_t::CastLight(
       auto radius2 = radius * radius;
       if ((int)(dx * dx + dy * dy) < radius2)
       {
-        this->tiles[ay * this->mapSize.x + ax].visible = true;
+        auto& cell = this->Tiles(glm::ivec2{ax, ay});
+        if ((cell.tile == T_LADDER) && (cell.visible == false) && (cell.shadow == false))
+        {
+          bb::postOffice_t::Instance().Post(
+            "StarView",
+            bb::Issue<bb::msg::dataMsg_t<std::string>>(
+              "Конан нашел лестницу!",
+              -1
+            )
+          );
+        }
+        this->Tiles(glm::ivec2{ax, ay}).visible = true;
       }
 
       if (blocked)
@@ -215,8 +233,8 @@ void world_t::UpdateFOV(glm::ivec2 pos, int radius)
       pos,
       radius,
       1,
-      1.0,
-      0.0,
+      1.0f,
+      0.0f,
       multipliers[0][i],
       multipliers[1][i],
       multipliers[2][i],
@@ -224,12 +242,230 @@ void world_t::UpdateFOV(glm::ivec2 pos, int radius)
   }
 }
 
+struct quadData_t
+{
+  glm::vec3 vPos[4];
+  glm::vec2 vUV[4];
+  glm::vec3 vCol[4];
+  glm::vec2 vShim[4];
+  uint16_t vInd[6];
+};
+
+struct triData_t
+{
+  std::vector<glm::vec3> pos;
+  std::vector<glm::vec2> uv;
+  std::vector<glm::vec3> col;
+  std::vector<glm::vec2> shim;
+  std::vector<uint16_t> ind;
+
+  bb::meshDesc_t Create()
+  {
+    bb::meshDesc_t result;
+    result.Buffers().emplace_back(
+      bb::MakeVertexBuffer(std::move(this->pos)));
+    result.Buffers().emplace_back(
+      bb::MakeVertexBuffer(std::move(this->uv)));
+    result.Buffers().emplace_back(
+      bb::MakeVertexBuffer(std::move(this->col)));
+    result.Buffers().emplace_back(
+      bb::MakeVertexBuffer(std::move(this->shim)));
+    result.Indecies() = bb::MakeIndexBuffer(std::move(this->ind));
+    result.SetDrawMode(GL_TRIANGLES);
+    return result;
+  }
+
+  void Add(const quadData_t& data)
+  {
+    this->pos.insert(
+      this->pos.end(),
+      std::begin(data.vPos),
+      std::end(data.vPos));
+
+    this->uv.insert(
+      this->uv.end(),
+      std::begin(data.vUV),
+      std::end(data.vUV));
+
+    this->col.insert(
+      this->col.end(),
+      std::begin(data.vCol),
+      std::end(data.vCol));
+
+    this->shim.insert(
+      this->shim.end(),
+      std::begin(data.vShim),
+      std::end(data.vShim)
+    );
+
+    this->ind.insert(
+      this->ind.end(),
+      std::begin(data.vInd),
+      std::end(data.vInd)
+    );
+  }
+
+};
+
+quadData_t CreateQuad(glm::ivec2 sprite, glm::vec2 pos, glm::vec3 col, uint16_t indOffset, bool flip)
+{
+  quadData_t result;
+
+  glm::vec2 uvOffset(
+    static_cast<float>(sprite.x) / static_cast<float>(tileCount.x),
+    static_cast<float>(sprite.y) / static_cast<float>(tileCount.y)
+  );
+
+  static_assert(sizeof(result.vUV) == sizeof(vConstUV), "Sizes must be equal");
+  static_assert(sizeof(result.vUV) == sizeof(vConstFlipUV), "Sizes must be equal");
+  static_assert(sizeof(result.vPos) == sizeof(vConstPos), "Sizes must be equal");
+  static_assert(sizeof(result.vInd) == sizeof(vConstInd), "Sizes must be equal");
+
+  memcpy(result.vPos, vConstPos, sizeof(result.vPos));
+  memcpy(result.vUV, flip ? vConstFlipUV : vConstUV, sizeof(result.vUV));
+  memcpy(result.vInd, vConstInd, sizeof(result.vInd));
+
+  for (auto &i : result.vPos)
+  {
+    i.x += pos.x;
+    i.y += pos.y;
+  }
+
+  for (auto &i : result.vCol)
+  {
+    i = col;
+  }
+
+  for (auto &i : result.vUV)
+  {
+    i += uvOffset;
+  }
+
+  for (auto& v: result.vShim)
+  {
+    v = glm::vec2(0.0f);
+  }
+
+  for (auto &i : result.vInd)
+  {
+    i = static_cast<uint16_t>((i + indOffset) & 0xFFFF);
+  }
+
+  return result;
+}
+
+
+bb::meshDesc_t world_t::BuildUnits()
+{
+  triData_t vec;
+  bb::meshDesc_t result;
+
+  if (this->units.empty())
+  {
+    return bb::meshDesc_t();
+  }
+
+  vec.pos.reserve(this->units.size() * 4);
+  vec.uv.reserve(this->units.size() * 4);
+  vec.col.reserve(this->units.size() * 4);
+  vec.shim.reserve(this->units.size() * 4);
+  vec.ind.reserve(this->units.size() * 6);
+
+  int indOffset = 0;
+
+  for (auto& unit : this->units)
+  {
+    auto info = this->Tiles(unit.pos);
+
+    if (!info.visible)
+    {
+      continue;
+    }
+
+    glm::vec2 pos = {unit.pos.x * tileSize.x, unit.pos.y * tileSize.y};
+
+    quadData_t q = CreateQuad(unit.sprite, pos, glm::vec3(1.0f), indOffset, false);
+    for (auto& v: q.vPos)
+    {
+      v.z = 1.0f;
+    }
+
+    switch (unit.status)
+    {
+    case US_NONE:
+      break;
+    case US_MISS:
+      for (auto& v: q.vShim)
+      {
+        v = unit.side*10.0f;
+      }
+      unit.status = US_NONE;
+      break;
+    case US_ARMOR:
+      {
+        quadData_t shield = CreateQuad(
+          glm::ivec2{39, 3},
+          pos,
+          glm::vec3(1.0f),
+          indOffset+4,
+          false
+        );
+        for (auto& v: q.vCol)
+        {
+          v *= 0.3f;
+        }
+        for (auto& v: shield.vPos)
+        {
+          v.z = 2.0f;
+        }
+        for (auto& v: shield.vShim)
+        {
+          v = unit.side*14.0f;
+        }
+        vec.Add(shield);
+        indOffset += 4;
+        unit.status = US_NONE;
+      }
+      break;
+    case US_SAVE:
+      for (auto& v: q.vShim)
+      {
+        v = glm::vec2(unit.side.y, -unit.side.x)*10.0f;
+      }
+      unit.status = US_NONE;
+      break;
+    case US_DEAD:
+      {
+        for (auto& v: q.vCol)
+        {
+          v = glm::vec3(0.8f,0.3f,0.3f);
+        }
+        auto temp = q.vUV[3];
+        q.vUV[3] = q.vUV[2];
+        q.vUV[2] = q.vUV[1];
+        q.vUV[1] = q.vUV[0];
+        q.vUV[0] = temp;
+        for (auto& v: q.vPos)
+        {
+          v.z = 0.1f;
+        }
+      }
+      break;
+    default:
+      assert(0);
+      break;
+    }
+
+    vec.Add(q);
+    indOffset += 4;
+  }
+
+  return vec.Create();
+}
+
 bb::meshDesc_t world_t::BuildTileMap()
 {
-  std::vector<glm::vec2> posVec;
-  std::vector<glm::vec2> uvVec;
-  std::vector<glm::vec3> colVec;
-  std::vector<uint16_t> indVec;
+  triData_t vec;
   bb::meshDesc_t result;
 
   glm::ivec2 playerPos;
@@ -239,10 +475,11 @@ bb::meshDesc_t world_t::BuildTileMap()
     playerPos = this->units[0].pos;
   }
 
-  posVec.reserve(mapSize.y * mapSize.x * 4);
-  uvVec.reserve(mapSize.y * mapSize.x * 4);
-  colVec.reserve(mapSize.y * mapSize.x * 4);
-  indVec.reserve(mapSize.y * mapSize.x * 6);
+  vec.pos.reserve(mapSize.y * mapSize.x * 4);
+  vec.uv.reserve(mapSize.y * mapSize.x * 4);
+  vec.col.reserve(mapSize.y * mapSize.x * 4);
+  vec.shim.reserve(mapSize.y * mapSize.x * 4);
+  vec.ind.reserve(mapSize.y * mapSize.x * 6);
 
   int indOffset = 0;
 
@@ -252,7 +489,7 @@ bb::meshDesc_t world_t::BuildTileMap()
     cell.visible = false;
   }
 
-  this->tiles[this->units[0].pos.y * mapSize.x + this->units[0].pos.x].visible = true;
+  this->Tiles(this->units[0].pos).visible = true;
 
   this->UpdateFOV(playerPos, 10);
   for (auto &cell : this->tiles)
@@ -264,96 +501,24 @@ bb::meshDesc_t world_t::BuildTileMap()
   {
     for (auto x = 0; x < mapSize.x; ++x)
     {
-      auto &cell = this->tiles[y * mapSize.x + x];
+      auto &cell = this->Tiles(glm::ivec2{x, y});
       if ((cell.visible == false) && (cell.shadow == false))
       {
         continue;
       }
 
-      auto color = cell.shadow ? glm::vec3(0.5f) : glm::vec3(1.0f);
+      auto color = cell.shadow ? glm::vec3(0.3f) : glm::vec3(0.6f);
       auto tile = tileID[cell.tile];
-      auto unit = unitsOnMap.find(glm::ivec2(x, y));
-
-      if ((unit != unitsOnMap.end()) && (cell.shadow == false))
-      {
-        tile.pos = unit->second->sprite;
-        tile.canWalk = false;
-        tile.flip = false;
-      }
-
-      glm::vec2 offset(
-        static_cast<float>(tile.pos.x) / static_cast<float>(tileCount.x),
-        static_cast<float>(tile.pos.y) / static_cast<float>(tileCount.y));
-
-      glm::vec2 vPos[4];
-      glm::vec2 vUV[4];
-      glm::vec3 vCol[4];
-      uint16_t vInd[6];
-
-      static_assert(sizeof(vUV) == sizeof(vConstUV), "Sizes must be equal");
-      static_assert(sizeof(vUV) == sizeof(vConstFlipUV), "Sizes must be equal");
-      static_assert(sizeof(vPos) == sizeof(vConstPos), "Sizes must be equal");
-      static_assert(sizeof(vInd) == sizeof(vConstInd), "Sizes must be equal");
-
       glm::vec2 pos = {x * tileSize.x, y * tileSize.y};
 
-      memcpy(vPos, vConstPos, sizeof(vPos));
-      memcpy(vUV, tile.flip ? vConstFlipUV : vConstUV, sizeof(vUV));
-      memcpy(vInd, vConstInd, sizeof(vConstInd));
+      quadData_t q = CreateQuad(tile.pos, pos, color, indOffset, tile.flip);
 
-      for (auto& i: vCol)
-      {
-        i = color;
-      }
-
-      for (auto& i: vPos)
-      {
-        i += pos;
-      }
-
-      for (auto& i: vUV)
-      {
-        i += offset;
-      }
-
-      for (auto& i: vInd)
-      {
-        i = static_cast<uint16_t>((i + indOffset) & 0xFFFF);
-      }
-
-      posVec.insert(
-        posVec.end(),
-        std::begin(vPos),
-        std::end(vPos));
-
-      uvVec.insert(
-        uvVec.end(),
-        std::begin(vUV),
-        std::end(vUV));
-
-      indVec.insert(
-        indVec.end(),
-        std::begin(vInd),
-        std::end(vInd));
-
-      colVec.insert(
-        colVec.end(),
-        std::begin(vCol),
-        std::end(vCol));
-
+      vec.Add(q);
       indOffset += 4;
     }
   }
 
-  result.Buffers().emplace_back(
-    bb::MakeVertexBuffer(std::move(posVec)));
-  result.Buffers().emplace_back(
-    bb::MakeVertexBuffer(std::move(uvVec)));
-  result.Buffers().emplace_back(
-    bb::MakeVertexBuffer(std::move(colVec)));
-  result.Indecies() = bb::MakeIndexBuffer(std::move(indVec));
-  result.SetDrawMode(GL_TRIANGLES);
-  return result;
+  return vec.Create();
 }
 
 bb::msg::result_t world_t::OnProcessMessage(const bb::actor_t &, const bb::msg::basic_t &msg)
@@ -446,48 +611,60 @@ bb::msg::result_t world_t::OnProcessMessage(const bb::actor_t &, const bb::msg::
           --newPos.x;
           ++newPos.y;
           this->timePassed += sq2;
+          ++this->step;
           break;
         case GLFW_KEY_KP_2:
           ++newPos.y;
           this->timePassed += 1.0;
+          ++this->step;
           break;
         case GLFW_KEY_KP_3:
           ++newPos.x;
           ++newPos.y;
           this->timePassed += sq2;
+          ++this->step;
           break;
         case GLFW_KEY_KP_4:
           --newPos.x;
           this->timePassed += 1.0;
+          ++this->step;
           break;
         case GLFW_KEY_KP_6:
           ++newPos.x;
           this->timePassed += 1.0;
+          ++this->step;
           break;
         case GLFW_KEY_KP_7:
           --newPos.x;
           --newPos.y;
           this->timePassed += sq2;
+          ++this->step;
           break;
         case GLFW_KEY_KP_8:
           --newPos.y;
           this->timePassed += 1.0;
+          ++this->step;
           break;
         case GLFW_KEY_KP_9:
           ++newPos.x;
           --newPos.y;
           this->timePassed += sq2;
+          ++this->step;
           break;
       }
 
       auto target = this->unitsOnMap.find(newPos);
-      if (target != this->unitsOnMap.end())
+      if ((target != this->unitsOnMap.end()) && (target->second->status != US_DEAD))
       {
+        std::stringstream logst;
         auto &engine = RandomEngine();
         std::uniform_int_distribution<int> dice(0, 100);
 
-        auto playerStats = this->units[0];
-        auto targetStats = *target->second;
+        auto& playerStats = this->units[0];
+        auto& targetStats = *target->second;
+        targetStats.side = newPos - player.pos;
+
+        logst << "[" << this->step << "]" << "Конан бьёт! ";
 
         int hitRoll = dice(engine);
         if (hitRoll <= playerStats.skill)
@@ -498,11 +675,42 @@ bb::msg::result_t world_t::OnProcessMessage(const bb::actor_t &, const bb::msg::
             int armorSave = dice(engine);
             if (armorSave > targetStats.armor)
             { // armor failed
-              this->units.erase(target->second);
+              logst << "Убил!";
+              targetStats.status = US_DEAD;
               this->UpdateMapUnits();
             }
+            else
+            {
+              logst << "Не задел! (S" << armorSave << "<" << targetStats.armor << ')';
+              playerStats.status = US_SAVE;
+              playerStats.side = player.pos-newPos;
+              targetStats.status = US_SAVE;
+            }
+          }
+          else
+          {
+            logst << "Мечь отскочил от брони! (W" << woundRoll << ">" << playerStats.stren - targetStats.tough << ')';
+            playerStats.status = US_MISS;
+            playerStats.side = player.pos-newPos;
+            targetStats.status = US_ARMOR;
           }
         }
+        else
+        {
+          logst << "Промазал! (H" << hitRoll << ">" << playerStats.skill << ')';
+          playerStats.status = US_MISS;
+          playerStats.side = player.pos-newPos;
+          targetStats.status = US_MISS;
+        }
+
+        bb::postOffice_t::Instance().Post(
+          "StarView",
+          bb::Issue<bb::msg::dataMsg_t<std::string>>(
+            logst.str(),
+            -1
+          )
+        );
+
       }
 
       if (this->CanWalk(newPos))
@@ -524,6 +732,10 @@ bb::msg::result_t world_t::OnProcessMessage(const bb::actor_t &, const bb::msg::
           {
             for (auto unit = this->units.begin() + 1, e = this->units.end(); unit != e; ++unit)
             {
+              if (unit->status == US_DEAD)
+              {
+                continue;
+              }
               newPos.x = unit->pos.x + deltaMove(engine) - 1;
               newPos.y = unit->pos.y + deltaMove(engine) - 1;
               if (this->CanWalk(newPos))
@@ -539,10 +751,21 @@ bb::msg::result_t world_t::OnProcessMessage(const bb::actor_t &, const bb::msg::
 
         bb::postOffice_t::Instance().Post(
           "StarView",
-          bb::Issue<bb::msg::dataMsg_t<bb::meshDesc_t>>(
+          bb::Issue<meshData_t>(
             this->BuildTileMap(),
-            -1));
+            meshData_t::M_MAP
+          )
+        );
       }
+
+      bb::postOffice_t::Instance().Post(
+        "StarView",
+        bb::Issue<meshData_t>(
+          this->BuildUnits(),
+          meshData_t::M_UNIT
+        )
+      );
+
     }
     return bb::msg::result_t::complete;
   }
@@ -561,7 +784,7 @@ tileInfo_t world_t::TileInfo(glm::ivec2 pos) const
 {
   if ((pos.x < this->mapSize.x) && (pos.y < this->mapSize.y) && (pos.x >= 0) && (pos.y >= 0))
   {
-    return tileID[this->tiles[pos.y * mapSize.x + pos.x].tile];
+    return tileID[this->Tiles(pos).tile];
   }
   return tileID[T_TREE_0];
 }
@@ -570,8 +793,9 @@ bool world_t::CanWalk(glm::ivec2 pos) const
 {
   if ((pos.x < this->mapSize.x) && (pos.y < this->mapSize.y) && (pos.x >= 0) && (pos.y >= 0))
   {
-    auto tile = tileID[this->tiles[pos.y * mapSize.x + pos.x].tile];
-    if (this->unitsOnMap.find(pos) == this->unitsOnMap.end())
+    auto tile = tileID[this->Tiles(pos).tile];
+    auto unit = this->unitsOnMap.find(pos) ;
+    if ((unit == this->unitsOnMap.end()) || (unit->second->status == US_DEAD))
     {
       return tile.canWalk;
     }
@@ -580,17 +804,26 @@ bool world_t::CanWalk(glm::ivec2 pos) const
 }
 
 world_t::world_t(glm::ivec2 mapSize)
-: mapSize(mapSize)
+: mapSize(mapSize),
+  step(1)
 {
   this->GenerateMap();
 
   bb::postOffice_t::Instance().Post(
     "StarView",
-    bb::Issue<bb::msg::dataMsg_t<bb::meshDesc_t>>(
+    bb::Issue<meshData_t>(
       this->BuildTileMap(),
-      -1
+      meshData_t::M_MAP
     )
   );
+  bb::postOffice_t::Instance().Post(
+    "StarView",
+    bb::Issue<meshData_t>(
+      this->BuildUnits(),
+      meshData_t::M_UNIT
+    )
+  );
+
 }
 
 world_t::~world_t()

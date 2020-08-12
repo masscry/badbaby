@@ -10,10 +10,12 @@ uniform camera
   mat4 view;
 };
 
+uniform mat4 model;
+
 out vec2 fragUV;
 
 void main()
 {
   fragUV      = vUV;
-  gl_Position = proj * view * vec4(vPos.xy - vec2(1.0, 0.5), 0.0f, 1.0f);
+  gl_Position = proj * view * model * vec4(vPos.xy - vec2(1.0, 0.5), 0.0f, 1.0f);
 }

@@ -44,11 +44,11 @@ const glm::vec2 tileSize  = { 16.0f,  16.0f   };
 const glm::vec2 tileCount = { 48, 22 };
 const glm::vec2 tileTSize = { 1.0f/tileCount.x, 1.0f/tileCount.y };
 
-const glm::vec2 vConstPos[4] = {
-  {  0.0f,       0.0f       },
-  {  tileSize.x, 0.0f       },
-  {  tileSize.x, tileSize.y },
-  {  0.0f,       tileSize.y }
+const glm::vec3 vConstPos[4] = {
+  {  0.0f,       0.0f,       0.0f },
+  {  tileSize.x, 0.0f,       0.0f },
+  {  tileSize.x, tileSize.y, 0.0f },
+  {  0.0f,       tileSize.y, 0.0f }
 };
 
 const glm::vec2 vConstUV[4] = {
@@ -71,14 +71,49 @@ const uint16_t vConstInd[6] = {
 
 #include "tileDB.hpp"
 
+enum unitStatus_t
+{
+  US_NONE = 0,
+  US_MISS,
+  US_ARMOR,
+  US_SAVE,
+  US_DEAD
+};
+
+enum unitSide_t
+{
+  SIDE_UP = 0,
+  SIDE_UP_RIGHT,
+  SIDE_RIGHT,
+  SIDE_DOWN_RIGHT,
+  SIDE_DOWN,
+  SIDE_DONW_LEFT,
+  SIDE_LEFT,
+  SIDE_UP_LEFT,
+  SIDE_TOTAL
+};
+
+const glm::vec2 sideVec[SIDE_TOTAL] = {
+  {  0.0f, -1.0f },
+  {  1.0f, -1.0f },
+  {  1.0f,  0.0f },
+  {  1.0f,  1.0f },
+  {  0.0f,  1.0f },
+  { -1.0f,  1.0f },
+  { -1.0f,  0.0f },
+  { -1.0f, -1.0f }
+};
+
 struct unit_t
 {
   glm::ivec2 pos;
   glm::ivec2 sprite;
-  int skill; // probability to hit
-  int stren; // hit strenght
-  int tough; // unit toughness
-  int armor; // armor rating
+  int skill;      // probability to hit
+  int stren;      // hit strenght
+  int tough;      // unit toughness
+  int armor;      // armor rating
+  int status;     // unit status
+  glm::vec2 side; // which side
 };
 
 struct ivecKey_t
@@ -117,9 +152,15 @@ class starrg_t
   bb::texture_t tileset;
   bb::font_t font;
   bb::textDynamic_t text;
-  bb::mesh_t mesh;
+  bb::textDynamic_t log;
+  bb::mesh_t map;
+  bb::mesh_t unit;
   bb::mailbox_t::shared_t box;
   bb::actorPID_t world;
+  std::deque<std::string> logLines;
+  std::string logText;
+
+  double time;
 
 public:
 

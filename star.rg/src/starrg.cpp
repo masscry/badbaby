@@ -10,6 +10,8 @@
 #include <font.hpp>
 #include <text.hpp>
 
+#include <sstream>
+
 std::mt19937& RandomEngine()
 {
   static std::random_device rd;
@@ -22,41 +24,116 @@ void starrg_t::Update(double dt)
   bb::msg_t msg;
   while (this->box->Poll(&msg))
   {
-    if (auto tileDesc = bb::As<bb::msg::dataMsg_t<bb::meshDesc_t>>(msg))
+    if (auto tileDesc = bb::As<meshData_t>(msg))
     {
-      this->mesh = bb::GenerateMesh(
-        tileDesc->Data()
-      );
+      switch(tileDesc->type)
+      {
+        case meshData_t::M_MAP:
+          this->map = bb::GenerateMesh(
+            tileDesc->Data()
+          );
+          break;
+        case meshData_t::M_UNIT:
+          this->unit = bb::GenerateMesh(
+            tileDesc->Data()
+          );
+          this->time = 0.5;
+          break;
+      }
+      continue;
+    }
+    if (auto log = bb::As<bb::msg::dataMsg_t<std::string>>(msg))
+    {
+      logLines.emplace_back(std::move(log->Data()));
+      if (logLines.size() > 10)
+      {
+        logLines.pop_front();
+      }
+
+      std::stringstream linesText;
+
+      for(const auto& ll: logLines)
+      {
+        linesText << ll << "\n";
+      }
+
+      this->logText =  linesText.str();
+
       continue;
     }
     // Unknown message!
     assert(0);
   }
 
+  if (!this->logText.empty())
+  {
+    this->log.Update("%s", this->logText.c_str());
+  }
   this->text.Update("%5.1f", 1.0/dt);
+  if (this->time > 0.0)
+  {
+    this->time -= dt;
+  }
+  else 
+  {
+    this->time = 0.0;
+  }
 }
 
 void starrg_t::Render()
 {
   bb::framebuffer_t::Bind(this->context.Canvas());
 
-  glDisable(GL_CULL_FACE);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glDepthFunc(GL_LESS);
   
   this->camera.Update();
-  
+
   bb::shader_t::Bind(this->mapShader);
   this->mapShader.SetBlock("camera", camera.UniformBlock());
+  this->mapShader.SetFloat(
+    "time",
+    static_cast<float>(this->time)
+  );
 
   bb::texture_t::Bind(tileset);
-  if (this->mesh.Good())
+  if (this->map.Good())
   {
-    this->mesh.Render();
+    this->mapShader.SetFloat(
+      "minAlpha",
+      1.0f
+    );
+    this->map.Render();
   }
-  
+
+  if (this->unit.Good())
+  {
+    this->mapShader.SetFloat(
+      "minAlpha",
+      0.0f
+    );
+    this->unit.Render();
+  }
+
+  glDepthFunc(GL_ALWAYS);
   bb::shader_t::Bind(this->fontShader);
   this->fontShader.SetBlock("camera", camera.UniformBlock());
+  
+  this->fontShader.SetMatrix(
+    "model",
+    glm::mat4(1.0f)
+  );
   this->text.Render();
+  
+  this->fontShader.SetMatrix(
+    "model",
+    glm::translate(glm::mat4(1.0f), glm::vec3(720.0f, 0.0f, 0.0f))
+  );
+  if (!this->logText.empty())
+  {
+    this->log.Render();
+  }
+  bb::framebuffer_t::RenderToScreen();
 }
 
 starrg_t::starrg_t(bb::context_t& context)
@@ -82,6 +159,9 @@ starrg_t::starrg_t(bb::context_t& context)
 
   this->font.Load("font.config");
   this->text = bb::textDynamic_t(this->font, bb::vec2_t(8.0f, -16.0f));
+  this->log = bb::textDynamic_t(this->font, bb::vec2_t(8.0f, -16.0f));
+  glDisable(GL_CULL_FACE);
+  glEnable(GL_DEPTH_TEST);
 }
 
 starrg_t::~starrg_t()
