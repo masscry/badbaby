@@ -69,7 +69,7 @@ namespace bb
     }
 
     template<typename data_t>
-    class dataMsg_t final: public basic_t
+    class dataMsg_t: public basic_t
     {
       data_t data;
     public:
