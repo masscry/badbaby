@@ -13,13 +13,18 @@ public:
     M_UNIT
   } type;
 
-   meshData_t(bb::meshDesc_t&& data, type_t type)
-   : bb::msg::dataMsg_t<bb::meshDesc_t>(std::move(data), -1),
-     type(type)
-   {
-     ;
-   }
+  meshData_t(bb::meshDesc_t&& data, type_t type)
+  : bb::msg::dataMsg_t<bb::meshDesc_t>(std::move(data), -1),
+    type(type)
+  {
+    ;
+  }
 
+  meshData_t(const meshData_t&) = default;
+  meshData_t& operator=(const meshData_t&) = default;
+
+  meshData_t(meshData_t&&) = default;
+  meshData_t& operator=(meshData_t&&) = default;
 };
 
 class world_t: public bb::role_t
@@ -27,18 +32,18 @@ class world_t: public bb::role_t
   glm::ivec2 mapSize;
   std::vector<cell_t> tiles;
   std::deque<unit_t> units;
-  std::unordered_multimap<glm::ivec2, std::deque<unit_t>::iterator, ivecKey_t, ivecKey_t> unitsOnMap;
+  std::unordered_multimap<glm::ivec2, unit_t, ivecKey_t, ivecKey_t> unitsOnMap;
   double timePassed;
   uint64_t step;
 
   cell_t& Tiles(glm::ivec2 v)
   {
-    return this->tiles[v.y * mapSize.x + v.x];
+    return this->tiles[static_cast<size_t>(v.y * mapSize.x + v.x)];
   }
 
   const cell_t& Tiles(glm::ivec2 v) const
   {
-    return this->tiles[v.y * mapSize.x + v.x];
+    return this->tiles[static_cast<size_t>(v.y * mapSize.x + v.x)];
   }
 
   void UpdateMapUnits();
@@ -60,15 +65,20 @@ class world_t: public bb::role_t
   bb::meshDesc_t BuildTileMap();
   bb::meshDesc_t BuildUnits();
 
+  void ProcessAI();
+
   bb::msg::result_t OnProcessMessage(const bb::actor_t&, const bb::msg::basic_t& msg) override;
 
 public:
+
+
 
   const char* DefaultName() const override;
 
   tileInfo_t TileInfo(glm::ivec2 pos) const;
 
-  bool CanWalk(glm::ivec2 pos) const;
+  bool CanStand(glm::ivec2 pos) const;
+  bool CanWalk(glm::ivec2 pos, unitSide_t side) const;
 
   world_t(glm::ivec2 mapSize);
 

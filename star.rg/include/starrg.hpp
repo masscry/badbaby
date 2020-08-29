@@ -16,6 +16,8 @@
 
 #include <random>
 
+#include <components.hpp>
+
 std::mt19937& RandomEngine();
 
 enum tile_t
@@ -71,15 +73,6 @@ const uint16_t vConstInd[6] = {
 
 #include "tileDB.hpp"
 
-enum unitStatus_t
-{
-  US_NONE = 0,
-  US_MISS,
-  US_ARMOR,
-  US_SAVE,
-  US_DEAD
-};
-
 enum unitSide_t
 {
   SIDE_UP = 0,
@@ -87,7 +80,7 @@ enum unitSide_t
   SIDE_RIGHT,
   SIDE_DOWN_RIGHT,
   SIDE_DOWN,
-  SIDE_DONW_LEFT,
+  SIDE_DOWN_LEFT,
   SIDE_LEFT,
   SIDE_UP_LEFT,
   SIDE_TOTAL
@@ -104,17 +97,18 @@ const glm::vec2 sideVec[SIDE_TOTAL] = {
   { -1.0f, -1.0f }
 };
 
-struct unit_t
-{
-  glm::ivec2 pos;
-  glm::ivec2 sprite;
-  int skill;      // probability to hit
-  int stren;      // hit strenght
-  int tough;      // unit toughness
-  int armor;      // armor rating
-  int status;     // unit status
-  glm::vec2 side; // which side
+const glm::ivec2 iSideVec[SIDE_TOTAL] = {
+  {  0, -1 },
+  {  1, -1 },
+  {  1,  0 },
+  {  1,  1 },
+  {  0,  1 },
+  { -1,  1 },
+  { -1,  0 },
+  { -1, -1 }
 };
+
+using unit_t = sr::entityID_t;
 
 struct ivecKey_t
 {

@@ -17,13 +17,53 @@ void world_t::UpdateMapUnits()
   this->unitsOnMap.clear();
   for (auto it = this->units.begin(), e = this->units.end(); it != e; ++it)
   {
-    this->unitsOnMap.insert(
-      std::make_pair(
-        it->pos,
-        it)
+    std::unordered_multimap<glm::ivec2, unit_t, ivecKey_t, ivecKey_t> newMapUnits;
+    sr::pos_t::factory_t::Instance().Each(
+      [&newMapUnits](sr::pos_t& pos)
+      {
+        newMapUnits.emplace(
+          pos.Data().v,
+          pos.ID()
+        );
+      }
     );
+    this->unitsOnMap = std::move(newMapUnits);
   }
 }
+
+const sr::spriteData_t pikeManSprite = { {26, 0} };
+
+const sr::meleeData_t pikeManMelee = {
+  80, // int skill; // probability to hit
+  60, // int stren; // hit strenght
+  60, // int tough; // unit toughness
+  50  // int armor; // armor rating
+};
+
+const sr::updateData_t pikeManUpdate = {
+  1.0f,
+  0.0f
+};
+
+const sr::spriteData_t orkSprite = {
+  {26, 2}
+};
+
+const sr::meleeData_t orkMelee = {
+  20, // int skill; // probability to hit
+  90, // int stren; // hit strenght
+  50, // int tough; // unit toughness
+  5   // int armor; // armor rating
+};
+
+const sr::updateData_t orkUpdate = {
+  2.0f,
+  0.0f
+};
+
+const sr::aiData_t orkAI = {
+  sr::AI_STALKER
+};
 
 void world_t::GenerateMap()
 {
@@ -31,8 +71,9 @@ void world_t::GenerateMap()
 
   this->tiles.clear();
   this->tiles.resize(
-    this->mapSize.x * this->mapSize.y,
-    cell_t{T_EMPTY, false, false});
+    static_cast<size_t>(this->mapSize.x * this->mapSize.y),
+    cell_t{T_EMPTY, false, false}
+  );
 
   std::discrete_distribution<int> dist{
     15, // T_EMPTY
@@ -80,49 +121,106 @@ void world_t::GenerateMap()
   std::discrete_distribution<int> jumpDist{
     1, 3, 10, 10, 3, 1};
 
-  while (this->CanWalk(plPos) == false)
+  while (this->CanStand(plPos) == false)
   {
     plPos.x += jumpDist(engine) - 3;
     plPos.y += jumpDist(engine) - 3;
+    if ((plPos.x < 0) || (plPos.x > this->mapSize.x-1) || (plPos.y < 0) || (plPos.y > this->mapSize.y-1))
+    {
+      plPos.x = posXDist(engine);
+      plPos.y = posYDist(engine);
+    }
   }
 
   this->units.clear();
+  sr::entityFactory_t::Instance().Clear();
 
-  this->units.emplace_back(
-    unit_t{
-      plPos,
-      {26, 0},
-      80, // int skill; // probability to hit
-      60, // int stren; // hit strenght
-      60, // int tough; // unit toughness
-      95, // int armor; // armor rating
-      US_NONE, // int status; // unit status
-      {0.0f, 0.0f}  // int side; // unit side 
-    });
+  auto playerEntity = sr::entityFactory_t::Instance().GetNew();
+
+  sr::pos_t::factory_t::Instance().NewComponent(
+    playerEntity,
+    { plPos }
+  );
+
+  sr::sprite_t::factory_t::Instance().NewComponent(
+    playerEntity,
+    pikeManSprite
+  );
+
+  sr::melee_t::factory_t::Instance().NewComponent(
+    playerEntity,
+    pikeManMelee
+  );
+
+  sr::update_t::factory_t::Instance().NewComponent(
+    playerEntity,
+    pikeManUpdate
+  );
+
+  sr::status_t::factory_t::Instance().NewComponent(
+    playerEntity,
+    {
+      sr::US_NONE,
+      glm::vec2(0.0f)
+    }
+  );
+
+  this->units.emplace_back(playerEntity);
 
   for (int i = 0; i < 10; ++i)
   {
     auto pos = glm::ivec2{
       posXDist(engine),
-      posYDist(engine)};
+      posYDist(engine)
+    };
 
-    while (this->CanWalk(pos) == false)
+    while (this->CanStand(pos) == false)
     {
       pos.x += jumpDist(engine) - 3;
       pos.y += jumpDist(engine) - 3;
+      if ((pos.x < 0) || (pos.x > this->mapSize.x-1) || (pos.y < 0) || (pos.y > this->mapSize.y-1))
+      {
+        pos.x = posXDist(engine);
+        pos.y = posYDist(engine);
+      }
     }
 
-    this->units.emplace_back(
-      unit_t{
-        pos,
-        {26, 2},
-        20, // int skill; // probability to hit
-        10, // int stren; // hit strenght
-        10, // int tough; // unit toughness
-        5,  // int armor; // armor rating
-        US_NONE, // int status; // unit status
-        {0.0f, 0.0f}  // int side; // unit side 
-      });
+    auto orkEntity = sr::entityFactory_t::Instance().GetNew();
+
+    sr::pos_t::factory_t::Instance().NewComponent(
+      orkEntity,
+      { pos }
+    );
+
+    sr::sprite_t::factory_t::Instance().NewComponent(
+      orkEntity,
+      orkSprite
+    );
+
+    sr::melee_t::factory_t::Instance().NewComponent(
+      orkEntity,
+      orkMelee
+    );
+
+    sr::update_t::factory_t::Instance().NewComponent(
+      orkEntity,
+      orkUpdate
+    );
+
+    sr::ai_t::factory_t::Instance().NewComponent(
+      orkEntity,
+      orkAI
+    );
+
+    sr::status_t::factory_t::Instance().NewComponent(
+      orkEntity,
+      {
+        sr::US_NONE,
+        glm::vec2(0.0f)
+      }
+    );
+
+    this->units.emplace_back(orkEntity);
     this->UpdateMapUnits();
   }
 
@@ -194,7 +292,7 @@ void world_t::CastLight(
 
       if (blocked)
       {
-        if (!this->CanWalk(glm::ivec2{ax, ay}))
+        if (!this->CanStand(glm::ivec2{ax, ay}))
         {
           nextStartSlope = r_slope;
           continue;
@@ -205,7 +303,7 @@ void world_t::CastLight(
           startSlope = nextStartSlope;
         }
       }
-      else if (!this->CanWalk(glm::ivec2{ax, ay}))
+      else if (!this->CanStand(glm::ivec2{ax, ay}))
       {
         blocked = true;
         nextStartSlope = r_slope;
@@ -375,66 +473,86 @@ bb::meshDesc_t world_t::BuildUnits()
 
   for (auto& unit : this->units)
   {
-    auto info = this->Tiles(unit.pos);
+    auto& unitPosComponent = sr::pos_t::factory_t::Instance().Item(unit);
+    auto& unitSpriteComponent = sr::sprite_t::factory_t::Instance().Item(unit);
+    auto& unitStatusComponent = sr::status_t::factory_t::Instance().Item(unit);
+
+    auto unitPos = unitPosComponent.Data().v;
+    auto& unitStatus = unitStatusComponent.Data();
+
+    auto info = this->Tiles(unitPos);
 
     if (!info.visible)
     {
       continue;
     }
 
-    glm::vec2 pos = {unit.pos.x * tileSize.x, unit.pos.y * tileSize.y};
+    glm::vec2 pos = {unitPos.x * tileSize.x, unitPos.y * tileSize.y};
 
-    quadData_t q = CreateQuad(unit.sprite, pos, glm::vec3(1.0f), indOffset, false);
+    if (indOffset + 4 >= UINT16_MAX)
+    { // Invalid offset!
+      assert(0);
+      continue;
+    }
+
+    quadData_t q = CreateQuad(unitSpriteComponent.Data().id, pos, glm::vec3(1.0f), static_cast<uint16_t>(indOffset), false);
     for (auto& v: q.vPos)
     {
       v.z = 1.0f;
     }
 
-    switch (unit.status)
+    switch (unitStatus.status)
     {
-    case US_NONE:
+    case sr::US_NONE:
       break;
-    case US_MISS:
+    case sr::US_MISS:
       for (auto& v: q.vShim)
       {
-        v = unit.side*10.0f;
+        v = unitStatus.side*10.0f;
       }
-      unit.status = US_NONE;
+      unitStatus.status = sr::US_NONE;
       break;
-    case US_ARMOR:
+    case sr::US_ARMOR:
       {
-        quadData_t shield = CreateQuad(
-          glm::ivec2{39, 3},
-          pos,
-          glm::vec3(1.0f),
-          indOffset+4,
-          false
-        );
-        for (auto& v: q.vCol)
+        if (indOffset + 4 >= UINT16_MAX)
         {
-          v *= 0.3f;
+          assert(0);
         }
-        for (auto& v: shield.vPos)
+        else
         {
-          v.z = 2.0f;
+          quadData_t shield = CreateQuad(
+            glm::ivec2{39, 3},
+            pos,
+            glm::vec3(1.0f),
+            static_cast<uint16_t>(indOffset+4),
+            false
+          );
+          for (auto& v: q.vCol)
+          {
+            v *= 0.3f;
+          }
+          for (auto& v: shield.vPos)
+          {
+            v.z = 2.0f;
+          }
+          for (auto& v: shield.vShim)
+          {
+            v = unitStatus.side*14.0f;
+          }
+          vec.Add(shield);
+          indOffset += 4;
         }
-        for (auto& v: shield.vShim)
-        {
-          v = unit.side*14.0f;
-        }
-        vec.Add(shield);
-        indOffset += 4;
-        unit.status = US_NONE;
+        unitStatus.status = sr::US_NONE;
       }
       break;
-    case US_SAVE:
+    case sr::US_SAVE:
       for (auto& v: q.vShim)
       {
-        v = glm::vec2(unit.side.y, -unit.side.x)*10.0f;
+        v = glm::vec2(unitStatus.side.y, -unitStatus.side.x)*10.0f;
       }
-      unit.status = US_NONE;
+      unitStatus.status = sr::US_NONE;
       break;
-    case US_DEAD:
+    case sr::US_DEAD:
       {
         for (auto& v: q.vCol)
         {
@@ -470,16 +588,22 @@ bb::meshDesc_t world_t::BuildTileMap()
 
   glm::ivec2 playerPos;
 
-  if (!this->units.empty())
-  {
-    playerPos = this->units[0].pos;
+  if (mapSize.y * mapSize.x < 0)
+  { // Invalid map dimensions!
+    assert(0);
+    return bb::meshDesc_t();
   }
 
-  vec.pos.reserve(mapSize.y * mapSize.x * 4);
-  vec.uv.reserve(mapSize.y * mapSize.x * 4);
-  vec.col.reserve(mapSize.y * mapSize.x * 4);
-  vec.shim.reserve(mapSize.y * mapSize.x * 4);
-  vec.ind.reserve(mapSize.y * mapSize.x * 6);
+  if (!this->units.empty())
+  {
+    playerPos = sr::pos_t::factory_t::Instance().Item(this->units[0]).Data().v;
+  }
+
+  vec.pos.reserve(static_cast<size_t>(mapSize.y * mapSize.x * 4));
+  vec.uv.reserve(static_cast<size_t>(mapSize.y * mapSize.x * 4));
+  vec.col.reserve(static_cast<size_t>(mapSize.y * mapSize.x * 4));
+  vec.shim.reserve(static_cast<size_t>(mapSize.y * mapSize.x * 4));
+  vec.ind.reserve(static_cast<size_t>(mapSize.y * mapSize.x * 6));
 
   int indOffset = 0;
 
@@ -489,7 +613,7 @@ bb::meshDesc_t world_t::BuildTileMap()
     cell.visible = false;
   }
 
-  this->Tiles(this->units[0].pos).visible = true;
+  this->Tiles(playerPos).visible = true;
 
   this->UpdateFOV(playerPos, 10);
   for (auto &cell : this->tiles)
@@ -511,7 +635,13 @@ bb::meshDesc_t world_t::BuildTileMap()
       auto tile = tileID[cell.tile];
       glm::vec2 pos = {x * tileSize.x, y * tileSize.y};
 
-      quadData_t q = CreateQuad(tile.pos, pos, color, indOffset, tile.flip);
+      if (indOffset + 4 >= UINT16_MAX)
+      { // Too many indecies!
+        assert(0);
+        continue;
+      }
+
+      quadData_t q = CreateQuad(tile.pos, pos, color, static_cast<uint16_t>(indOffset), tile.flip);
 
       vec.Add(q);
       indOffset += 4;
@@ -519,6 +649,56 @@ bb::meshDesc_t world_t::BuildTileMap()
   }
 
   return vec.Create();
+}
+
+void world_t::ProcessAI()
+{
+  // Обработка ответа мира на действия игрока
+  auto &engine = RandomEngine();
+  std::uniform_int_distribution<int> modeSide(SIDE_UP, SIDE_UP_LEFT);
+  // Каждые три хода игрока, все орки двигаются в случайном направлении
+  for (auto unit: this->units)
+  {
+    auto& unitStatus = sr::status_t::factory_t::Instance().Item(unit);
+    if (unitStatus->status == sr::US_DEAD)
+    {
+      continue;
+    }
+
+    auto& unitUpdate = sr::update_t::factory_t::Instance().Item(unit);
+
+    unitUpdate->curTime += this->timePassed;
+    while (unitUpdate->curTime > unitUpdate->moveTime)
+    {
+      unitUpdate->curTime -= unitUpdate->moveTime;
+      auto* unitAI = sr::ai_t::factory_t::Instance().OptionalItem(unit);
+      if (unitAI == nullptr)
+      {
+        continue;
+      }
+
+      switch(unitAI->Data().ai)
+      {
+        case sr::AI_STALKER:
+        {
+          auto& unitPos = sr::pos_t::factory_t::Instance().Item(unit);
+          auto side = (unitSide_t) modeSide(engine);
+          if (this->CanWalk(unitPos->v, side))
+          {
+            unitPos->v += iSideVec[side];
+          }
+          break;
+        }
+        case sr::AI_SCARED:
+          break;
+        case sr::AI_ANGRY:
+          break;
+        default:
+          assert(0);
+      }
+    }
+  }
+  this->timePassed = 0.0;
 }
 
 bb::msg::result_t world_t::OnProcessMessage(const bb::actor_t &, const bb::msg::basic_t &msg)
@@ -600,164 +780,88 @@ bb::msg::result_t world_t::OnProcessMessage(const bb::actor_t &, const bb::msg::
 
   if (auto action = bb::msg::As<bb::msg::dataMsg_t<action_t>>(msg))
   {
-    if (!this->units.empty())
+    if (this->units.empty())
+    { // Некем управлять
+      return bb::msg::result_t::complete;
+    }
+
+    // Если есть первый юнит - это игрок
+    auto &player = this->units[0];
+
+    // обработка ввода игрока
+    unitSide_t side = SIDE_TOTAL;
+    switch (action->Data().key)
     {
-      auto &player = this->units[0];
+      case GLFW_KEY_KP_1:
+        side = SIDE_DOWN_LEFT;
+        this->timePassed += sq2;
+        ++this->step;
+        break;
+      case GLFW_KEY_KP_2:
+        side = SIDE_DOWN;
+        this->timePassed += 1.0;
+        ++this->step;
+        break;
+      case GLFW_KEY_KP_3:
+        side = SIDE_DOWN_RIGHT;
+        this->timePassed += sq2;
+        ++this->step;
+        break;
+      case GLFW_KEY_KP_4:
+        side = SIDE_LEFT;
+        this->timePassed += 1.0;
+        ++this->step;
+        break;
+      case GLFW_KEY_KP_6:
+        side = SIDE_RIGHT;
+        this->timePassed += 1.0;
+        ++this->step;
+        break;
+      case GLFW_KEY_KP_7:
+        side = SIDE_UP_LEFT;
+        this->timePassed += sq2;
+        ++this->step;
+        break;
+      case GLFW_KEY_KP_8:
+        side = SIDE_UP;
+        this->timePassed += 1.0;
+        ++this->step;
+        break;
+      case GLFW_KEY_KP_9:
+        side = SIDE_UP_RIGHT;
+        this->timePassed += sq2;
+        ++this->step;
+        break;
+    }
 
-      glm::ivec2 newPos = player.pos;
-      switch (action->Data().key)
-      {
-        case GLFW_KEY_KP_1:
-          --newPos.x;
-          ++newPos.y;
-          this->timePassed += sq2;
-          ++this->step;
-          break;
-        case GLFW_KEY_KP_2:
-          ++newPos.y;
-          this->timePassed += 1.0;
-          ++this->step;
-          break;
-        case GLFW_KEY_KP_3:
-          ++newPos.x;
-          ++newPos.y;
-          this->timePassed += sq2;
-          ++this->step;
-          break;
-        case GLFW_KEY_KP_4:
-          --newPos.x;
-          this->timePassed += 1.0;
-          ++this->step;
-          break;
-        case GLFW_KEY_KP_6:
-          ++newPos.x;
-          this->timePassed += 1.0;
-          ++this->step;
-          break;
-        case GLFW_KEY_KP_7:
-          --newPos.x;
-          --newPos.y;
-          this->timePassed += sq2;
-          ++this->step;
-          break;
-        case GLFW_KEY_KP_8:
-          --newPos.y;
-          this->timePassed += 1.0;
-          ++this->step;
-          break;
-        case GLFW_KEY_KP_9:
-          ++newPos.x;
-          --newPos.y;
-          this->timePassed += sq2;
-          ++this->step;
-          break;
+    auto& playerPos = sr::pos_t::factory_t::Instance().Item(player);
+
+    // Если можно сделать ход
+    if (this->CanWalk(playerPos->v, side))
+    {
+      playerPos->v += iSideVec[side];
+
+      auto tileInfo = this->TileInfo(playerPos->v);
+      if (tileInfo.ladder)
+      { // Специальная клетка - лестница
+        this->GenerateMap();
+      }
+      else
+      { // Двигаем остальных и обновляем карту
+        this->ProcessAI();
+        this->UpdateMapUnits();
       }
 
-      auto target = this->unitsOnMap.find(newPos);
-      if ((target != this->unitsOnMap.end()) && (target->second->status != US_DEAD))
-      {
-        std::stringstream logst;
-        auto &engine = RandomEngine();
-        std::uniform_int_distribution<int> dice(0, 100);
+      // Отправляем новую карту
+      bb::postOffice_t::Instance().Post(
+        "StarView",
+        bb::Issue<meshData_t>(
+          this->BuildTileMap(),
+          meshData_t::M_MAP
+        )
+      );
 
-        auto& playerStats = this->units[0];
-        auto& targetStats = *target->second;
-        targetStats.side = newPos - player.pos;
-
-        logst << "[" << this->step << "]" << "Конан бьёт! ";
-
-        int hitRoll = dice(engine);
-        if (hitRoll <= playerStats.skill)
-        { // has hit
-          int woundRoll = dice(engine);
-          if (woundRoll <= (playerStats.stren - targetStats.tough))
-          { // has wounded
-            int armorSave = dice(engine);
-            if (armorSave > targetStats.armor)
-            { // armor failed
-              logst << "Убил!";
-              targetStats.status = US_DEAD;
-              this->UpdateMapUnits();
-            }
-            else
-            {
-              logst << "Не задел! (S" << armorSave << "<" << targetStats.armor << ')';
-              playerStats.status = US_SAVE;
-              playerStats.side = player.pos-newPos;
-              targetStats.status = US_SAVE;
-            }
-          }
-          else
-          {
-            logst << "Мечь отскочил от брони! (W" << woundRoll << ">" << playerStats.stren - targetStats.tough << ')';
-            playerStats.status = US_MISS;
-            playerStats.side = player.pos-newPos;
-            targetStats.status = US_ARMOR;
-          }
-        }
-        else
-        {
-          logst << "Промазал! (H" << hitRoll << ">" << playerStats.skill << ')';
-          playerStats.status = US_MISS;
-          playerStats.side = player.pos-newPos;
-          targetStats.status = US_MISS;
-        }
-
-        bb::postOffice_t::Instance().Post(
-          "StarView",
-          bb::Issue<bb::msg::dataMsg_t<std::string>>(
-            logst.str(),
-            -1
-          )
-        );
-
-      }
-
-      if (this->CanWalk(newPos))
-      {
-        player.pos = newPos;
-
-        auto tileInfo = this->TileInfo(player.pos);
-        if (tileInfo.ladder)
-        {
-          this->GenerateMap();
-        }
-        else
-        {
-          auto &engine = RandomEngine();
-          std::discrete_distribution<int> deltaMove = {
-            1, 3, 1};
-
-          while (this->timePassed > 3.0)
-          {
-            for (auto unit = this->units.begin() + 1, e = this->units.end(); unit != e; ++unit)
-            {
-              if (unit->status == US_DEAD)
-              {
-                continue;
-              }
-              newPos.x = unit->pos.x + deltaMove(engine) - 1;
-              newPos.y = unit->pos.y + deltaMove(engine) - 1;
-              if (this->CanWalk(newPos))
-              {
-                unit->pos = newPos;
-                this->UpdateMapUnits();
-              }
-            }
-            this->timePassed -= 3.0;
-          }
-          this->UpdateMapUnits();
-        }
-
-        bb::postOffice_t::Instance().Post(
-          "StarView",
-          bb::Issue<meshData_t>(
-            this->BuildTileMap(),
-            meshData_t::M_MAP
-          )
-        );
-      }
-
+      // Отправляем новых юнитов
       bb::postOffice_t::Instance().Post(
         "StarView",
         bb::Issue<meshData_t>(
@@ -765,8 +869,102 @@ bb::msg::result_t world_t::OnProcessMessage(const bb::actor_t &, const bb::msg::
           meshData_t::M_UNIT
         )
       );
-
+      // Больше делать нечего - заканчиваем
+      return bb::msg::result_t::complete;
     }
+
+    // Пройти не получилось, пробуем драться!
+    auto targetPos = playerPos->v + iSideVec[side];
+
+    // Если в клетке есть враг - пытаемся драться
+    auto target = this->unitsOnMap.find(targetPos);
+    if (target != this->unitsOnMap.end())
+    {
+      auto& playerStatus = sr::status_t::factory_t::Instance().Item(this->units[0]);
+      auto& targetStatus = sr::status_t::factory_t::Instance().Item(target->second);
+      if (targetStatus->status != sr::US_DEAD)
+      {
+        std::stringstream logst;
+        auto &engine = RandomEngine();
+        std::uniform_int_distribution<int> dice(0, 100);
+
+        auto& playerMelee = sr::melee_t::factory_t::Instance().Item(this->units[0]);
+        auto& targetMelee = sr::melee_t::factory_t::Instance().Item(target->second);
+        targetStatus->side = sideVec[side];
+
+        logst << "[" << this->step << "]" << "Конан бьёт! ";
+
+        // Как хорошо попадаем
+        int hitRoll = dice(engine);
+        if (hitRoll <= playerMelee->skill)
+        {
+          // Чтобы ранить - надо пробить броню своей силой
+          int woundDifficulty = 50; // Если равны - то вероятность 50/50
+
+          woundDifficulty += (playerMelee->stren > targetMelee->tough)*20; // Если сила выше, то +20%
+          woundDifficulty += (playerMelee->stren > targetMelee->tough*2)*20; // Если в два раза выше +40%
+          woundDifficulty -= (playerMelee->stren < targetMelee->tough)*20; // Если сила меньше, то -20%
+          woundDifficulty -= (playerMelee->stren*2 < targetMelee->tough)*20; // Если в два раза меньше -40%
+
+          int woundRoll = dice(engine);
+
+          if (woundRoll <= woundDifficulty)
+          { // Рана попала
+            
+            // Воин способен минимизировать вред от раны
+            int armorSave = dice(engine);
+            if (armorSave > targetMelee->armor)
+            { // Не вышло!
+              logst << "Убил!";
+              targetStatus->status = sr::US_DEAD;
+            }
+            else
+            { // Рана не прошла
+              logst << "Не задел! (S" << armorSave << "<" << targetMelee->armor << ')';
+              playerStatus->status = sr::US_SAVE;
+              playerStatus->side = -sideVec[side];
+              targetStatus->status = sr::US_SAVE;
+            }
+          }
+          else
+          { // Спасла броня
+            logst << "Мечь отскочил от брони! (W" << woundRoll << ">" << woundDifficulty << ')';
+            playerStatus->status = sr::US_MISS;
+            playerStatus->side = -sideVec[side];
+            targetStatus->status = sr::US_ARMOR;
+          }
+        }
+        else
+        { // Вообще не попал
+          logst << "Промазал! (H" << hitRoll << ">" << playerMelee->skill << ')';
+          playerStatus->status = sr::US_MISS;
+          playerStatus->side = -sideVec[side];
+          targetStatus->status = sr::US_MISS;
+        }
+
+        // Отправка сообщения в лог
+        bb::postOffice_t::Instance().Post(
+          "StarView",
+          bb::Issue<bb::msg::dataMsg_t<std::string>>(
+            logst.str(),
+            -1
+          )
+        );
+      }
+    }
+
+    // Двигаем кого можем и обновляем карту
+    this->ProcessAI();
+    this->UpdateMapUnits();
+
+    // Отправляем новые положения и состояния юнитов
+    bb::postOffice_t::Instance().Post(
+      "StarView",
+      bb::Issue<meshData_t>(
+        this->BuildUnits(),
+        meshData_t::M_UNIT
+      )
+    );
     return bb::msg::result_t::complete;
   }
 
@@ -789,18 +987,41 @@ tileInfo_t world_t::TileInfo(glm::ivec2 pos) const
   return tileID[T_TREE_0];
 }
 
-bool world_t::CanWalk(glm::ivec2 pos) const
+bool world_t::CanStand(glm::ivec2 pos) const
 {
   if ((pos.x < this->mapSize.x) && (pos.y < this->mapSize.y) && (pos.x >= 0) && (pos.y >= 0))
   {
     auto tile = tileID[this->Tiles(pos).tile];
     auto unit = this->unitsOnMap.find(pos) ;
-    if ((unit == this->unitsOnMap.end()) || (unit->second->status == US_DEAD))
+    if ((unit == this->unitsOnMap.end()) ||  (sr::status_t::factory_t::Instance().Item(unit->second)->status == sr::US_DEAD))
     {
       return tile.canWalk;
     }
   }
   return false;
+}
+
+bool world_t::CanWalk(glm::ivec2 pos, unitSide_t side) const
+{
+  auto newPos = pos + iSideVec[side];
+  if (this->CanStand(newPos) == false)
+  {
+    return false;
+  }
+
+  if ((newPos.x != pos.x) && (newPos.y != pos.y))
+  { // Если движение по диагонали, то надо проверить, можно ли пройти 
+    // также в стороны, если хоть в одну из сторон пройти нельзя - 
+    // то пройти нельзя
+
+    if ( (this->CanStand({ pos.x, newPos.y }) == false) 
+      && (this->CanStand({ newPos.x, pos.y }) == false))
+    {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 world_t::world_t(glm::ivec2 mapSize)

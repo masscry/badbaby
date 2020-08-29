@@ -19,6 +19,8 @@ std::mt19937& RandomEngine()
   return gen;
 }
 
+const size_t maxLines = 44;
+
 void starrg_t::Update(double dt)
 {
   bb::msg_t msg;
@@ -45,19 +47,28 @@ void starrg_t::Update(double dt)
     if (auto log = bb::As<bb::msg::dataMsg_t<std::string>>(msg))
     {
       logLines.emplace_back(std::move(log->Data()));
-      if (logLines.size() > 10)
+      if (logLines.size() > maxLines)
       {
         logLines.pop_front();
       }
 
       std::stringstream linesText;
+      linesText << "\\0";
 
-      for(const auto& ll: logLines)
+      for(auto it = logLines.begin(), e = logLines.end()-1; it != e; ++it)
       {
-        linesText << ll << "\n";
+        linesText << *it << "\n";
+      }
+      if (logLines.size() == maxLines)
+      {
+        linesText << "\\1" << *(logLines.end()-1) << "\n";
+      }
+      else
+      {
+        linesText << *(logLines.end()-1) << "\n";
       }
 
-      this->logText =  linesText.str();
+      this->logText = linesText.str();
 
       continue;
     }
