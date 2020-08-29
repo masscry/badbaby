@@ -101,8 +101,8 @@ namespace bb
       dataMsg_t(const dataMsg_t<data_t>&) = default;
       dataMsg_t& operator=(const dataMsg_t<data_t>&) = default;
 
-      dataMsg_t(dataMsg_t<data_t>&&) noexcept = default;
-      dataMsg_t& operator=(dataMsg_t<data_t>&&) noexcept= default;
+      dataMsg_t(dataMsg_t<data_t>&&) = default;
+      dataMsg_t& operator=(dataMsg_t<data_t>&&) = default;
 
       ~dataMsg_t() override = default;
     };
