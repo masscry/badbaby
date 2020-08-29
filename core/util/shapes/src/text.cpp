@@ -61,6 +61,7 @@ namespace
     {
       output.vPos.resize(totalSymbols*4);
       output.vUV.resize(totalSymbols*4);
+      output.vCol.resize(totalSymbols*4);
       output.indecies.resize(totalSymbols*6);
     }
 
@@ -71,18 +72,26 @@ namespace
 
     auto vPosIt = output.vPos.begin();
     auto vUVIt = output.vUV.begin();
+    auto vColIt = output.vCol.begin();
     auto indIt = output.indecies.begin();
 
     const glm::vec2* pUVMatrix = (chSize.y < 0)?(uvInvertedMatrix):(uvMatrix);
     chSize.y = fabsf(chSize.y);
 
-    for (auto it: symbols)
+    auto ccolt = glm::vec4(1.0f);
+    auto ccolb = glm::vec4(1.0f);
+
+    for (auto it = symbols.begin(), e = symbols.end(); it != e; ++it)
     {
-      if ((it <= 0xFF) && (std::isspace(static_cast<int>(it)) != 0))
+      auto smb = *it;
+
+      if (((smb <= 0xFF) && (std::isspace(static_cast<int>(smb)) != 0)) || (smb == '\\'))
       {
-        switch (it)
+        switch (smb)
         {
         case '\n':
+          ccolb = glm::vec4(1.0f);
+          ccolt = glm::vec4(1.0f);
           cursor.x = 0.0f;
           cursor.y += chSize.y;
           break;
@@ -90,8 +99,26 @@ namespace
           // Move cursor integer part of tab stops in cursor + 1
           cursor.x = (floorf(cursor.x/(chSize.x*2.0f))+1.0f)*chSize.x*2.0f;
           break;
+        case '\\':
+          ++it;
+          smb = *it;
+          switch(smb)
+          {
+            case '0':
+              ccolb = glm::vec4(1.0f);
+              ccolt = glm::vec4(0.0f);
+              break;
+            case '1':
+              ccolb = glm::vec4(0.0f);
+              ccolt = glm::vec4(1.0f);
+              break;
+            default:
+              assert(0);
+              bb::Warning("Unknown escape sequence: \\(%02X)", smb);
+          }
+          break;
         default:
-          bb::Warning("Unknown space char: (%02X)", it);
+          bb::Warning("Unknown space char: (%02X)", smb);
           /* FALLTHROUGH */
         case ' ':
           cursor.x += chSize.x;
@@ -99,8 +126,8 @@ namespace
       }
       else
       {
-        bb::vec2_t smbOffset = font.SymbolOffset(it);
-        bb::vec2_t smbSize   = font.SymbolSize(it);
+        bb::vec2_t smbOffset = font.SymbolOffset(smb);
+        bb::vec2_t smbSize   = font.SymbolSize(smb);
 
         *vPosIt++ = { cursor.x, cursor.y, cursor.z };
         *vPosIt++ = { cursor.x + chSize.x, cursor.y, cursor.z};
@@ -111,6 +138,11 @@ namespace
         *vUVIt++ = { smbOffset.x + smbSize.x * pUVMatrix[1].x, smbOffset.y + smbSize.y * pUVMatrix[1].y };
         *vUVIt++ = { smbOffset.x + smbSize.x * pUVMatrix[2].x, smbOffset.y + smbSize.y * pUVMatrix[2].y };
         *vUVIt++ = { smbOffset.x + smbSize.x * pUVMatrix[3].x, smbOffset.y + smbSize.y * pUVMatrix[3].y };
+
+        *vColIt++ = ccolt;
+        *vColIt++ = ccolt;
+        *vColIt++ = ccolb;
+        *vColIt++ = ccolb;
 
         *indIt++ = static_cast<uint16_t>(vID+0u);
         *indIt++ = static_cast<uint16_t>(vID+1u);
@@ -304,12 +336,14 @@ namespace bb
 
     vbo_t vPosVBO = vbo_t::CreateArrayBuffer(textV.vPos.data(), ByteSize(textV.vPos), false);
     vbo_t vUVVBO = vbo_t::CreateArrayBuffer(textV.vUV.data(), ByteSize(textV.vUV), false);
+    vbo_t vColVBO = vbo_t::CreateArrayBuffer(textV.vCol.data(), ByteSize(textV.vCol), false);
     vbo_t indeciesVBO = vbo_t::CreateElementArrayBuffer(textV.indecies.data(), ByteSize(textV.indecies), false);
 
     vao_t vao = vao_t::CreateVertexAttribObject();
 
     vao.BindVBO(vPosVBO, 0, 3, GL_FLOAT, GL_FALSE, 0, 0);
     vao.BindVBO(vUVVBO, 1, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    vao.BindVBO(vColVBO, 2, 4, GL_FLOAT, GL_FALSE, 0, 0);
     vao.BindIndecies(indeciesVBO);
 
     this->mesh = mesh_t(std::move(vao), textV.indecies.size(), GL_TRIANGLES, 2);
@@ -341,6 +375,11 @@ namespace bb
         ByteSize(this->vertecies.vUV),
         true
       );
+      this->vColVBO = vbo_t::CreateArrayBuffer(
+        this->vertecies.vCol.data(),
+        ByteSize(this->vertecies.vCol),
+        true
+      );
       this->indeciesVBO = vbo_t::CreateElementArrayBuffer(
         this->vertecies.indecies.data(),
         ByteSize(this->vertecies.indecies),
@@ -356,12 +395,14 @@ namespace bb
 
       this->vPosVBO.Update(0, sizeof(vec3_t)*textV, this->vertecies.vPos.data());
       this->vUVVBO.Update(0,  sizeof(vec2_t)*textV, this->vertecies.vUV.data());
+      this->vColVBO.Update(0, sizeof(vec4_t)*textV, this->vertecies.vCol.data());
       this->indeciesVBO.Update(0, sizeof(uint16_t)*textI, this->vertecies.indecies.data());
     }
 
-    this->vao.BindVBO(vPosVBO, 0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    this->vao.BindVBO(vUVVBO, 1, 2, GL_FLOAT, GL_FALSE, 0, 0);
-    this->vao.BindIndecies(indeciesVBO);
+    this->vao.BindVBO(this->vPosVBO, 0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    this->vao.BindVBO(this->vUVVBO, 1, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    this->vao.BindVBO(this->vColVBO, 2, 4, GL_FLOAT, GL_FALSE, 0, 0);
+    this->vao.BindIndecies(this->indeciesVBO);
 
     this->renderI = textI;
   }
@@ -399,9 +440,11 @@ namespace bb
 
       glEnableVertexAttribArray(0);
       glEnableVertexAttribArray(1);
+      glEnableVertexAttribArray(2);
       glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(this->renderI), GL_UNSIGNED_SHORT, 0);
-      glDisableVertexAttribArray(0);
+      glDisableVertexAttribArray(2);
       glDisableVertexAttribArray(1);
+      glDisableVertexAttribArray(0);
     }
   }
 

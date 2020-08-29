@@ -4,10 +4,11 @@
 layout(location = 0) out vec4 pixColor;
 
 in vec2 fragUV;
+in vec4 fragCol;
 
 uniform sampler2D mainTex;
 
 void main()
 {
-  pixColor = vec4(1.0f, 1.0f, 1.0f, texture(mainTex, fragUV).a);
+  pixColor = vec4(fragCol.rgb, texture(mainTex, fragUV).a);
 }
