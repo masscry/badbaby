@@ -7,6 +7,14 @@ model.
 
 * sub3000 - Game built around BadBaby engine
   * WORK IN PROGRESS
+* star.rg
+  * Roguelike stub project
+* orthofight
+  * Orthigonal camera RTS stub project
+* cqc
+  * Simple vector menu example
+* painter
+  * utility to draw vector graphics
 * core - engine core components
   * actor - actor-based multithreading system
   * common - common routines, like logging, UTF-8 etc.
@@ -15,6 +23,7 @@ model.
   * util - utility libraries
     * shapes - rotuines and classes uses core.render to create objects to render
     * simplex - 3D OpenSimplex noise implementation 
+  * sound - sound library using BASS
 * runtime - working directory for examples, resources stored here
 * tests - engine feature test programs
 
@@ -33,3 +42,4 @@ model.
 * Python 3.6
 * glfw3 3.2
 * glm 0.9.9
+* bass 2.4
