@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file
 
 ## [Unreleased]
 
+## [0.4.0] - 2020-09-19
+
+###
+ - star.rg: roguelike stub project
+ - star.rg: simple ECS
+
 ## [0.3.0] - 2020-06-13
 
 ### Added
@@ -139,7 +145,8 @@ All notable changes to this project will be documented in this file
 - tests: 000hello, 001render, 002config, 003font
 - documentation: README.md, CHANGELOG.md, plan.md, LICENSE.md
 
-[Unreleased]: https://github.com/masscry/badbaby/compare/v0.3.0...develop
+[Unreleased]: https://github.com/masscry/badbaby/compare/v0.4.0...develop
+[0.3.0]: https://github.com/masscry/badbaby/releases/tag/v0.4.0
 [0.3.0]: https://github.com/masscry/badbaby/releases/tag/v0.3.0
 [0.2.1]: https://github.com/masscry/badbaby/releases/tag/v0.2.1
 [0.2.0]: https://github.com/masscry/badbaby/releases/tag/v0.2.0
