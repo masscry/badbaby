@@ -41,8 +41,8 @@ const sr::meleeData_t pikeManMelee = {
 };
 
 const sr::updateData_t pikeManUpdate = {
-  1.0f,
-  0.0f
+  1000,
+  0
 };
 
 const sr::spriteData_t orkSprite = {
@@ -57,8 +57,8 @@ const sr::meleeData_t orkMelee = {
 };
 
 const sr::updateData_t orkUpdate = {
-  2.0f,
-  0.0f
+  2000,
+  0
 };
 
 const sr::aiData_t orkAI = {
@@ -162,6 +162,14 @@ void world_t::GenerateMap()
     {
       sr::US_NONE,
       glm::vec2(0.0f)
+    }
+  );
+
+  sr::userInput_t::factory_t::Instance().NewComponent(
+    playerEntity,
+    {
+      sr::SIDE_TOTAL,
+      0
     }
   );
 
@@ -655,8 +663,7 @@ void world_t::ProcessAI()
 {
   // Обработка ответа мира на действия игрока
   auto &engine = RandomEngine();
-  std::uniform_int_distribution<int> modeSide(SIDE_UP, SIDE_UP_LEFT);
-  // Каждые три хода игрока, все орки двигаются в случайном направлении
+  std::uniform_int_distribution<int> modeSide(sr::SIDE_UP, sr::SIDE_UP_LEFT);
   for (auto unit: this->units)
   {
     auto& unitStatus = sr::status_t::factory_t::Instance().Item(unit);
@@ -681,11 +688,12 @@ void world_t::ProcessAI()
       {
         case sr::AI_STALKER:
         {
+          // Каждые два хода игрока, все орки двигаются в случайном направлении
           auto& unitPos = sr::pos_t::factory_t::Instance().Item(unit);
-          auto side = (unitSide_t) modeSide(engine);
+          auto side = (sr::unitSide_t) modeSide(engine);
           if (this->CanWalk(unitPos->v, side))
           {
-            unitPos->v += iSideVec[side];
+            unitPos->v += sr::iSideVec[side];
           }
           break;
         }
@@ -698,260 +706,271 @@ void world_t::ProcessAI()
       }
     }
   }
-  this->timePassed = 0.0;
+  this->timePassed = 0;
 }
+
+bb::msg::result_t world_t::OnKeyPress(const bb::msg::keyEvent_t& key)
+{
+  switch (key.Press())
+  {
+    case GLFW_RELEASE:
+    {
+      if (key.Key() == GLFW_KEY_ESCAPE)
+      {
+        bb::postOffice_t::Instance().Post(
+          "starrg",
+          bb::IssuePoison());
+      }
+    }
+    break;
+    case GLFW_PRESS:
+    case GLFW_REPEAT:
+    {
+      switch (key.Key())
+      {
+        case GLFW_KEY_RIGHT:
+          bb::postOffice_t::Instance().Post(
+            "StarWorld",
+            bb::Issue<bb::msg::dataMsg_t<action_t>>(
+              action_t{GLFW_KEY_KP_6},
+              -1));
+          break;
+        case GLFW_KEY_LEFT:
+          bb::postOffice_t::Instance().Post(
+            "StarWorld",
+            bb::Issue<bb::msg::dataMsg_t<action_t>>(
+              action_t{GLFW_KEY_KP_4},
+              -1));
+          break;
+        case GLFW_KEY_DOWN:
+          bb::postOffice_t::Instance().Post(
+            "StarWorld",
+          bb::Issue<bb::msg::dataMsg_t<action_t>>(
+            action_t{GLFW_KEY_KP_2},
+            -1));
+        break;
+        case GLFW_KEY_UP:
+          bb::postOffice_t::Instance().Post(
+            "StarWorld",
+            bb::Issue<bb::msg::dataMsg_t<action_t>>(
+              action_t{GLFW_KEY_KP_8},
+              -1));
+          break;
+        case GLFW_KEY_KP_1:
+        case GLFW_KEY_KP_2:
+        case GLFW_KEY_KP_3:
+        case GLFW_KEY_KP_4:
+        case GLFW_KEY_KP_6:
+        case GLFW_KEY_KP_7:
+        case GLFW_KEY_KP_8:
+        case GLFW_KEY_KP_9:
+          bb::postOffice_t::Instance().Post(
+            "StarWorld",
+            bb::Issue<bb::msg::dataMsg_t<action_t>>(
+              action_t{key.Key()},
+              -1));
+          break;
+        default:
+          break;
+      }
+    }
+    break;
+    default:
+      assert(0);
+      break;
+  }
+  return bb::msg::result_t::complete;
+}
+
+static const uint32_t SQ2 = 1414;
+static const uint32_t SQ1 = 1000;
 
 bb::msg::result_t world_t::OnProcessMessage(const bb::actor_t &, const bb::msg::basic_t &msg)
 {
   if (auto key = bb::msg::As<bb::msg::keyEvent_t>(msg))
   {
-    switch (key->Press())
-    {
-      case GLFW_RELEASE:
-      {
-        if (key->Key() == GLFW_KEY_ESCAPE)
-        {
-          bb::postOffice_t::Instance().Post(
-            "starrg",
-            bb::IssuePoison());
-        }
-      }
-      break;
-      case GLFW_PRESS:
-      case GLFW_REPEAT:
-      {
-        switch (key->Key())
-        {
-          case GLFW_KEY_RIGHT:
-            bb::postOffice_t::Instance().Post(
-              "StarWorld",
-              bb::Issue<bb::msg::dataMsg_t<action_t>>(
-                action_t{GLFW_KEY_KP_6},
-                -1));
-            break;
-          case GLFW_KEY_LEFT:
-            bb::postOffice_t::Instance().Post(
-              "StarWorld",
-              bb::Issue<bb::msg::dataMsg_t<action_t>>(
-                action_t{GLFW_KEY_KP_4},
-                -1));
-            break;
-          case GLFW_KEY_DOWN:
-            bb::postOffice_t::Instance().Post(
-              "StarWorld",
-              bb::Issue<bb::msg::dataMsg_t<action_t>>(
-                action_t{GLFW_KEY_KP_2},
-                -1));
-            break;
-          case GLFW_KEY_UP:
-            bb::postOffice_t::Instance().Post(
-              "StarWorld",
-              bb::Issue<bb::msg::dataMsg_t<action_t>>(
-                action_t{GLFW_KEY_KP_8},
-                -1));
-            break;
-          case GLFW_KEY_KP_1:
-          case GLFW_KEY_KP_2:
-          case GLFW_KEY_KP_3:
-          case GLFW_KEY_KP_4:
-          case GLFW_KEY_KP_6:
-          case GLFW_KEY_KP_7:
-          case GLFW_KEY_KP_8:
-          case GLFW_KEY_KP_9:
-            bb::postOffice_t::Instance().Post(
-              "StarWorld",
-              bb::Issue<bb::msg::dataMsg_t<action_t>>(
-                action_t{key->Key()},
-                -1));
-            break;
-          default:
-            break;
-        }
-      }
-      break;
-      default:
-        assert(0);
-        break;
-    }
-    return bb::msg::result_t::complete;
+    return this->OnKeyPress(*key);
   }
-
-  const double sq2 = 1.41421356237;
 
   if (auto action = bb::msg::As<bb::msg::dataMsg_t<action_t>>(msg))
   {
-    if (this->units.empty())
-    { // Некем управлять
-      return bb::msg::result_t::complete;
-    }
+    uint32_t totalTimePassed = 0;
 
-    // Если есть первый юнит - это игрок
-    auto &player = this->units[0];
-
-    // обработка ввода игрока
-    unitSide_t side = SIDE_TOTAL;
-    switch (action->Data().key)
-    {
-      case GLFW_KEY_KP_1:
-        side = SIDE_DOWN_LEFT;
-        this->timePassed += sq2;
-        ++this->step;
-        break;
-      case GLFW_KEY_KP_2:
-        side = SIDE_DOWN;
-        this->timePassed += 1.0;
-        ++this->step;
-        break;
-      case GLFW_KEY_KP_3:
-        side = SIDE_DOWN_RIGHT;
-        this->timePassed += sq2;
-        ++this->step;
-        break;
-      case GLFW_KEY_KP_4:
-        side = SIDE_LEFT;
-        this->timePassed += 1.0;
-        ++this->step;
-        break;
-      case GLFW_KEY_KP_6:
-        side = SIDE_RIGHT;
-        this->timePassed += 1.0;
-        ++this->step;
-        break;
-      case GLFW_KEY_KP_7:
-        side = SIDE_UP_LEFT;
-        this->timePassed += sq2;
-        ++this->step;
-        break;
-      case GLFW_KEY_KP_8:
-        side = SIDE_UP;
-        this->timePassed += 1.0;
-        ++this->step;
-        break;
-      case GLFW_KEY_KP_9:
-        side = SIDE_UP_RIGHT;
-        this->timePassed += sq2;
-        ++this->step;
-        break;
-    }
-
-    auto& playerPos = sr::pos_t::factory_t::Instance().Item(player);
-
-    // Если можно сделать ход
-    if (this->CanWalk(playerPos->v, side))
-    {
-      playerPos->v += iSideVec[side];
-
-      auto tileInfo = this->TileInfo(playerPos->v);
-      if (tileInfo.ladder)
-      { // Специальная клетка - лестница
-        this->GenerateMap();
-      }
-      else
-      { // Двигаем остальных и обновляем карту
-        this->ProcessAI();
-        this->UpdateMapUnits();
-      }
-
-      // Отправляем новую карту
-      bb::postOffice_t::Instance().Post(
-        "StarView",
-        bb::Issue<meshData_t>(
-          this->BuildTileMap(),
-          meshData_t::M_MAP
-        )
-      );
-
-      // Отправляем новых юнитов
-      bb::postOffice_t::Instance().Post(
-        "StarView",
-        bb::Issue<meshData_t>(
-          this->BuildUnits(),
-          meshData_t::M_UNIT
-        )
-      );
-      // Больше делать нечего - заканчиваем
-      return bb::msg::result_t::complete;
-    }
-
-    // Пройти не получилось, пробуем драться!
-    auto targetPos = playerPos->v + iSideVec[side];
-
-    // Если в клетке есть враг - пытаемся драться
-    auto target = this->unitsOnMap.find(targetPos);
-    if (target != this->unitsOnMap.end())
-    {
-      auto& playerStatus = sr::status_t::factory_t::Instance().Item(this->units[0]);
-      auto& targetStatus = sr::status_t::factory_t::Instance().Item(target->second);
-      if (targetStatus->status != sr::US_DEAD)
+    sr::userInput_t::factory_t::Instance().Each(
+      [this,action,&totalTimePassed](sr::userInput_t& input)
       {
-        std::stringstream logst;
-        auto &engine = RandomEngine();
-        std::uniform_int_distribution<int> dice(0, 100);
-
-        auto& playerMelee = sr::melee_t::factory_t::Instance().Item(this->units[0]);
-        auto& targetMelee = sr::melee_t::factory_t::Instance().Item(target->second);
-        targetStatus->side = sideVec[side];
-
-        logst << "[" << this->step << "]" << "Конан бьёт! ";
-
-        // Как хорошо попадаем
-        int hitRoll = dice(engine);
-        if (hitRoll <= playerMelee->skill)
+        // обработка ввода игрока
+        switch (action->Data().key)
         {
-          // Чтобы ранить - надо пробить броню своей силой
-          int woundDifficulty = 50; // Если равны - то вероятность 50/50
+          case GLFW_KEY_KP_1:
+            input->side = sr::SIDE_DOWN_LEFT;
+            totalTimePassed += SQ2;
+            ++input->steps;
+            break;
+          case GLFW_KEY_KP_2:
+            input->side = sr::SIDE_DOWN;
+            totalTimePassed += SQ1;
+            ++input->steps;
+            break;
+          case GLFW_KEY_KP_3:
+            input->side = sr::SIDE_DOWN_RIGHT;
+            totalTimePassed += SQ2;
+            ++input->steps;
+            break;
+          case GLFW_KEY_KP_4:
+            input->side = sr::SIDE_LEFT;
+            totalTimePassed += SQ1;
+            ++input->steps;
+            break;
+          case GLFW_KEY_KP_6:
+            input->side = sr::SIDE_RIGHT;
+            totalTimePassed += SQ1;
+            ++input->steps;
+            break;
+          case GLFW_KEY_KP_7:
+            input->side = sr::SIDE_UP_LEFT;
+            totalTimePassed += SQ2;
+            ++input->steps;
+            break;
+          case GLFW_KEY_KP_8:
+            input->side = sr::SIDE_UP;
+            totalTimePassed += SQ1;
+            ++input->steps;
+            break;
+          case GLFW_KEY_KP_9:
+            input->side = sr::SIDE_UP_RIGHT;
+            totalTimePassed += SQ2;
+            ++input->steps;
+            break;
+          default:
+            input->side = sr::SIDE_TOTAL;
+        }
 
-          woundDifficulty += (playerMelee->stren > targetMelee->tough)*20; // Если сила выше, то +20%
-          woundDifficulty += (playerMelee->stren > targetMelee->tough*2)*20; // Если в два раза выше +40%
-          woundDifficulty -= (playerMelee->stren < targetMelee->tough)*20; // Если сила меньше, то -20%
-          woundDifficulty -= (playerMelee->stren*2 < targetMelee->tough)*20; // Если в два раза меньше -40%
+        if (input->side != sr::SIDE_TOTAL)
+        {
+          auto& playerPos = sr::pos_t::factory_t::Instance().Item(input.ID());
 
-          int woundRoll = dice(engine);
+          // Если можно сделать ход
+          if (this->CanWalk(playerPos->v, input->side))
+          {
+            playerPos->v += sr::iSideVec[input->side];
 
-          if (woundRoll <= woundDifficulty)
-          { // Рана попала
-            
-            // Воин способен минимизировать вред от раны
-            int armorSave = dice(engine);
-            if (armorSave > targetMelee->armor)
-            { // Не вышло!
-              logst << "Убил!";
-              targetStatus->status = sr::US_DEAD;
+            auto tileInfo = this->TileInfo(playerPos->v);
+            if (tileInfo.ladder)
+            { // Специальная клетка - лестница
+              this->GenerateMap();
             }
             else
-            { // Рана не прошла
-              logst << "Не задел! (S" << armorSave << "<" << targetMelee->armor << ')';
-              playerStatus->status = sr::US_SAVE;
-              playerStatus->side = -sideVec[side];
-              targetStatus->status = sr::US_SAVE;
+            { // Двигаем остальных и обновляем карту
+              this->ProcessAI();
+              this->UpdateMapUnits();
+            }
+
+            // Отправляем новую карту
+            bb::postOffice_t::Instance().Post(
+              "StarView",
+              bb::Issue<meshData_t>(
+                this->BuildTileMap(),
+                meshData_t::M_MAP
+              )
+            );
+
+            // Отправляем новых юнитов
+            bb::postOffice_t::Instance().Post(
+              "StarView",
+              bb::Issue<meshData_t>(
+                this->BuildUnits(),
+                meshData_t::M_UNIT
+              )
+            );
+            // Больше делать нечего - заканчиваем
+            return;
+          }
+
+          // Пройти не получилось, пробуем драться!
+          auto targetPos = playerPos->v + sr::iSideVec[input->side];
+
+          // Если в клетке есть враг - пытаемся драться
+          auto target = this->unitsOnMap.find(targetPos);
+          if (target != this->unitsOnMap.end())
+          {
+            auto& playerStatus = sr::status_t::factory_t::Instance().Item(this->units[0]);
+            auto& targetStatus = sr::status_t::factory_t::Instance().Item(target->second);
+            if (targetStatus->status != sr::US_DEAD)
+            {
+              std::stringstream logst;
+              auto &engine = RandomEngine();
+              std::uniform_int_distribution<int> dice(0, 100);
+
+              auto& playerMelee = sr::melee_t::factory_t::Instance().Item(this->units[0]);
+              auto& targetMelee = sr::melee_t::factory_t::Instance().Item(target->second);
+              targetStatus->side = sr::sideVec[input->side];
+
+              logst << "[" << input->steps << "]" << "Конан бьёт! ";
+
+              // Как хорошо попадаем
+              int hitRoll = dice(engine);
+              if (hitRoll <= playerMelee->skill)
+              {
+                // Чтобы ранить - надо пробить броню своей силой
+                int woundDifficulty = 50; // Если равны - то вероятность 50/50
+
+                woundDifficulty += (playerMelee->stren > targetMelee->tough)*20; // Если сила выше, то +20%
+                woundDifficulty += (playerMelee->stren > targetMelee->tough*2)*20; // Если в два раза выше +40%
+                woundDifficulty -= (playerMelee->stren < targetMelee->tough)*20; // Если сила меньше, то -20%
+                woundDifficulty -= (playerMelee->stren*2 < targetMelee->tough)*20; // Если в два раза меньше -40%
+
+                int woundRoll = dice(engine);
+
+                if (woundRoll <= woundDifficulty)
+                { // Рана попала
+                  
+                  // Воин способен минимизировать вред от раны
+                  int armorSave = dice(engine);
+                  if (armorSave > targetMelee->armor)
+                  { // Не вышло!
+                    logst << "Убил!";
+                    targetStatus->status = sr::US_DEAD;
+                  }
+                  else
+                  { // Рана не прошла
+                    logst << "Не задел! (S" << armorSave << "<" << targetMelee->armor << ')';
+                    playerStatus->status = sr::US_SAVE;
+                    playerStatus->side = -sr::sideVec[input->side];
+                    targetStatus->status = sr::US_SAVE;
+                  }
+                }
+                else
+                { // Спасла броня
+                  logst << "Мечь отскочил от брони! (W" << woundRoll << ">" << woundDifficulty << ')';
+                  playerStatus->status = sr::US_MISS;
+                  playerStatus->side = -sr::sideVec[input->side];
+                  targetStatus->status = sr::US_ARMOR;
+                }
+              }
+              else
+              { // Вообще не попал
+                logst << "Промазал! (H" << hitRoll << ">" << playerMelee->skill << ')';
+                playerStatus->status = sr::US_MISS;
+                playerStatus->side = -sr::sideVec[input->side];
+                targetStatus->status = sr::US_MISS;
+              }
+
+              // Отправка сообщения в лог
+              bb::postOffice_t::Instance().Post(
+                "StarView",
+                bb::Issue<bb::msg::dataMsg_t<std::string>>(
+                  logst.str(),
+                  -1
+                )
+              );
             }
           }
-          else
-          { // Спасла броня
-            logst << "Мечь отскочил от брони! (W" << woundRoll << ">" << woundDifficulty << ')';
-            playerStatus->status = sr::US_MISS;
-            playerStatus->side = -sideVec[side];
-            targetStatus->status = sr::US_ARMOR;
-          }
         }
-        else
-        { // Вообще не попал
-          logst << "Промазал! (H" << hitRoll << ">" << playerMelee->skill << ')';
-          playerStatus->status = sr::US_MISS;
-          playerStatus->side = -sideVec[side];
-          targetStatus->status = sr::US_MISS;
-        }
-
-        // Отправка сообщения в лог
-        bb::postOffice_t::Instance().Post(
-          "StarView",
-          bb::Issue<bb::msg::dataMsg_t<std::string>>(
-            logst.str(),
-            -1
-          )
-        );
       }
-    }
+    );
+
+    this->timePassed += totalTimePassed;
 
     // Двигаем кого можем и обновляем карту
     this->ProcessAI();
@@ -965,6 +984,7 @@ bb::msg::result_t world_t::OnProcessMessage(const bb::actor_t &, const bb::msg::
         meshData_t::M_UNIT
       )
     );
+
     return bb::msg::result_t::complete;
   }
 
@@ -1001,9 +1021,9 @@ bool world_t::CanStand(glm::ivec2 pos) const
   return false;
 }
 
-bool world_t::CanWalk(glm::ivec2 pos, unitSide_t side) const
+bool world_t::CanWalk(glm::ivec2 pos, sr::unitSide_t side) const
 {
-  auto newPos = pos + iSideVec[side];
+  auto newPos = pos + sr::iSideVec[side];
   if (this->CanStand(newPos) == false)
   {
     return false;
@@ -1025,8 +1045,7 @@ bool world_t::CanWalk(glm::ivec2 pos, unitSide_t side) const
 }
 
 world_t::world_t(glm::ivec2 mapSize)
-: mapSize(mapSize),
-  step(1)
+: mapSize(mapSize)
 {
   this->GenerateMap();
 

@@ -40,8 +40,8 @@ namespace sr
    */
   struct updateData_t
   {
-    float moveTime; // Сколько времени на движение 
-    float curTime;  // Сколько уже есть времени
+    uint32_t moveTime; // Сколько времени на движение 
+    uint32_t curTime;  // Сколько уже есть времени
   };
 
   /**
@@ -71,10 +71,53 @@ namespace sr
     US_DEAD
   };
 
+
+
   struct statusData_t
   {
     unitStatus_t status;
     glm::vec2 side;
+  };
+
+  enum unitSide_t
+  {
+    SIDE_UP = 0,
+    SIDE_UP_RIGHT,
+    SIDE_RIGHT,
+    SIDE_DOWN_RIGHT,
+    SIDE_DOWN,
+    SIDE_DOWN_LEFT,
+    SIDE_LEFT,
+    SIDE_UP_LEFT,
+    SIDE_TOTAL
+  };
+
+  const glm::vec2 sideVec[SIDE_TOTAL] = {
+    {  0.0f, -1.0f },
+    {  1.0f, -1.0f },
+    {  1.0f,  0.0f },
+    {  1.0f,  1.0f },
+    {  0.0f,  1.0f },
+    { -1.0f,  1.0f },
+    { -1.0f,  0.0f },
+    { -1.0f, -1.0f }
+  };
+
+  const glm::ivec2 iSideVec[SIDE_TOTAL] = {
+    {  0, -1 },
+    {  1, -1 },
+    {  1,  0 },
+    {  1,  1 },
+    {  0,  1 },
+    { -1,  1 },
+    { -1,  0 },
+    { -1, -1 }
+  };
+
+  struct userInputData_t
+  {
+    unitSide_t side;
+    uint32_t steps;
   };
 
   using pos_t = component_t<posData_t>;
@@ -83,6 +126,7 @@ namespace sr
   using update_t = component_t<updateData_t>;
   using ai_t = component_t<aiData_t>;
   using status_t = component_t<statusData_t>;
+  using userInput_t = component_t<userInputData_t>;
 
 }
 

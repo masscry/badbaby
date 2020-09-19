@@ -33,8 +33,7 @@ class world_t: public bb::role_t
   std::vector<cell_t> tiles;
   std::deque<unit_t> units;
   std::unordered_multimap<glm::ivec2, unit_t, ivecKey_t, ivecKey_t> unitsOnMap;
-  double timePassed;
-  uint64_t step;
+  uint32_t timePassed;
 
   cell_t& Tiles(glm::ivec2 v)
   {
@@ -69,6 +68,8 @@ class world_t: public bb::role_t
 
   bb::msg::result_t OnProcessMessage(const bb::actor_t&, const bb::msg::basic_t& msg) override;
 
+  bb::msg::result_t OnKeyPress(const bb::msg::keyEvent_t& keyEvent);
+
 public:
 
 
@@ -78,7 +79,7 @@ public:
   tileInfo_t TileInfo(glm::ivec2 pos) const;
 
   bool CanStand(glm::ivec2 pos) const;
-  bool CanWalk(glm::ivec2 pos, unitSide_t side) const;
+  bool CanWalk(glm::ivec2 pos, sr::unitSide_t side) const;
 
   world_t(glm::ivec2 mapSize);
 

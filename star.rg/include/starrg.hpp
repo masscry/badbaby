@@ -73,41 +73,6 @@ const uint16_t vConstInd[6] = {
 
 #include "tileDB.hpp"
 
-enum unitSide_t
-{
-  SIDE_UP = 0,
-  SIDE_UP_RIGHT,
-  SIDE_RIGHT,
-  SIDE_DOWN_RIGHT,
-  SIDE_DOWN,
-  SIDE_DOWN_LEFT,
-  SIDE_LEFT,
-  SIDE_UP_LEFT,
-  SIDE_TOTAL
-};
-
-const glm::vec2 sideVec[SIDE_TOTAL] = {
-  {  0.0f, -1.0f },
-  {  1.0f, -1.0f },
-  {  1.0f,  0.0f },
-  {  1.0f,  1.0f },
-  {  0.0f,  1.0f },
-  { -1.0f,  1.0f },
-  { -1.0f,  0.0f },
-  { -1.0f, -1.0f }
-};
-
-const glm::ivec2 iSideVec[SIDE_TOTAL] = {
-  {  0, -1 },
-  {  1, -1 },
-  {  1,  0 },
-  {  1,  1 },
-  {  0,  1 },
-  { -1,  1 },
-  { -1,  0 },
-  { -1, -1 }
-};
-
 using unit_t = sr::entityID_t;
 
 struct ivecKey_t
