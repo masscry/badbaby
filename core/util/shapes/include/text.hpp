@@ -43,6 +43,7 @@ namespace bb
   {
     storage_t<vec3_t>   vPos;
     storage_t<vec2_t>   vUV;
+    storage_t<vec4_t>   vCol;
     storage_t<uint16_t> indecies;
   };
 
@@ -60,6 +61,7 @@ namespace bb
 
     vbo_t vPosVBO;
     vbo_t vUVVBO;
+    vbo_t vColVBO;
     vbo_t indeciesVBO;
     size_t totalV;  /**< total allocated vertecies */ 
     size_t totalI;  /**< total allocated indecies  */

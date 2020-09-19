@@ -6,7 +6,7 @@ set(CMAKE_C_STANDARD 99)
 set(CMAKE_CXX_STANDARD 11)
 
 project(badbaby
-  VERSION 0.3.0
+  VERSION 0.4.0
   LANGUAGES C CXX
 )
 
@@ -73,7 +73,9 @@ target_link_libraries(badbaby INTERFACE
 )
 
 # Additional path to search for glfw
+if(UNIX)
 set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib")
+endif(UNIX)
 
 add_subdirectory(core)
 add_subdirectory(extra)
@@ -84,6 +86,7 @@ add_subdirectory(painter)
 add_subdirectory(orthofight)
 add_subdirectory(obj2mesh)
 add_subdirectory(cqc)
+add_subdirectory(star.rg)
 
 install(DIRECTORY runtime/sub3000
   DESTINATION share

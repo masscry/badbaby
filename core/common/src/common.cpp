@@ -45,6 +45,7 @@ namespace
     fprintf(output, "Usage: %s [-h]\n", programName);
     fprintf(output, "BadBaby Powered Game.\n\n");
     fprintf(output, "Standard supported arguments:\n");
+    fprintf(output, "  -c\tChange Current Working directory to given\n");
     fprintf(output, "  -h\tPrint this message and exit\n");
   }
 
@@ -134,10 +135,17 @@ namespace bb
     SetThisThreadName(GetBasename(argv[0]));
 
     int option;
-    while ((option = getopt(argc, argv, "h")) != -1)
+    while ((option = getopt(argc, argv, "hc:")) != -1)
     {
       switch (option)
       {
+      case 'c':
+        if (chdir(optarg) != 0)
+        {
+          fprintf(stderr, "chdir failed: %x\n", errno);
+          exit(EXIT_FAILURE);
+        } 
+        return 0;
       case 'h':
         PrintHelp(stdout, argv[0]);
         exit(EXIT_SUCCESS);

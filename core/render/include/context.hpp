@@ -78,6 +78,14 @@ namespace bb
 
     framebuffer_t& Canvas();
 
+    glm::ivec2 Size() const
+    {
+      return glm::ivec2(
+        this->Width(),
+        this->Height()
+      );
+    }
+    
     int Width() const;
     int Height() const;
     float AspectRatio() const;
