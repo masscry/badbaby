@@ -61,6 +61,8 @@ namespace bb
 
   };
 
+  postAddress_t GetPostAddressFromString(const std::string& str);
+
   class postOffice_t final
   {
     friend class mailbox_t;

@@ -97,6 +97,7 @@ namespace bb
         return result;
       }
       cursor += len;
+      ++result;
     }
     return result;
   }

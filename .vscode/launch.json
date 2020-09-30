@@ -5,6 +5,26 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Launch TacWar",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/.debug/bin/tacwar",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}/runtime/tacwar",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "setupCommands": [
+          {
+              "description": "Включить автоматическое форматирование для gdb",
+              "text": "-enable-pretty-printing",
+              "ignoreFailures": true
+          }
+      ],
+      "preLaunchTask": "Build TacWar (Debug)"
+    },
+    {
       "name": "Launch 000Hello (Debug)",
       "type": "cppdbg",
       "request": "launch",

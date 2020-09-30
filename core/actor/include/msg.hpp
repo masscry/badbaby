@@ -226,6 +226,27 @@ namespace bb
       ~keyEvent_t() override = default;
     };
 
+    class clickEvent_t final: public basic_t
+    {
+      int key;
+      int press;
+
+    public:
+
+      int Key() const;
+      int Press() const;
+
+      clickEvent_t(int key, int press);
+
+      clickEvent_t(const clickEvent_t&) = default;
+      clickEvent_t& operator=(const clickEvent_t&) = default;
+
+      clickEvent_t(clickEvent_t&&) noexcept = default;
+      clickEvent_t& operator=(clickEvent_t&&) noexcept = default;
+
+      ~clickEvent_t() override = default;
+    };    
+
     inline actorPID_t basic_t::Source() const
     {
       return this->src;
@@ -280,6 +301,22 @@ namespace bb
     {
       ;
     }
+
+    inline int clickEvent_t::Key() const
+    {
+      return this->key;
+    }
+
+    inline int clickEvent_t::Press() const
+    {
+      return this->press;
+    }
+
+    inline clickEvent_t::clickEvent_t(int key, int press)
+    : key(key), press(press)
+    {
+      ;
+    }    
 
   }
 

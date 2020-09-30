@@ -26,6 +26,7 @@ namespace bb
   size_t TypeSize(GLenum type);
 
   using actorPID_t = int64_t;
+  using postAddress_t = uint32_t;
 
   class context_t final
   {
@@ -34,15 +35,19 @@ namespace bb
     enum msgFlag_t : uint32_t
     {
       none = 0x0000,
-      keyboard = 0x0001
+      keyboard = 0x0001,
+      mouse = 0x0002
     };
 
   private:
 
     static bool isAlreadyExists;
 
-    using pairOfFlags = std::pair<actorPID_t, msgFlag_t>;
+    using pairOfFlags = std::pair<actorPID_t, uint32_t>;
     using actorCallbackList_t = std::list<pairOfFlags>;
+
+    using boxAndFlag_t = std::pair<postAddress_t, uint32_t>;
+    using mailCallbackList_t = std::list<boxAndFlag_t>;
 
     GLFWwindow*         wnd;
     int                 width;
@@ -62,6 +67,10 @@ namespace bb
     std::string         title;
     bool                hasNewTitle;
 
+    mailCallbackList_t  mailCallbackList;
+
+    double              clickTimeout[GLFW_MOUSE_BUTTON_LAST+1];
+
     context_t();
     ~context_t();
 
@@ -73,6 +82,7 @@ namespace bb
 
     static void OnCursorEnter(GLFWwindow* window, int entered);
     static void OnKey(GLFWwindow* window, int key, int scancode, int action, int mods);
+    static void OnMouseButton(GLFWwindow* window, int button, int action, int mods);
 
   public:
 
@@ -109,7 +119,11 @@ namespace bb
 
     void Title(const std::string& newTitle);
 
-    void RegisterActorCallback(actorPID_t actorID, context_t::msgFlag_t flags);
+    void RegisterMailboxCallback(const char* mailbox, uint32_t flags);
+    void UnregisterMailboxCallbacks(const char* mailbox);
+    void UnregisterMailboxCallbacks(postAddress_t mailbox);
+
+    void RegisterActorCallback(actorPID_t actorID, uint32_t flags);
     void UnregisterActorCallbacks(actorPID_t actorID);
 
     static void UnregisterActorCallbacksIfContextExists(actorPID_t actorID)
@@ -117,6 +131,14 @@ namespace bb
       if (context_t::IsAlreadyExists())
       {
         context_t::Instance().UnregisterActorCallbacks(actorID);
+      }
+    }
+
+    static void UnregisterMailboxCallbacksIfContextExists(postAddress_t mailbox)
+    {
+      if (context_t::IsAlreadyExists())
+      {
+        context_t::Instance().UnregisterMailboxCallbacks(mailbox);
       }
     }
 

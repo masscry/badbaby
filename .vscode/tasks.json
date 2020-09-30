@@ -50,6 +50,15 @@
         "command": "cmake --build ${workspaceFolder}\\.release --clean-first -j4"
       },
       "group": "build"
-    }
+    },
+    {
+      "label": "Build TacWar (Debug)",
+      "type": "shell",
+      "command": "cmake --build ${workspaceFolder}/.debug --target tacwar -- -j4",
+      "windows": {
+        "command": "cmake --build ${workspaceFolder}\\.debug --target tacwar -- -j4"
+      },
+      "group": "build"
+    } 
   ]
 }
