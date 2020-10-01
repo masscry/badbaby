@@ -87,6 +87,7 @@ add_subdirectory(orthofight)
 add_subdirectory(obj2mesh)
 add_subdirectory(cqc)
 add_subdirectory(star.rg)
+add_subdirectory(tac.war)
 
 install(DIRECTORY runtime/sub3000
   DESTINATION share

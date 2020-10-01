@@ -1,5 +1,6 @@
 #include <mailbox.hpp>
 #include <common.hpp>
+#include <context.hpp>
 
 #include <cassert>
 #include <functional>
@@ -79,9 +80,14 @@ namespace bb
     }
   }
 
+  postAddress_t GetPostAddressFromString(const std::string& str)
+  {
+    return static_cast<postAddress_t>(std::hash<std::string>()(str));
+  }
+
   mailbox_t::shared_t postOffice_t::New(const std::string& address)
   {
-    return this->New(static_cast<postAddress_t>(std::hash<std::string>()(address)));
+    return this->New(GetPostAddressFromString(address));
   }
 
   mailbox_t::mailbox_t(postAddress_t address)
@@ -92,12 +98,15 @@ namespace bb
 
   mailbox_t::~mailbox_t()
   {
+    context_t::UnregisterMailboxCallbacksIfContextExists(
+      this->Address()
+    );
     postOffice_t::Instance().Delete(this->Address());
   }
 
   int postOffice_t::Post(const std::string& address, msg_t&& msg)
   {
-    return this->Post(static_cast<postAddress_t>(std::hash<std::string>()(address)), std::move(msg));
+    return this->Post(GetPostAddressFromString(address), std::move(msg));
   }
 
   int postOffice_t::Post(postAddress_t address, msg_t&& msg)
