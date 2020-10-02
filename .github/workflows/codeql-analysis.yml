@@ -55,6 +55,7 @@ jobs:
     - run: |
         sudo apt-get update 
         sudo apt-get install -y git cmake python ninja-build 
+        sudo apt-get install -y xorg-dev libglu1-mesa-dev
         mkdir build
         cd build && cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=gcc ../
         cd build && cmake --build ./ -- -j
