@@ -9,6 +9,7 @@ uniform sampler2D sprite;
 uniform float contrast;
 uniform float bright;
 uniform float radSel;
+uniform vec3 acol;
 
 vec3 fixBC(vec3 col)
 {
@@ -21,5 +22,5 @@ void main()
   float dist = distance(fragUV,vec2(0.5f));
 
   float radius = clamp(0.0f, 1.0f, step(dist, 0.50) - step(dist, 0.45));
-  pixColor = vec4(clamp(fixBC(texCol.rgb), 0.0f, 1.0f), texCol.a) + radius*radSel*vec4(0.0f, 0.5f, 0.0f, 0.5f);
+  pixColor = vec4(clamp(fixBC(texCol.rgb*acol), 0.0f, 1.0f), texCol.a) + radius*radSel*vec4(0.0f, 0.5f, 0.0f, 0.5f);
 }
