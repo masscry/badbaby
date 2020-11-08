@@ -163,6 +163,25 @@ namespace bb
     return 0;
   }
 
+  int ExecuteScriptFile(vm_t& vm, const char* filename)
+  {
+    FILE* input = fopen(filename, "rb");
+    if (input == nullptr)
+    {
+      return -1;
+    }
+    BB_DEFER(fclose(input));
+
+    auto script = bb::ReadWholeFile(input, nullptr);
+    if (script == nullptr)
+    {
+      return -1;
+    }
+    BB_DEFER(free(script));
+
+    return bb::ExecuteScript(vm, script);
+  }
+
   double Argument(const listOfRefs_t& refs, uint32_t id)
   {
     if (id < refs.size())

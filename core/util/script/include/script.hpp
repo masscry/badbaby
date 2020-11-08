@@ -44,6 +44,8 @@ namespace bb
 
   int ExecuteScript(vm_t& vm, const char* script);
 
+  int ExecuteScriptFile(vm_t& vm, const char* filename);
+
   /**
    * Read whole content of file to memory.
    *
