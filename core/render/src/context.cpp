@@ -383,6 +383,33 @@ namespace bb
     );
   }
 
+  template<typename event_t>
+  void context_t::PostEvent(bb::context_t::msgFlag_t mask, const event_t& event)
+  {
+    for (auto actorPair : this->actorCallbackList)
+    {
+      if ((actorPair.second & mask) != 0)
+      {
+        workerPool_t::Instance().PostMessage(actorPair.first,
+          bb::msg_t(
+            new event_t(event)
+          )
+        );
+      }
+    }
+    for (auto mailPair : this->mailCallbackList)
+    {
+      if ((mailPair.second & mask) != 0)
+      {
+        postOffice_t::Instance().Post(mailPair.first,
+          bb::msg_t(
+            new event_t(event)
+          )
+        );
+      }
+    }
+  }
+
   void context_t::OnMouseButton(GLFWwindow* window, int button, int action, int /*mods*/)
   { // this function called is called when glfwPollEvents happens
     // at that moment context mutex is already aquired by update thread
@@ -392,38 +419,15 @@ namespace bb
     switch(action)
     {
       case GLFW_RELEASE:
-        bb::Debug("release (%d) (%g)\n", button, glfwGetTime() - self->clickTimeout[button]);
         if ((glfwGetTime() - self->clickTimeout[button]) < 0.15)
         {
-          bb::Debug("%s\n", "click!");
-          for (auto actorPair : self->actorCallbackList)
-          {
-            if ((actorPair.second & msgFlag_t::mouse) != 0)
-            {
-              workerPool_t::Instance().PostMessage(actorPair.first,
-                bb::msg_t(
-                  new bb::msg::clickEvent_t(button, 1)
-                )
-              );
-            }
-          }
-
-          for (auto mailPair : self->mailCallbackList)
-          {
-            if ((mailPair.second & msgFlag_t::mouse) != 0)
-            {
-              postOffice_t::Instance().Post(mailPair.first,
-                bb::msg_t(
-                  new bb::msg::clickEvent_t(button, 1)
-                )
-              );
-            }
-          }
+          self->PostEvent(msgFlag_t::mouse, bb::msg::clickEvent_t(button, 1));
         }
+        self->PostEvent(msgFlag_t::mouse, bb::msg::mouseEvent_t(button, GLFW_RELEASE));
         break;
       case GLFW_PRESS:
         self->clickTimeout[button] = glfwGetTime();
-        bb::Debug("press (%d) (%g)\n", button, self->clickTimeout[button]);
+        self->PostEvent(msgFlag_t::mouse, bb::msg::mouseEvent_t(button, GLFW_PRESS));
         break;
     }
 
@@ -433,32 +437,8 @@ namespace bb
   { // this function called is called when glfwPollEvents happens
     // at that moment context mutex is already aquired by update thread
     // so, no lock here
-
     context_t *self = reinterpret_cast<context_t *>(glfwGetWindowUserPointer(window));
-    for (auto actorPair : self->actorCallbackList)
-    {
-      if ((actorPair.second & msgFlag_t::keyboard) != 0)
-      {
-        workerPool_t::Instance().PostMessage(actorPair.first,
-          bb::msg_t(
-            new bb::msg::keyEvent_t(key, action)
-          )
-        );
-      }
-    }
-
-    for (auto mailPair : self->mailCallbackList)
-    {
-      if ((mailPair.second & msgFlag_t::keyboard) != 0)
-      {
-        postOffice_t::Instance().Post(mailPair.first,
-          bb::msg_t(
-            new bb::msg::keyEvent_t(key, action)
-          )
-        );
-      }
-    }
-
+    self->PostEvent(msgFlag_t::keyboard, bb::msg::keyEvent_t(key, action));
   }
 
   void context_t::RegisterMailboxCallback(const char* mailbox, uint32_t flags)

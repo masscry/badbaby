@@ -245,7 +245,27 @@ namespace bb
       clickEvent_t& operator=(clickEvent_t&&) noexcept = default;
 
       ~clickEvent_t() override = default;
-    };    
+    };
+
+    class mouseEvent_t final: public basic_t
+    {
+      int key;
+      int press;
+    public:
+
+      int Key() const;
+      int Press() const;
+
+      mouseEvent_t(int key, int press);
+
+      mouseEvent_t(const mouseEvent_t&) = default;
+      mouseEvent_t& operator=(const mouseEvent_t&) = default;
+
+      mouseEvent_t(mouseEvent_t&&) noexcept = default;
+      mouseEvent_t& operator=(mouseEvent_t&&) noexcept = default;
+
+      ~mouseEvent_t() override = default;
+    };
 
     inline actorPID_t basic_t::Source() const
     {
@@ -316,7 +336,23 @@ namespace bb
     : key(key), press(press)
     {
       ;
-    }    
+    }
+
+    inline int mouseEvent_t::Key() const
+    {
+      return this->key;
+    }
+
+    inline int mouseEvent_t::Press() const
+    {
+      return this->press;
+    }
+
+    inline mouseEvent_t::mouseEvent_t(int key, int press)
+    : key(key), press(press)
+    {
+      ;
+    }
 
   }
 

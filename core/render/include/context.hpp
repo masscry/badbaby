@@ -84,6 +84,9 @@ namespace bb
     static void OnKey(GLFWwindow* window, int key, int scancode, int action, int mods);
     static void OnMouseButton(GLFWwindow* window, int button, int action, int mods);
 
+    template<typename event_t>
+    void PostEvent(bb::context_t::msgFlag_t mask, const event_t& event);
+
   public:
 
     framebuffer_t& Canvas();
