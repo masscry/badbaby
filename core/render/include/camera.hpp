@@ -21,17 +21,19 @@ namespace bb
       mat4_t view;
     } data;
 
-    uniformBlock_t ubo;
+    mutable uniformBlock_t ubo;
 
-    camera_t(const camera_t&) = delete;
-    camera_t& operator =(const camera_t&) = delete;
-
-    camera_t(const mat4_t& proj, const mat4_t& view, uniformBlock_t&& ubo);
+    camera_t(const mat4_t& proj, const mat4_t& view);
 
   public:
 
     const uniformBlock_t& UniformBlock() const
     {
+      if (!this->ubo.IsValid())
+      {
+        this->ubo = uniformBlock_t::CreateUniformBlock(sizeof(camera_t::data_t));
+        this->Update();
+      }
       return this->ubo;
     }
 
@@ -55,10 +57,13 @@ namespace bb
       return this->data.view;
     }
 
-    void Update();
+    void Update() const;
 
     camera_t(camera_t&&) noexcept;
     camera_t& operator =(camera_t&&) noexcept;
+
+    camera_t(const camera_t&);
+    camera_t& operator =(const camera_t&);
 
     camera_t();
     ~camera_t();

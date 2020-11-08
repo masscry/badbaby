@@ -29,13 +29,18 @@ namespace bb
 
   public:
 
+    bool IsValid() const
+    {
+      return (this->self != 0);
+    }
+
     uniformBlock_t(uniformBlock_t&& mv);
     uniformBlock_t& operator=(uniformBlock_t&& mv);
 
     uniformBlock_t();
     ~uniformBlock_t();
 
-    void UpdateData(void* data, int offset, size_t size);
+    void UpdateData(const void* data, int offset, size_t size);
 
     static uniformBlock_t CreateUniformBlock(size_t size);
   };

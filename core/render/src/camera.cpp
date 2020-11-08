@@ -25,8 +25,24 @@ namespace bb
     return *this;
   }
 
-  camera_t::camera_t(const mat4_t& proj, const mat4_t& view, uniformBlock_t&& ubo)
-  : ubo(std::move(ubo))
+  camera_t::camera_t(const camera_t& cpy)
+  : data(cpy.data)
+  {
+    ;
+  }
+
+  camera_t& camera_t::operator =(const camera_t& cpy)
+  {
+    if (this == &cpy)
+    {
+      return *this;
+    }
+
+    this->data = cpy.data;
+    return *this;
+  }
+
+  camera_t::camera_t(const mat4_t& proj, const mat4_t& view)
   {
     this->data.proj = proj;
     this->data.view = view;
@@ -43,7 +59,7 @@ namespace bb
     ;
   }
 
-  void camera_t::Update()
+  void camera_t::Update() const
   {
     this->ubo.UpdateData(&this->data, 0, sizeof(camera_t::data_t));
   }
@@ -52,10 +68,8 @@ namespace bb
   {
     camera_t result(
       glm::perspective(fov, aspect, nearZ, farZ),
-      glm::mat4(1.0f),
-      uniformBlock_t::CreateUniformBlock(sizeof(camera_t::data_t))
+      glm::mat4(1.0f)
     );
-    result.Update();
     return result;
   }
 
@@ -63,10 +77,8 @@ namespace bb
   {
     camera_t result(
       glm::ortho(left, right, bottom, top, -1000.0f, 1000.0f),
-      glm::mat4(1.0f),
-      uniformBlock_t::CreateUniformBlock(sizeof(camera_t::data_t))
+      glm::mat4(1.0f)
     );
-    result.Update();
     return result;
   }
 
