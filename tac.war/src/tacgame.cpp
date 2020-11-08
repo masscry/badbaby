@@ -4,6 +4,8 @@
 
 #include <cmath>
 
+const auto tableSize = glm::vec2(44.0f, 60.0f);
+
 class levelVM_t final: public bb::vm_t
 {
   tac::game_t::troop_t troops;
@@ -204,13 +206,6 @@ namespace tac
         isec = ray.finish;
       }
 
-      bb::context_t::Instance().Title(
-        std::to_string(rayStart.x) 
-        + " " + std::to_string(rayStart.y)
-        + " " + std::to_string(isec.x) 
-        + " " + std::to_string(isec.y)
-      );
-
       semCircle.emplace_back(
         glm::vec4(dirAngle, 0.0f, 1.0f)
       );
@@ -243,10 +238,9 @@ namespace tac
     return glm::vec2(wPos.x, wPos.y);
   }
 
-  
-
   void game_t::OnClick()
   {
+    this->hadClick = true;
     switch(this->mode)
     {
     case gameMode_t::select:
@@ -346,6 +340,19 @@ namespace tac
   void game_t::OnUpdate(double dt)
   {
     bb::shader_t::Bind(this->spriteShader);
+
+    if (this->inPress)
+    {
+      auto newMousePos = MouseInWorld(this->initcam);
+      auto newTableOffset = this->tableOffset + this->FixOffset(this->pressMousePos - newMousePos);
+
+      this->camera = bb::camera_t::Orthogonal(
+        newTableOffset.x,
+        newTableOffset.x + this->tableViewport.x,
+        newTableOffset.y + this->tableViewport.y,
+        newTableOffset.y
+      );
+    }
     this->camera.Update();
 
     switch (this->mode)
@@ -487,6 +494,44 @@ namespace tac
     }
   }
 
+  glm::vec2 game_t::FixOffset(glm::vec2 newCamOffset)
+  {
+    auto newPotOffset = this->tableOffset + newCamOffset;
+
+    newPotOffset.x = (newPotOffset.x < 0.0f)?(0.0f):newPotOffset.x;
+    newPotOffset.y = (newPotOffset.y < 0.0f)?(0.0f):newPotOffset.y;
+    newPotOffset.x = (newPotOffset.x > tableSize.x - this->tableViewport.x)?(tableSize.x - this->tableViewport.x):newPotOffset.x;
+    newPotOffset.y = (newPotOffset.y > tableSize.y - this->tableViewport.y)?(tableSize.y - this->tableViewport.y):newPotOffset.y;
+    return newPotOffset - this->tableOffset;
+  }
+
+  void game_t::OnMouse(int btn, int press)
+  {
+    if (press != 0)
+    {
+      this->pressMousePos = MouseInWorld(this->camera);
+      this->hadClick = false;
+      this->inPress = true;
+      this->initcam = this->camera;
+    }
+    else
+    {
+      this->inPress = false;
+      if (this->hadClick == false)
+      {
+        auto newMousePos = MouseInWorld(this->initcam);
+        this->tableOffset += this->FixOffset(this->pressMousePos - newMousePos);
+
+        this->camera = bb::camera_t::Orthogonal(
+          this->tableOffset.x,
+          this->tableOffset.x + this->tableViewport.x,
+          this->tableOffset.y + this->tableViewport.y,
+          this->tableOffset.y
+        );
+      }
+    }
+  }
+
   void game_t::OnAction(int action)
   {
 
@@ -616,9 +661,18 @@ namespace tac
     );
 
     auto aspect = bb::context_t::Instance().AspectRatio();
+
+    this->tableOffset = glm::vec2(0.0f);
+    this->tableViewport = glm::vec2(40.0f*aspect, 40.0f);
+
     this->camera = bb::camera_t::Orthogonal(
-      0.0f, 40.0f*aspect, 40.0f, 0.0f
+      this->tableOffset.x,
+      this->tableOffset.x + this->tableViewport.x,
+      this->tableOffset.y + this->tableViewport.y,
+      this->tableOffset.y
     );
+    this->inPress = false;
+    this->initcam = this->camera;
 
     this->spriteTex = bb::texture_t::LoadTGA("basic.tga");
     this->spriteTex.SetFilter(GL_LINEAR, GL_LINEAR);
@@ -645,20 +699,28 @@ namespace tac
 
     if (levelVM.Level().size() >= 2)
     {
-      this->level = bb::GenerateLine(0.1f, levelVM.Level());
+      bb::meshDesc_t levelLines;
 
       for (
         auto cur = levelVM.Level().begin(),
             next = cur + 1,
             last = levelVM.Level().end();
-        next != last;
-        ++cur, ++next
+        cur != last;
+        cur+= 2, next += 2
       )
       {
+        bb::linePoints_t tmpLine;
+        tmpLine.emplace_back(*cur);
+        tmpLine.emplace_back(*next);
+
+        auto tmpLineDesc = bb::DefineLine(glm::vec3(0.0f), 0.1f, tmpLine);
+        levelLines.Append(tmpLineDesc);
+
         this->segments.emplace_back(
           segment_t{ *cur, *next }
         );
       }
+      this->level = bb::GenerateMesh(levelLines);
     }
 
     for (auto& it: this->troop)

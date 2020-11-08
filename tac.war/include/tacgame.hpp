@@ -60,6 +60,16 @@ namespace tac
     bb::mesh_t level;
     std::deque<bb::mesh_t> troopLineMesh;
 
+    glm::vec2 tableOffset;
+    glm::vec2 tableViewport;
+
+    bb::camera_t initcam;
+    glm::vec2 pressMousePos;
+    bool hadClick;
+    bool inPress;
+
+    glm::vec2 FixOffset(glm::vec2 newCamOffset);
+
   public:
 
     using troop_t = std::deque<trooper_t>;
@@ -90,6 +100,7 @@ namespace tac
     void OnUpdate(double dt) override;
     void OnRender() override;
     void OnAction(int action) override;
+    void OnMouse(int btn, int press) override;
 
     void Prepare();
     void Cleanup();

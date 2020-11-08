@@ -78,6 +78,24 @@ namespace tac
     return 0;
   }
 
+  int scene_t::SceneMouse(state_t state, int btn, int press)
+  {
+    std::unique_lock<std::mutex> lock(sceneCS);
+    if (state == state_t::undef)
+    {
+      return -1;
+    }
+
+    auto scene = scenes[asInteger(state)];
+    if (scene == nullptr)
+    {
+      return -1;
+    }
+
+    scene->OnMouse(btn, press);
+    return 0;
+  }
+
   int scene_t::SceneClick(state_t state)
   {
     std::unique_lock<std::mutex> lock(sceneCS);
@@ -113,6 +131,12 @@ namespace tac
     scene->OnUpdate(dt);
     scene->OnRender();
     return 0;
+  }
+
+  void scene_t::OnMouse(int btn, int press)
+  {
+    // Do nothing!
+    ;
   }
 
 }
@@ -164,6 +188,11 @@ int main(int argc, char* argv[])
       if (bb::As<bb::msg::clickEvent_t>(msg))
       {
         tac::scene_t::SceneClick(state);
+        continue;
+      }
+      if (auto mouse = bb::As<bb::msg::mouseEvent_t>(msg))
+      {
+        tac::scene_t::SceneMouse(state, mouse->Key(), mouse->Press());
         continue;
       }
       if (auto action = bb::As<bb::msg::dataMsg_t<int>>(msg))

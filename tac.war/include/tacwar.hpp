@@ -35,6 +35,7 @@ namespace tac
   {
     tac::state_t id;
 
+    virtual void OnMouse(int btn, int press);
     virtual void OnClick() = 0;
     virtual void OnUpdate(double dt) = 0;
     virtual void OnAction(int action) = 0;
@@ -75,6 +76,7 @@ namespace tac
     static int SceneUpdate(state_t state, double dt);
     static int SceneClick(state_t state);
     static int SceneAction(state_t state, int action);
+    static int SceneMouse(state_t state, int btn, int press);
   };
 
 } // namespace tac
