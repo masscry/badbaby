@@ -33,6 +33,7 @@ namespace tac
     int team;
     int flags;
     float maxDist;
+    bb::mesh_t* lineMesh;
   };
 
   enum class gameMode_t
@@ -57,6 +58,7 @@ namespace tac
     bb::texture_t spriteTex;
     bb::mesh_t lineMesh;
     bb::mesh_t level;
+    std::deque<bb::mesh_t> troopLineMesh;
 
   public:
 
@@ -80,6 +82,7 @@ namespace tac
     int curTeam;
     int round;
     bool showShade;
+    bool shadeChanged;
 
     segments_t segments;
 

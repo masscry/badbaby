@@ -157,10 +157,10 @@ namespace tac
         { // Do not calculate further, any intersection enough
           return result;
         }
-      }
-      if (glm::distance(line.start, isec) < glm::distance(line.start, nearestPoint))
-      {
-        nearestPoint = isec;
+        if (glm::distance(line.start, isec) < glm::distance(line.start, nearestPoint))
+        {
+          nearestPoint = isec;
+        }
       }
     }
     if (result)
@@ -179,19 +179,9 @@ namespace tac
 
     auto invModel = glm::inverse(model);
 
-    for (float angle = 40.0f; angle > -40.0f; angle -= 0.5f)
+    for (float angle = -40.0f; angle < 40.0f; angle += 1.0f)
     {
-      auto radAngle = glm::radians(angle);
-      auto dirAngle = bb::Dir(radAngle);
-      auto rayStart = glm::vec4(dirAngle, 0.0f, 1.0f);
 
-      semCircle.emplace_back(
-        rayStart
-      );
-    }
-
-    for (float angle = -40.0f; angle < 40.0f; angle += 0.5f)
-    {
       auto radAngle = glm::radians(angle);
 
       auto dirAngle = bb::Dir(radAngle);
@@ -213,13 +203,23 @@ namespace tac
       {
         isec = ray.finish;
       }
+
+      bb::context_t::Instance().Title(
+        std::to_string(rayStart.x) 
+        + " " + std::to_string(rayStart.y)
+        + " " + std::to_string(isec.x) 
+        + " " + std::to_string(isec.y)
+      );
+
+      semCircle.emplace_back(
+        glm::vec4(dirAngle, 0.0f, 1.0f)
+      );
+
       semCircle.emplace_back(
         invModel * glm::vec4(isec, 0.0f, 1.0f)
       );
 
     }
-
-    semCircle.emplace_back(semCircle.front());
 
     return semCircle;
   }
@@ -255,7 +255,7 @@ namespace tac
 
         for (auto it = this->troop.begin(), e = this->troop.end(); it != e; ++it)
         {
-          if ((glm::length(it->pos - mouse) < 1.0f) && (it->team == this->curTeam) && (it->flags == 0))
+          if ((this->sel != it) && (glm::length(it->pos - mouse) < 1.0f) && (it->team == this->curTeam) && (it->flags == 0))
           {
             this->sel = it;
             return;
@@ -304,6 +304,7 @@ namespace tac
 
         this->time = 0.0;
         this->timeMult = 1.0;
+        *this->sel->lineMesh = bb::mesh_t();
       }
       break;
     case gameMode_t::move:
@@ -328,7 +329,6 @@ namespace tac
     auto t = glm::max(0.0f, glm::min(1.0f, glm::dot(p - v, w - v) / l2));
     auto projection = v + t * (w - v);
 
-    bb::context_t::Instance().Title(std::to_string(t));
     return glm::distance(p, projection);
   }
 
@@ -389,7 +389,7 @@ namespace tac
 
         for (auto it = this->troop.begin(), e = this->troop.end(); it != e; ++it)
         {
-          if (glm::length(it->pos - newUnitPos) < 1.0f)
+          if ((glm::length(it->pos - newUnitPos) < 1.0f) && (it != this->sel))
           {
             this->showShade = false;
             break;
@@ -426,6 +426,7 @@ namespace tac
         {
           this->finalDir = newFinalDir;
           this->newPos = newUnitPos;
+          this->shadeChanged = true;
         }
       }
       break;
@@ -438,7 +439,12 @@ namespace tac
         {
           dir = this->newPos - this->oldPos;
         }
-        this->finalDir = atan2(dir.y, dir.x) - M_PI_2;
+        auto newDir = atan2(dir.y, dir.x) - M_PI_2;
+        if (newDir != this->finalDir)
+        {
+          this->finalDir = newDir;
+          this->shadeChanged = true;
+        }
       }
       break;
     case gameMode_t::move:
@@ -474,6 +480,7 @@ namespace tac
         this->mode = gameMode_t::select;
         this->sel->angle = this->finalDir;
         this->sel->flags = 1;
+        *this->sel->lineMesh = std::move(this->lineMesh);
         this->timeMult = 1.0;
       }
       break;
@@ -554,6 +561,10 @@ namespace tac
         teamColor[it->team]
       );
       this->sprite.Render();
+      if (trooper.lineMesh->Good())
+      {
+        trooper.lineMesh->Render();
+      }
     }
 
     // render destination
@@ -585,8 +596,14 @@ namespace tac
         0.0f
       );
       this->sprite.Render();
-      auto semCircle = BuildSemCircle(model, this->segments);
-      this->lineMesh = bb::GenerateLine(0.1f, semCircle);
+
+      if (this->shadeChanged)
+      {
+        auto semCircle = BuildSemCircle(model, this->segments);
+        auto meshDesc = bb::DefineTriangleStrip(semCircle);
+        this->lineMesh = bb::GenerateMesh(meshDesc);
+        this->shadeChanged = false;
+      }
       this->lineMesh.Render();
     }
 
@@ -615,9 +632,16 @@ namespace tac
     this->troop = std::move(levelVM.Troops());
     this->sel = this->troop.begin();
     this->mode = gameMode_t::select;
+    this->troopLineMesh.resize(this->troop.size());
+
+    for (size_t it = 0, e = this->troop.size(); it < e; ++it)
+    {
+      this->troop[it].lineMesh = &this->troopLineMesh[it];
+    }
 
     this->curTeam = tac::TEAM_ALICE;
     this->round = 0;
+    this->shadeChanged = true;
 
     if (levelVM.Level().size() >= 2)
     {
@@ -636,6 +660,23 @@ namespace tac
         );
       }
     }
+
+    for (auto& it: this->troop)
+    {
+      glm::mat4 model = glm::rotate(
+        glm::translate(
+          glm::mat4(1.0f),
+          glm::vec3(it.pos, 0.0f)
+        ),
+        it.angle,
+        glm::vec3(0.0f, 0.0f, 1.0f)
+      );
+
+      auto semCircle = BuildSemCircle(model, this->segments);
+      auto meshDesc = bb::DefineTriangleStrip(semCircle);
+      *it.lineMesh = bb::GenerateMesh(meshDesc);
+    }
+
   }
 
   void game_t::Cleanup()
