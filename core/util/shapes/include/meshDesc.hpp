@@ -94,6 +94,7 @@ namespace bb
   meshDesc_t DefineLine(glm::vec3 offset, float width, const linePoints_t& linePoints);
   meshDesc_t DefineNumber(glm::vec3 offset, float width, glm::vec2 scale, const char* utf8Text);
   meshDesc_t DefinePoints(float width, const linePoints_t& points);
+  meshDesc_t DefineTriangleStrip(const linePoints_t& points);
 
 } // namespace bb
 

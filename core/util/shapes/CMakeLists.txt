@@ -17,6 +17,7 @@ add_library(shapes STATIC
   src/vertexBuffer.cpp
   src/indexBuffer.cpp
   src/vecfont.cpp
+  src/tristrip.cpp
 )
 
 target_link_libraries(shapes PUBLIC render)
