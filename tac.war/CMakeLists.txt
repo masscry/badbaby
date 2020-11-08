@@ -27,6 +27,7 @@ target_link_libraries(tacwar
     effects
     mapgen
     sound
+    script
 )
 
 set_target_properties(tacwar PROPERTIES

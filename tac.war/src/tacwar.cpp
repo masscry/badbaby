@@ -143,7 +143,7 @@ int main(int argc, char* argv[])
     bb::context_t::msgFlag_t::mouse
   );
 
-  tac::state_t state = tac::state_t::menu;
+  tac::state_t state = tac::state_t::game;
   bb::msg_t msg;
   auto lastTick = glfwGetTime();
 

@@ -6,19 +6,47 @@
 
 #include <deque>
 
+#include <common.hpp>
+
 namespace tac
 {
+
+  enum teamID_t
+  {
+    TEAM_FIRST = 0,
+    TEAM_ALICE = TEAM_FIRST,
+    TEAM_BOB,
+    TEAM_TOTAL
+  };
+
+  const glm::vec3 teamColor[] = {
+    glm::vec3{ 1.0f, 0.1f, 0.1f },
+    glm::vec3{ 0.1f, 1.0f, 0.1f }
+  };
+
+  static_assert(bb::countof(teamColor) == TEAM_TOTAL, "teamColor must be equal to TEAM_TOTAL");
 
   struct trooper_t
   {
     glm::vec2 pos;
     float angle;
+    int team;
+    int flags;
+    float maxDist;
   };
 
   enum class gameMode_t
   {
     select,
-    move
+    dir,
+    move,
+    rot
+  };
+
+  struct segment_t
+  {
+    glm::vec2 start;
+    glm::vec2 finish;
   };
 
   class game_t final: public scene_t 
@@ -27,19 +55,33 @@ namespace tac
     bb::shader_t spriteShader;
     bb::mesh_t sprite;
     bb::texture_t spriteTex;
+    bb::mesh_t lineMesh;
+    bb::mesh_t level;
+
+  public:
 
     using troop_t = std::deque<trooper_t>;
+    using segments_t = std::deque<segment_t>;
+
+  private:
 
     troop_t troop;
     troop_t::iterator sel;
     gameMode_t mode;
 
+    float finalDir;
     float unitDir;
     glm::vec2 oldPos;
     glm::vec2 newPos;
     double time;
     double fulltime;
     double timeMult;
+
+    int curTeam;
+    int round;
+    bool showShade;
+
+    segments_t segments;
 
     void OnClick() override;
     void OnUpdate(double dt) override;
