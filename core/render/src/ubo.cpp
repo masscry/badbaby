@@ -57,7 +57,7 @@ namespace bb
     return uniformBlock_t(result);
   }
 
-  void uniformBlock_t::UpdateData(void* data, int offset, size_t size)
+  void uniformBlock_t::UpdateData(const void* data, int offset, size_t size)
   {
     glBindBuffer(GL_UNIFORM_BUFFER, this->self);
     glBufferSubData(GL_UNIFORM_BUFFER, offset, static_cast<GLsizeiptr>(size), data);
