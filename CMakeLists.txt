@@ -52,6 +52,7 @@ add_library(badbaby INTERFACE)
 target_compile_options(badbaby INTERFACE
   $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra -Wconversion -fdiagnostics-color=always>
   $<$<CXX_COMPILER_ID:Clang>:-Wall -Wextra -Wconversion -fcolor-diagnostics>
+  $<$<CXX_COMPILER_ID:AppleClang>:-Wall -Wextra -Wconversion -fcolor-diagnostics -arch x86_64>
 )
 
 if (BB_WINDOWS)

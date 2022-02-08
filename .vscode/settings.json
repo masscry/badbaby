@@ -59,7 +59,8 @@
     "regex": "cpp",
     "cerrno": "cpp",
     "typeindex": "cpp",
-    "complex": "cpp"
+    "complex": "cpp",
+    "__mutex_base": "cpp"
   },
   "files.exclude": {
     "**/.classpath": true,

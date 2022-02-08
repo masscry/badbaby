@@ -39,7 +39,7 @@ namespace sr
     std::unique_lock<std::mutex> lock(this->mutex);
     if (this->released.empty())
     {
-      this->entity.emplace_back(true);
+      this->entity.push_back(true);
       return static_cast<entityID_t>(this->entity.size()-1);
     }
 

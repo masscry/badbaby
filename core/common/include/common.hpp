@@ -295,6 +295,11 @@ namespace bb
 #define BBssize_t "%zd"
 #endif
 
+#if defined(__APPLE__)
+#define BBsize_t "%zu"
+#define BBssize_t "%zd"
+#endif
+
 #ifndef BBsize_t
 #error "Unsupported platform! Must defined BBsize_t for size_t types"
 #endif /* BBsize_t */

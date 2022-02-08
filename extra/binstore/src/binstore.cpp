@@ -20,6 +20,25 @@
 #include <arpa/inet.h>
 #include <sys/file.h>
 #include <unistd.h>
+
+#define gnu_strerror_r(errnum, buf, buflen) (strerror_r((errnum), (buf), (buflen)))
+
+#endif
+
+#ifdef __APPLE__
+#include <arpa/inet.h>
+#include <sys/file.h>
+#include <unistd.h>
+
+char* gnu_strerror_r(int errnum, char *buf, size_t buflen)
+{
+  if (strerror_r(errnum, buf, buflen) != 0) 
+  {
+    strlcpy(buf, "Error!", buflen);
+  }
+  return buf;
+}
+
 #endif
 
 #ifdef _WIN32
@@ -29,9 +48,13 @@
 #define O_NOFOLLOW (0)
 #define O_CLOEXEC (0)
 
-int strerror_r(int errnum, char *buf, size_t buflen)
+char* gnu_strerror_r(int errnum, char *buf, size_t buflen)
 {
-  return strerror_s(buf, buflen, errnum);
+  if (strerror_s(buf, buflen, errnum) != 0)
+  {
+    strlcpy(buf, "Error!", buflen);
+  }
+  return buf;
 }
 
 #define LOCK_UN (0x0)
@@ -152,7 +175,7 @@ namespace bb
         bb::Error("%s:%d: error: %s (%d)",
           __FILE__,
           __LINE__,
-          strerror_r(errno, errorbuf, sizeof(errorbuf)),
+         gnu_strerror_r(errno, errorbuf, sizeof(errorbuf)),
           errno);
       }
 
@@ -219,7 +242,7 @@ namespace bb
         bb::Error("%s:%d: error: %s (%d)",
           __FILE__,
           __LINE__,
-          strerror_r(errno, errorbuf, sizeof(errorbuf)),
+         gnu_strerror_r(errno, errorbuf, sizeof(errorbuf)),
           errno);
         return binstore_t();
       }
@@ -230,7 +253,7 @@ namespace bb
         bb::Error("%s:%d: error: %s (%d)",
           __FILE__,
           __LINE__,
-          strerror_r(errno, errorbuf, sizeof(errorbuf)),
+         gnu_strerror_r(errno, errorbuf, sizeof(errorbuf)),
           errno);
         close(inputHandle);
         return binstore_t();
@@ -261,7 +284,7 @@ namespace bb
         bb::Error("%s:%d: error: %s (%d)",
           __FILE__,
           __LINE__,
-          strerror_r(errno, errorbuf, sizeof(errorbuf)),
+         gnu_strerror_r(errno, errorbuf, sizeof(errorbuf)),
           errno);
         return binstore_t();
       }
@@ -272,7 +295,7 @@ namespace bb
         bb::Error("%s:%d: error: %s (%d)",
           __FILE__,
           __LINE__,
-          strerror_r(errno, errorbuf, sizeof(errorbuf)),
+         gnu_strerror_r(errno, errorbuf, sizeof(errorbuf)),
           errno);
         close(outputHandle);
         return binstore_t();
@@ -284,7 +307,7 @@ namespace bb
         bb::Error("%s:%d: error: %s (%d)",
           __FILE__,
           __LINE__,
-          strerror_r(errno, errorbuf, sizeof(errorbuf)),
+         gnu_strerror_r(errno, errorbuf, sizeof(errorbuf)),
           errno);
         flock(outputHandle, LOCK_UN);
         close(outputHandle);
@@ -314,7 +337,7 @@ namespace bb
         bb::Error("%s:%d: error: %s (%d)",
           __FILE__,
           __LINE__,
-          strerror_r(errno, errorbuf, sizeof(errorbuf)),
+         gnu_strerror_r(errno, errorbuf, sizeof(errorbuf)),
           errno);
         return -1;
       }
@@ -340,7 +363,7 @@ namespace bb
         bb::Error("%s:%d: error: %s (%d)",
           __FILE__,
           __LINE__,
-          strerror_r(errno, errorbuf, sizeof(errorbuf)),
+         gnu_strerror_r(errno, errorbuf, sizeof(errorbuf)),
           errno);
         return -1;
       }
@@ -352,7 +375,7 @@ namespace bb
         bb::Error("%s:%d: error: %s (%d)",
           __FILE__,
           __LINE__,
-          strerror_r(errno, errorbuf, sizeof(errorbuf)),
+         gnu_strerror_r(errno, errorbuf, sizeof(errorbuf)),
           errno);
         return -1;
       }
@@ -374,7 +397,7 @@ namespace bb
         bb::Error("%s:%d: error: %s (%d)",
           __FILE__,
           __LINE__,
-          strerror_r(errno, errorbuf, sizeof(errorbuf)),
+         gnu_strerror_r(errno, errorbuf, sizeof(errorbuf)),
           errno);
         return -1;
       }
@@ -394,7 +417,7 @@ namespace bb
           bb::Error("%s:%d: error: %s (%d)",
             __FILE__,
             __LINE__,
-            strerror_r(errno, errorbuf, sizeof(errorbuf)),
+           gnu_strerror_r(errno, errorbuf, sizeof(errorbuf)),
             errno);
           return -1;
         }
@@ -406,7 +429,7 @@ namespace bb
           bb::Error("%s:%d: error: %s (%d)",
             __FILE__,
             __LINE__,
-            strerror_r(errno, errorbuf, sizeof(errorbuf)),
+           gnu_strerror_r(errno, errorbuf, sizeof(errorbuf)),
             errno);
           return -1;
         }
@@ -465,7 +488,7 @@ namespace bb
         bb::Error("%s:%d: error: %s (%d)",
           __FILE__,
           __LINE__,
-          strerror_r(errno, errorbuf, sizeof(errorbuf)),
+         gnu_strerror_r(errno, errorbuf, sizeof(errorbuf)),
           errno);
         return -1;
       }
@@ -495,7 +518,7 @@ namespace bb
         bb::Error("%s:%d: error: %s (%d)",
           __FILE__,
           __LINE__,
-          strerror_r(errno, errorbuf, sizeof(errorbuf)),
+         gnu_strerror_r(errno, errorbuf, sizeof(errorbuf)),
           errno);
         return -1;
       }

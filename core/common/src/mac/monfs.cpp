@@ -32,12 +32,12 @@ namespace bb
       return 0;
     }
 
-    int monitor_t::Watch(const char* filename)
+    int monitor_t::Watch(const char*)
     {
       return 0;
     }
 
-    int monitor_t::RemoveWatch(int wd)
+    int monitor_t::RemoveWatch(int)
     {
       return 0;
     }

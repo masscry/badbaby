@@ -20,6 +20,10 @@ void sincos(double x, double *sinVal, double *cosVal)
 
 #endif
 
+#ifdef __APPLE__
+#define sincos(x, sinVal, cosVal) (__sincos((x), (sinVal), (cosVal)))
+#endif
+
 namespace bb
 {
 
