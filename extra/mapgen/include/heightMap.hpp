@@ -15,6 +15,7 @@
 
 #include <algebra.hpp>
 #include <binstore.hpp>
+#include <common.hpp>
 
 namespace bb
 {
@@ -128,7 +129,7 @@ namespace bb
     inline float& heightMap_t::Data(size_t x, size_t y)
     {
       auto& dataPoint = this->data[y * this->width + x];
-      assert(std::isfinite(dataPoint));
+      BB_ASSERT(std::isfinite(dataPoint));
       return dataPoint;
     }
 

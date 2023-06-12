@@ -108,7 +108,7 @@ namespace
         return "OTHER";
       default:
         // Must not happen!
-        assert(0);
+        BB_PANIC();
         return "?????";
     }
   }
@@ -127,7 +127,7 @@ namespace
         return "!KHR";
       default:
         // Must not happen!
-        assert(0);
+        BB_PANIC();
         return "????";
     }
   }
@@ -150,7 +150,7 @@ namespace
         return "OTH";
       default:
         // Must not happen!
-        assert(0);
+        BB_PANIC();
         return "???";
     }
   }
@@ -164,7 +164,7 @@ namespace
       ErrorTypeToString(type),
       message,
       id);
-    assert(severity != GL_DEBUG_SEVERITY_HIGH);
+    BB_ASSERT(severity != GL_DEBUG_SEVERITY_HIGH);
   }
 
 } // namespace
@@ -505,7 +505,7 @@ namespace bb
       default:
         // programmer's error
         bb::Error("Unknown type: (%d)", type);
-        assert(0);
+        BB_PANIC();
         return 0;
     }
   }

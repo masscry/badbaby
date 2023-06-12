@@ -156,7 +156,7 @@ namespace bb
         }
         break;
       default:
-        assert(0);
+        BB_PANIC();
         return -1;
       }
     }

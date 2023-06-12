@@ -17,12 +17,11 @@ namespace bb
     std::vector<glm::vec2> points;
     std::vector<glm::vec2> distance;
     std::vector<uint16_t> indecies;
-    auto breakIndex = bb::breakingIndex<uint16_t>();
 
     if (tripoints.size() < 3)
     { // Programmer's error!
       // Can't be so few or so many points
-      assert(0);
+      BB_PANIC();
       return bb::meshDesc_t();
     }
 

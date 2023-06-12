@@ -52,7 +52,7 @@ namespace bb
   void workerPool_t::DoProcessActors()
   {
     auto readLock = this->actorsGuard.GetReadLock();
-    assert(this->actors.size() <= maxActorsInWorkerPool);
+    BB_ASSERT(this->actors.size() <= maxActorsInWorkerPool);
   
     for (auto actorIt = this->actors.begin(), actorEnd = this->actors.end(); actorIt != actorEnd;)
     {
@@ -75,7 +75,7 @@ namespace bb
       {
       default:
         /* programmer's mistake */
-        assert(0);
+        BB_PANIC();
       case msg::result_t::skipped:
       case msg::result_t::complete:
         ++actorIt; // just incrementing
@@ -183,7 +183,7 @@ namespace bb
 
   actorPID_t workerPool_t::Register(std::unique_ptr<role_t>&& role)
   {
-    assert(role);
+    BB_ASSERT(role);
     std::string roleName = role->DefaultName();
 
     auto lock = this->actorsGuard.GetWriteLock();
@@ -217,7 +217,7 @@ namespace bb
   static inline postAddress_t ActorIDToPostbox(actorPID_t pid)
   { // postAddress_t - lower part of actorID
     // when actorID == -1 - this is an programmer's mistake
-    assert(pid != INVALID_ACTOR);
+    BB_ASSERT(pid != INVALID_ACTOR);
     return static_cast<postAddress_t>(pid);
   }
 
@@ -226,14 +226,14 @@ namespace bb
     if (actorID == INVALID_ACTOR)
     {
       bb::Error("%s", "Can't post message to INVALID_ACTOR");
-      assert(0);
+      BB_PANIC();
       return -1;
     }
 
     if (this->postOffice.Post(ActorIDToPostbox(actorID), std::move(message)) != 0)
     {
       bb::Error("Actor (%08lx) is no longer exists!", actorID);
-      assert(0);
+      BB_PANIC();
       return -1;
     }
     for (auto& info: this->infos)

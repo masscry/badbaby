@@ -20,8 +20,8 @@ public:
     ;
   }
 
-  meshData_t(const meshData_t&) = default;
-  meshData_t& operator=(const meshData_t&) = default;
+  meshData_t(const meshData_t&) = delete;
+  meshData_t& operator=(const meshData_t&) = delete;
 
   meshData_t(meshData_t&&) = default;
   meshData_t& operator=(meshData_t&&) = default;

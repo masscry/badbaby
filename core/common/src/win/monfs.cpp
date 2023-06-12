@@ -24,7 +24,7 @@ namespace bb
     {
       if (!this->IsGood())
       { // Programmer's error!
-        assert(0);
+        BB_PANIC();
         return -1;
       }
 
@@ -35,7 +35,7 @@ namespace bb
     {
       if (!this->IsGood())
       { // Programmer's error!
-        assert(0);
+        BB_PANIC();
         return -1;
       }
       return 0;
@@ -45,7 +45,7 @@ namespace bb
     {
       if (!this->IsGood())
       { // Programmer's error!
-        assert(0);
+        BB_PANIC();
         return -1;
       }
       return 0;
@@ -78,7 +78,7 @@ namespace bb
         if (this->self != -1)
         {
 			// Programmer's mistake!
-			assert(0);
+			BB_PANIC();
         }
 
         this->self = monitor.self;
@@ -94,7 +94,7 @@ namespace bb
       if (this->self != -1)
       {
 		  // Programmer's mistake!
-		  assert(0);
+		  BB_PANIC();
 	  }
     }
 
@@ -106,7 +106,7 @@ namespace bb
       {
         // Programmer's error!
         // No need to create monitor without processor
-        assert(0);
+        BB_PANIC();
         return monitor_t();
       }
       return monitor_t(-1, std::move(processor));

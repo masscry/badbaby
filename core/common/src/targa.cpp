@@ -252,7 +252,7 @@ namespace bb
         break;
       default:
         // programmer error, can't reach here
-        assert(0);
+        BB_PANIC();
     }
 
     std::unique_ptr<uint8_t[]> pixels;
@@ -296,7 +296,7 @@ namespace bb
         break;
         default:
           // can't reach here.
-          assert(0);
+          BB_PANIC();
       }
     }
     else
@@ -311,7 +311,7 @@ namespace bb
           break;
         default:
           // can't reach here.
-          assert(0);
+          BB_PANIC();
       }
     }
 

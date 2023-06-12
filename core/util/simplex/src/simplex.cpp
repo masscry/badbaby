@@ -236,7 +236,7 @@ namespace bb
 
   simplex_t& simplex_t::operator=(const simplex_t& cp)
   {
-      assert((this->perm) && (this->perm3D));
+      BB_ASSERT((this->perm) && (this->perm3D));
       if (this != &cp)
       {   // old pointer exists
           memcpy(this->perm.get(), cp.perm.get(), sizeof(uint8_t)*256);

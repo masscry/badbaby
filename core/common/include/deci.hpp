@@ -20,10 +20,7 @@ namespace bb
   class deci_t final
   {
   public:
-    enum
-    {
-      fraction = 1000
-    };
+    static constexpr int32_t fraction = 1000;
   
   private:
 

@@ -78,7 +78,11 @@ E    ([Ee][+-]?{D}+)
                       
 [[:space:]]+          { /* IGNORE SPACES */ }
 
-.                     { /* SOME INVALID CHARACTER */ printf(isprint(*yytext)?"%c\n":"<%02X>\n", *yytext); assert(0); }
+.                     { 
+                        /* SOME INVALID CHARACTER */
+                        printf(isprint(*yytext)?"%c\n":"<%02X>\n", *yytext);
+                        assert(0); 
+                      }
 
 %%
 

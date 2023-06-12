@@ -256,8 +256,10 @@ void world_t::CastLight(
     bool blocked = false;
     for (auto dx = -i, dy = -i; dx <= 0; dx++)
     {
-      auto l_slope = (dx - 0.5f) / (dy + 0.5f);
-      auto r_slope = (dx + 0.5f) / (dy - 0.5f);
+      float fdx = static_cast<float>(dx);
+      float fdy = static_cast<float>(dy);
+      auto l_slope = (fdx - 0.5f) / (fdy + 0.5f);
+      auto r_slope = (fdx + 0.5f) / (fdy - 0.5f);
       if (startSlope < r_slope)
       {
         continue;
@@ -269,8 +271,8 @@ void world_t::CastLight(
 
       auto sax = dx * xx + dy * xy;
       auto say = dx * yx + dy * yy;
-      if ((sax < 0 && (uint)std::abs(sax) > pos.x) ||
-          (say < 0 && (uint)std::abs(say) > pos.y))
+      if ((sax < 0 && std::abs(sax) > pos.x) ||
+          (say < 0 && std::abs(say) > pos.y))
       {
         continue;
       }
@@ -495,11 +497,14 @@ bb::meshDesc_t world_t::BuildUnits()
       continue;
     }
 
-    glm::vec2 pos = {unitPos.x * tileSize.x, unitPos.y * tileSize.y};
+    glm::vec2 pos = {
+      static_cast<float>(unitPos.x) * tileSize.x,
+      static_cast<float>(unitPos.y) * tileSize.y
+    };
 
     if (indOffset + 4 >= UINT16_MAX)
     { // Invalid offset!
-      assert(0);
+      BB_PANIC();
       continue;
     }
 
@@ -524,7 +529,7 @@ bb::meshDesc_t world_t::BuildUnits()
       {
         if (indOffset + 4 >= UINT16_MAX)
         {
-          assert(0);
+          BB_PANIC();
         }
         else
         {
@@ -578,7 +583,7 @@ bb::meshDesc_t world_t::BuildUnits()
       }
       break;
     default:
-      assert(0);
+      BB_PANIC();
       break;
     }
 
@@ -598,7 +603,7 @@ bb::meshDesc_t world_t::BuildTileMap()
 
   if (mapSize.y * mapSize.x < 0)
   { // Invalid map dimensions!
-    assert(0);
+    BB_PANIC();
     return bb::meshDesc_t();
   }
 
@@ -641,11 +646,14 @@ bb::meshDesc_t world_t::BuildTileMap()
 
       auto color = cell.shadow ? glm::vec3(0.3f) : glm::vec3(0.6f);
       auto tile = tileID[cell.tile];
-      glm::vec2 pos = {x * tileSize.x, y * tileSize.y};
+      glm::vec2 pos = {
+        static_cast<float>(x) * tileSize.x,
+        static_cast<float>(y) * tileSize.y
+      };
 
       if (indOffset + 4 >= UINT16_MAX)
       { // Too many indecies!
-        assert(0);
+        BB_PANIC();
         continue;
       }
 
@@ -702,7 +710,7 @@ void world_t::ProcessAI()
         case sr::AI_ANGRY:
           break;
         default:
-          assert(0);
+          BB_PANIC();
       }
     }
   }
@@ -776,7 +784,7 @@ bb::msg::result_t world_t::OnKeyPress(const bb::msg::keyEvent_t& key)
     }
     break;
     default:
-      assert(0);
+      BB_PANIC();
       break;
   }
   return bb::msg::result_t::complete;
@@ -989,7 +997,7 @@ bb::msg::result_t world_t::OnProcessMessage(const bb::actor_t &, const bb::msg::
   }
 
   // unknown message
-  assert(0);
+  BB_PANIC();
   return bb::msg::result_t::error;
 }
 

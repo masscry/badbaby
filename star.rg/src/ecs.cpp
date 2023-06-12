@@ -1,5 +1,6 @@
 #include<ecs.hpp>
-#include <components.hpp>
+#include<components.hpp>
+#include<common.hpp>
 
 namespace sr
 {
@@ -27,9 +28,9 @@ namespace sr
     {
       return false;
     }
-    if (static_cast<size_t>(entityID) < this->entity.size())
+    if (auto eid = static_cast<size_t>(entityID); eid < this->entity.size())
     {
-      return this->entity[entityID];
+      return this->entity[eid];
     }
     return false;
   }
@@ -43,11 +44,11 @@ namespace sr
       return static_cast<entityID_t>(this->entity.size()-1);
     }
 
-    auto resultID = this->released.front();
+    auto resultID = static_cast<size_t>(this->released.front());
     this->released.pop_front();
 
     this->entity[resultID] = true;
-    return resultID;
+    return static_cast<entityID_t>(resultID);
   }
 
   void entityFactory_t::Release(entityID_t id)
@@ -60,7 +61,7 @@ namespace sr
   {
     if ((id < 0) || (this->entity.size() < static_cast<size_t>(id)))
     {
-      assert(0);
+      BB_PANIC();
       throw std::runtime_error("Try to release invalid ID");
     }
 
@@ -69,7 +70,7 @@ namespace sr
       factory->OnEntityDelete(id);
     }
 
-    this->entity[id] = false;
+    this->entity[static_cast<size_t>(id)] = false;
     this->released.push_back(id);
   }
 

@@ -26,7 +26,7 @@ namespace bb
         { // special case! breaking vertex starts new line
           if (linePoints.size() < 2)
           { // if not enought points, just skip - may be error in data
-            assert(0);
+            BB_PANIC();
             continue;
           }
           if (result.IsGood())
@@ -96,7 +96,7 @@ namespace bb
       if (smbVerts == nullptr)
       { // This won't happen, if no regression happens
         bb::Error("Unknown symbol: %08x (%c)", smb, (smb & 0xFF));
-        assert(0);
+        BB_PANIC();
         return meshDesc_t();
       }
 

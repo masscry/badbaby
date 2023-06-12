@@ -25,7 +25,7 @@ namespace bb
     if (this == &mesh)
     {
       bb::Error("%s", "Can't append mesh to itself");
-      assert(0);
+      BB_PANIC();
       return -1;
     }
 
@@ -49,7 +49,7 @@ namespace bb
     {
       // Programmer's error!
       bb::Error("%s", "Can't append mesh of different type");
-      assert(0);
+      BB_PANIC();
       return -1;
     }
 
@@ -101,7 +101,7 @@ namespace bb
 
   int meshDesc_t::Save(FILE* output) const
   {
-    assert((this->Buffers().size() + 1) < std::numeric_limits<uint32_t>::max());
+    BB_ASSERT((this->Buffers().size() + 1) < std::numeric_limits<uint32_t>::max());
 
     meshDescHeader_t header;
     header.magic = MESH_DESC_MAGIC;
@@ -117,8 +117,8 @@ namespace bb
 
     for (auto& arrayBuffer: this->Buffers())
     {
-      assert(arrayBuffer->Size() < std::numeric_limits<uint32_t>::max());
-      assert(arrayBuffer->ByteSize() + sizeof(meshDescArrayHeader_t) < std::numeric_limits<uint32_t>::max());
+      BB_ASSERT(arrayBuffer->Size() < std::numeric_limits<uint32_t>::max());
+      BB_ASSERT(arrayBuffer->ByteSize() + sizeof(meshDescArrayHeader_t) < std::numeric_limits<uint32_t>::max());
 
       meshDescArrayHeader_t arrayHeader;
       arrayHeader.magic = MESH_DESC_ARRAY_MAGIC;
@@ -138,8 +138,8 @@ namespace bb
       }
     }
 
-    assert(this->Indecies()->Size() < std::numeric_limits<uint32_t>::max());
-    assert(this->Indecies()->ByteSize() + sizeof(meshDescArrayHeader_t) < std::numeric_limits<uint32_t>::max());
+    BB_ASSERT(this->Indecies()->Size() < std::numeric_limits<uint32_t>::max());
+    BB_ASSERT(this->Indecies()->ByteSize() + sizeof(meshDescArrayHeader_t) < std::numeric_limits<uint32_t>::max());
 
     meshDescArrayHeader_t arrayHeader;
     arrayHeader.magic = MESH_DESC_ELEMENT_MAGIC;
@@ -184,13 +184,13 @@ namespace bb
 
     if (fread(&header, sizeof(meshDescHeader_t), 1, input) != 1)
     {
-      assert(0);
+      BB_PANIC();
       return meshDesc_t();
     }
 
     if ((header.magic != MESH_DESC_MAGIC) || (header.version != MESH_DESC_VERSION))
     {
-      assert(0);
+      BB_PANIC();
       return meshDesc_t();
     }
 
@@ -198,7 +198,7 @@ namespace bb
 
     if (fseek(input, header.dataOffset, SEEK_SET) != 0)
     {
-      assert(0);
+      BB_PANIC();
       return meshDesc_t();
     }
 
@@ -208,7 +208,7 @@ namespace bb
 
       if (fread(&arrHeader, sizeof(meshDescArrayHeader_t), 1, input) != 1)
       {
-        assert(0);
+        BB_PANIC();
         return meshDesc_t();
       }
      
@@ -221,7 +221,7 @@ namespace bb
              std::unique_ptr<uint8_t[]> arrayData(new uint8_t[arrayDataByteSize]);
              if (fread(arrayData.get(), 1, arrayDataByteSize, input) != arrayDataByteSize)
              {
-               assert(0);
+               BB_PANIC();
                return meshDesc_t();
              }
 
@@ -243,7 +243,7 @@ namespace bb
             std::unique_ptr<uint8_t[]> elemData(new uint8_t[elemDataByteSize]);
             if (fread(elemData.get(), 1, elemDataByteSize, input) != elemDataByteSize)
             {
-              assert(0);
+              BB_PANIC();
               return meshDesc_t();
             }
 
@@ -253,7 +253,7 @@ namespace bb
           }
           break;
         default:
-          assert(0);
+          BB_PANIC();
           return meshDesc_t();
       }
       

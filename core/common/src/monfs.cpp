@@ -32,7 +32,7 @@ namespace bb
     {
       if (!this->IsGood())
       { // Programmer's error!
-        assert(0);
+        BB_PANIC();
         return -1;
       }
 
@@ -104,7 +104,7 @@ namespace bb
     {
       if (!this->IsGood())
       { // Programmer's error!
-        assert(0);
+        BB_PANIC();
         return -1;
       }
 
@@ -122,7 +122,7 @@ namespace bb
     {
       if (!this->IsGood())
       { // Programmer's error!
-        assert(0);
+        BB_PANIC();
         return -1;
       }
 
@@ -191,7 +191,7 @@ namespace bb
       {
         // Programmer's error!
         // No need to create monitor without processor
-        assert(0);
+        BB_PANIC();
         return monitor_t();
       }
 

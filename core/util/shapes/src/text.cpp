@@ -49,7 +49,7 @@ namespace
     auto totalSymbols = symbols.size() - totalSpaces;
     auto breakIndex = bb::breakingIndex<uint16_t>();
 
-    assert(totalSymbols*4 < breakIndex); // in debug we assert this issue
+    BB_ASSERT(totalSymbols*4 < breakIndex); // in debug we assert this issue
     if (totalSymbols*4 >= breakIndex)
     { // we are using uint16_t for vert indecies
       // need to check if given text is to long for
@@ -65,7 +65,7 @@ namespace
       output.indecies.resize(totalSymbols*6);
     }
 
-    assert(totalSymbols*6 <= output.indecies.size());
+    BB_ASSERT(totalSymbols*6 <= output.indecies.size());
 
     uint32_t vID = 0;
     bb::vec3_t cursor = bb::vec3_t(0.0f);
@@ -113,7 +113,7 @@ namespace
               ccolt = glm::vec4(1.0f);
               break;
             default:
-              assert(0);
+              BB_PANIC();
               bb::Warning("Unknown escape sequence: \\(%02X)", smb);
           }
           break;
@@ -161,7 +161,7 @@ namespace
 
   bool ExtractLine(range_t input, size_t maxWidth, range_t* result)
   {
-    assert(result != nullptr);
+    BB_ASSERT(result != nullptr);
 
     auto cursor = std::get<0>(input);
     auto end = std::get<1>(input);
@@ -213,7 +213,7 @@ namespace
 
     auto breakIndex = bb::breakingIndex<uint16_t>();
 
-    assert(symbols.size()*4 < breakIndex); // in debug we assert this issue
+    BB_ASSERT(symbols.size()*4 < breakIndex); // in debug we assert this issue
     if (symbols.size()*4 >= breakIndex)
     { // we are using uint16_t for vert indecies
       // need to check if given text is to long for
@@ -228,7 +228,7 @@ namespace
       output.indecies.resize(symbols.size()*6);
     }
 
-    assert(symbols.size()*6 <= output.indecies.size());
+    BB_ASSERT(symbols.size()*6 <= output.indecies.size());
 
     uint32_t vID = 0;
     bb::vec3_t cursor = bb::vec3_t(0.0f);
@@ -310,7 +310,7 @@ namespace bb
 
   void textStatic_t::Render()
   {
-    assert(this->tex);
+    BB_ASSERT(this->tex);
     texture_t::Bind(*this->tex);
     this->mesh.Render();
   }
@@ -351,13 +351,13 @@ namespace bb
 
   void textDynamic_t::UpdateText(const char* text)
   {
-    assert(this->font != nullptr);
+    BB_ASSERT(this->font != nullptr);
     size_t textI = MakeText(*this->font, text, this->chSize, this->vertecies);
 
     if (textI == 0)
     {
       Error("%s", "Empty Dynamic String");
-      assert(0);
+      BB_PANIC();
       return;
     }
 
@@ -433,7 +433,7 @@ namespace bb
   {
     if (!this->vertecies.indecies.empty())
     {
-      assert(this->font != nullptr);
+      BB_ASSERT(this->font != nullptr);
 
       texture_t::Bind(*this->font->Texture());
       vao_t::Bind(this->vao);

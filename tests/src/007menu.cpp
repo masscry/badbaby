@@ -195,7 +195,7 @@ namespace menu
             this->SelectLine();
             break;
           default:
-            assert(0);
+            BB_PANIC();
         }
         return bb::msg::result_t::complete;
       }
@@ -206,7 +206,7 @@ namespace menu
         return bb::msg::result_t::complete;
       }
 
-      assert(0);
+      BB_PANIC();
       return bb::msg::result_t::error;
     }
 
@@ -290,7 +290,7 @@ int main(int argc, char* argv[])
       {
         bb::Error("Unknown message type: %s", "Invalid Message");
       }
-      assert(0);
+      BB_PANIC();
     }
 
     auto nowTick = glfwGetTime();

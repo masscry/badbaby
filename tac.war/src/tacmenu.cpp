@@ -54,13 +54,13 @@ namespace tac
       {
         bb::postOffice_t::Instance().Post(
           "tacwar",
-          bb::Issue<bb::msg::dataMsg_t<int>>(i, -1)
+          bb::Issue<bb::msg::dataMsg_t<int>>(static_cast<int>(i), -1)
         );
       }
     }
   }
 
-  void menu_t::OnUpdate(double dt)
+  void menu_t::OnUpdate(double)
   {
     auto& context = bb::context_t::Instance();
     auto curPos = context.MousePos();
@@ -122,7 +122,7 @@ namespace tac
 
   float CenterTextOffset(const char* text, float screenWidth)
   {
-    auto len = bb::utf8len(text);
+    auto len = static_cast<float>(bb::utf8len(text));
 
     auto xCenter = (screenWidth - len)*0.5f;
     return xCenter;
@@ -149,7 +149,7 @@ namespace tac
       bb::DefineNumber(centerPos, 0.15f, glm::vec2(1.0f), "TacWar")
     );
 
-    centerPos += 10.0;
+    centerPos += 10.0f;
     for (int i = 0; i < menu_t::total; ++i)
     {
       centerPos.x = CenterTextOffset(textLines[i], 20.0f*aspect);
@@ -163,10 +163,10 @@ namespace tac
         0.3f, 0.7f, 0.3f, 1.0f
       );
       this->boundBox.emplace_back(
-        centerPos.y - 0.3,
+        centerPos.y - 0.3f,
         centerPos.y + 1.3f
       );
-      centerPos.y += 2.5;
+      centerPos.y += 2.5f;
     }
   }
 

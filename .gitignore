@@ -23,3 +23,5 @@ runtime/obj2mesh/*.log
 runtime/cqc/*.log
 runtime/starrg/*.log
 runtime/tacwar/*.log
+.cache/
+compile_commands.json

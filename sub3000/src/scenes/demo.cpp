@@ -82,7 +82,7 @@ namespace sub3000
     }
     else
     {
-      assert(0);
+      BB_PANIC();
       bb::Error("%s", "Map Read Failed!");
       sub3000::PostExit();
     }

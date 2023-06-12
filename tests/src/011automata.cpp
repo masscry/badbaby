@@ -479,7 +479,7 @@ mesh_t BuildMesh(const array2D_t<int>& world)
         col.emplace_back(glm::vec3(0.6, 0.4, 0.8));
       }
 
-      assert(index < 0x10000);
+      BB_ASSERT(index < 0x10000);
 
       indxs.emplace_back(index++);
     }

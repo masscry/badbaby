@@ -1,6 +1,7 @@
 #include <cassert>
 #include <cstring>
 
+#include <common.hpp>
 #include <image.hpp>
 
 namespace bb
@@ -11,7 +12,7 @@ namespace bb
   {
     if (copy.data)
     {
-      assert((copy.width != 0) && (copy.height != 0) && (copy.depth != 0));
+      BB_ASSERT((copy.width != 0) && (copy.height != 0) && (copy.depth != 0));
 
       size_t dataSize = static_cast<size_t>(copy.width * copy.height * copy.depth);
       this->data.reset(new uint8_t[dataSize]);
@@ -36,7 +37,7 @@ namespace bb
     }
     if (copy.data)
     { // has data to copy
-      assert((copy.width != 0) && (copy.height != 0) && (copy.depth != 0));
+      BB_ASSERT((copy.width != 0) && (copy.height != 0) && (copy.depth != 0));
 
       size_t dataSize = static_cast<size_t>(copy.width * copy.height * copy.depth);
       this->data.reset(new uint8_t[dataSize]);

@@ -80,7 +80,7 @@ namespace bb
       height(hmap.Height()),
       depth(depth & 0xFFFF)
     {
-      assert(this->width * this->height * this->depth != 0);
+      BB_ASSERT(this->width * this->height * this->depth != 0);
       if (this->width * this->height * this->depth != 0)
       {
         this->data.reset(
@@ -189,7 +189,7 @@ namespace bb
       height(static_cast<uint16_t>(dim.y & 0xFFFF)),
       depth(static_cast<uint16_t>(dim.z & 0xFFFF))
     {
-      assert(this->width * this->height * this->depth != 0);
+      BB_ASSERT(this->width * this->height * this->depth != 0);
       if (this->width * this->height * this->depth != 0)
       {
         this->data.reset(
@@ -255,7 +255,7 @@ namespace bb
     {
       if (!this->IsGood())
       { // programmer's mistake
-        assert(0);
+        BB_PANIC();
         return 0.0f;
       }
 
@@ -390,7 +390,7 @@ namespace bb
       }
       else
       {
-        assert(0);
+        BB_PANIC();
         return 0.0f;
       }
     }
@@ -450,7 +450,7 @@ namespace bb
 
       if (glm::abs(glm::length(dir) - 1.0f) >= 0.1f)
       {
-        assert(0);
+        BB_PANIC();
         return false;
       }
 

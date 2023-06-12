@@ -94,7 +94,7 @@ void ProcessGameAction(bb::actorPID_t src, sub3000::gameAction_t action)
     sub3000::PostChangeScene(sub3000::sceneID_t::demo);
     break;
   default:
-    assert(0);
+    BB_PANIC();
   }
 }
 
@@ -224,7 +224,7 @@ int main(int argc, char* argv[])
       {
         bb::Error("Unknown action type: %s", "Invalid Message");
       }
-      assert(0);
+      BB_PANIC();
     }
 
     for (auto& monitor: fsMonitors)

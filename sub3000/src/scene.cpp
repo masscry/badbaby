@@ -74,13 +74,13 @@ namespace sub3000
 
   scene_t* TopScene(size_t depth)
   {
-    assert(depth < sceneStack.size());
+    BB_ASSERT(depth < sceneStack.size());
     return *(sceneStack.rbegin() + static_cast<long>(depth));
   }
 
   void PushScene(scene_t* scene)
   {
-    assert(scene != nullptr);
+    BB_ASSERT(scene != nullptr);
     sceneSet.insert(scene->SceneID());
     sceneStack.push_back(scene);
     scene->Prepare();
@@ -89,7 +89,7 @@ namespace sub3000
 
   void PopScene()
   {
-    assert(!sceneStack.empty());
+    BB_ASSERT(!sceneStack.empty());
     sceneSet.erase(TopScene(0)->SceneID());
     TopScene(0)->Cleanup();
     sceneStack.pop_back();

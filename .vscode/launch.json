@@ -25,6 +25,26 @@
       "preLaunchTask": "Build TacWar (Debug)"
     },
     {
+      "name": "Launch MagRev",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/.debug/bin/magrev",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}/runtime/magrev",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "setupCommands": [
+          {
+              "description": "Включить автоматическое форматирование для gdb",
+              "text": "-enable-pretty-printing",
+              "ignoreFailures": true
+          }
+      ],
+      "preLaunchTask": "Build MagRev (Debug)"
+    },
+    {
       "name": "Launch 000Hello (Debug)",
       "type": "cppdbg",
       "request": "launch",

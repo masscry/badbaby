@@ -10,7 +10,7 @@ namespace bb
 
   bool mailbox_t::Poll(msg_t* result)
   {
-    assert(result != nullptr);
+    BB_ASSERT(result != nullptr);
 
     std::lock_guard<std::mutex> lock(this->guard);
     if (this->storage.empty())
@@ -61,7 +61,7 @@ namespace bb
     {
       bb::Error("Item with address %u already exists!", address);
       // such item exists
-      assert(0);
+      BB_PANIC();
       return mailbox_t::shared_t();
     }
 

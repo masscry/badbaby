@@ -25,7 +25,7 @@ namespace sub3000
       FILE* input = fopen(screenConfig.Value("radar.mesh", "radar.msh").c_str(), "rb");
       if (input == nullptr)
       { // resource not found!
-        assert(0);
+        BB_PANIC();
       }
       BB_DEFER(fclose(input));
 
@@ -92,7 +92,7 @@ namespace sub3000
       {
         if (!sub3000::RequestGenerateMap(this->spaceActorID))
         {
-          assert(0);
+          BB_PANIC();
           bb::Error("%s", "Map Gen Failed!");
           sub3000::PostExit();
         }

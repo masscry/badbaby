@@ -19,7 +19,7 @@ namespace bb
     {
       if (!this->IsGood())
       {
-        assert(0);
+        BB_PANIC();
         return -std::numeric_limits<float>::max();
       }
 
@@ -29,7 +29,7 @@ namespace bb
         maxPixel = std::max(this->data[pixel], maxPixel);
       }
 
-      assert(std::isfinite(maxPixel));
+      BB_ASSERT(std::isfinite(maxPixel));
       return maxPixel;
     }
 
@@ -37,7 +37,7 @@ namespace bb
     {
       if (!this->IsGood())
       {
-        assert(0);
+        BB_PANIC();
         return std::numeric_limits<float>::max();
       }
 
@@ -47,7 +47,7 @@ namespace bb
         minPixel = std::min(this->data[pixel], minPixel);
       }
 
-      assert(std::isfinite(minPixel));
+      BB_ASSERT(std::isfinite(minPixel));
       return minPixel;
     }
 
@@ -98,7 +98,7 @@ namespace bb
     : width(width),
       height(height)
     {
-      assert((this->width * this->height) != 0);
+      BB_ASSERT((this->width * this->height) != 0);
       this->data.reset(new float[this->width*this->height]);
     }
 
@@ -143,7 +143,7 @@ namespace bb
     {
       if (!this->IsGood())
       { // programmer's mistake
-        assert(0);
+        BB_PANIC();
         return 0.0f;
       }
 

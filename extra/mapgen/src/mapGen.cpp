@@ -13,7 +13,7 @@
 
 void sincos(double x, double *sinVal, double *cosVal)
 {
-  assert((sinVal != nullptr) && (cosVal != nullptr));
+  BB_ASSERT((sinVal != nullptr) && (cosVal != nullptr));
   *sinVal = sin(x);
   *cosVal = cos(x);
 }
@@ -28,7 +28,7 @@ namespace bb
 
     heightMap_t MakeHMapUsingOctaves(const generate_t& params)
     {
-      assert((params.width < 0x10000) && (params.height < 0x10000));
+      BB_ASSERT((params.width < 0x10000) && (params.height < 0x10000));
       auto simplex = simplex_t(params.seed);
 
       heightMap_t heightMap(params.width & 0xFFFF, params.height & 0xFFFF);
@@ -47,11 +47,15 @@ namespace bb
       {
         double sinTheta;
         double cosTheta;
-        sincos((y/resolution.y)*M_PI, &sinTheta, &cosTheta);
+        sincos(
+          static_cast<double>(y)/resolution.y*M_PI,
+          &sinTheta,
+          &cosTheta
+        );
 
         for (size_t x = 0; x < params.width; ++x)
         {
-          double phi = -M_PI + (x/resolution.x)*M_PI*2.0;
+          double phi = -M_PI + static_cast<double>(y)/resolution.x*M_PI*2.0;
           double sinPhi;
           double cosPhi;
           sincos(phi, &sinPhi, &cosPhi);
@@ -103,7 +107,7 @@ namespace bb
       }
 
       Error("Unknown message: %s", typeid(msg).name());
-      assert(0);
+      BB_PANIC();
       return msg::result_t::error;
     }
 

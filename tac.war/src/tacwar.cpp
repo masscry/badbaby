@@ -133,7 +133,7 @@ namespace tac
     return 0;
   }
 
-  void scene_t::OnMouse(int btn, int press)
+  void scene_t::OnMouse(int, int)
   {
     // Do nothing!
     ;
@@ -214,7 +214,7 @@ int main(int argc, char* argv[])
       {
         bb::Error("Unknown action type: %s", "Invalid Message");
       }
-      assert(0);
+      BB_PANIC();
       break;
     }
 

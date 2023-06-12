@@ -1,5 +1,6 @@
 #include <cassert>
 
+#include <common.hpp>
 #include <vao.hpp>
 
 namespace bb
@@ -137,7 +138,7 @@ namespace bb
   {
     void *pOffset = reinterpret_cast<void*>(static_cast<uintptr_t>(offset));
 
-    assert(this->self != 0);
+    BB_ASSERT(this->self != 0);
     glBindVertexArray(this->self);
     glBindBuffer(GL_ARRAY_BUFFER, vbo.self);
     glVertexAttribPointer(index, size, type, normalized, stride, pOffset);
@@ -147,7 +148,7 @@ namespace bb
 
   void vao_t::BindIndecies(const vbo_t& vbo)
   {
-    assert(this->self != 0);
+    BB_ASSERT(this->self != 0);
     glBindVertexArray(this->self);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo.self);
     glBindVertexArray(0);

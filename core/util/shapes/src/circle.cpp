@@ -28,7 +28,7 @@ namespace bb
 
     if (sides*4 > std::numeric_limits<uint16_t>::max())
     { // can't be so many sides!
-      assert(0);
+      BB_PANIC();
       sides = std::numeric_limits<uint16_t>::max()/4;
     }
 

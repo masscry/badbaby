@@ -112,7 +112,7 @@ namespace bb
   {
     if ((src.ByteSize() == 0) || (src.Data() == nullptr))
     {
-      assert(0);
+      BB_PANIC();
       return -1;
     }
 
@@ -157,7 +157,7 @@ namespace bb
       case GL_UNSIGNED_INT:
         return MaximumIndexArray(reinterpret_cast<const uint32_t*>(this->Data()), this->Size());
       default:
-        assert(0);
+        BB_PANIC();
         bb::Error("Unknown index array type (0x%x)", this->Type());
         return 0;
     }
@@ -171,7 +171,7 @@ namespace bb
 
     if (static_cast<size_t>(realOffset) != offset)
     { // some programmer's mistake
-      assert(0);
+      BB_PANIC();
       return -1;
     }
     if ((dst == nullptr) || (src == nullptr))
@@ -196,7 +196,7 @@ namespace bb
     if (this->Type() != src.Type())
     { // some programmer's mistake
       bb::Error("%s", "Trying to append buffers of different types");
-      assert(0);
+      BB_PANIC();
       return -1;
     }
 
@@ -256,7 +256,7 @@ namespace bb
         );
         break;
       default:
-        assert(0);
+        BB_PANIC();
         bb::Error("Unknown index array type (0x%x)", this->Type());
         return -1;
     }

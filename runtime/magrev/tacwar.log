@@ -1,0 +1,60 @@
+Log Started
+Wed Apr  7 23:47:14 2021 [INF]	OpenGL:
+	Vendor: Intel
+	Renderer: Mesa Intel(R) HD Graphics 5500 (BDW GT2)
+	Version: 4.6 (Core Profile) Mesa 20.2.6
+	GLSL Version: 4.60
+Wed Apr  7 23:47:14 2021 [DBG]	Post Office Created
+Wed Apr  7 23:47:14 2021 [DBG]	Worker Pool Created
+Wed Apr  7 23:47:14 2021 [INF]	Total Worker Count: 1
+Wed Apr  7 23:47:14 2021 [DBG]	Command p (112)
+
+Wed Apr  7 23:47:14 2021 [DBG]		10.000000
+
+Wed Apr  7 23:47:14 2021 [DBG]		15.000000
+
+Wed Apr  7 23:47:14 2021 [DBG]	Command p (112)
+
+Wed Apr  7 23:47:14 2021 [DBG]		10.000000
+
+Wed Apr  7 23:47:14 2021 [DBG]		20.000000
+
+Wed Apr  7 23:47:14 2021 [DBG]	Command p (112)
+
+Wed Apr  7 23:47:14 2021 [DBG]		10.000000
+
+Wed Apr  7 23:47:14 2021 [DBG]		20.000000
+
+Wed Apr  7 23:47:14 2021 [DBG]	Command p (112)
+
+Wed Apr  7 23:47:14 2021 [DBG]		20.000000
+
+Wed Apr  7 23:47:14 2021 [DBG]		20.000000
+
+Wed Apr  7 23:47:14 2021 [DBG]	Command p (112)
+
+Wed Apr  7 23:47:14 2021 [DBG]		20.000000
+
+Wed Apr  7 23:47:14 2021 [DBG]		20.000000
+
+Wed Apr  7 23:47:14 2021 [DBG]	Command p (112)
+
+Wed Apr  7 23:47:14 2021 [DBG]		20.000000
+
+Wed Apr  7 23:47:14 2021 [DBG]		15.000000
+
+Wed Apr  7 23:47:14 2021 [DBG]	Command p (112)
+
+Wed Apr  7 23:47:14 2021 [DBG]		20.000000
+
+Wed Apr  7 23:47:14 2021 [DBG]		15.000000
+
+Wed Apr  7 23:47:14 2021 [DBG]	Command p (112)
+
+Wed Apr  7 23:47:14 2021 [DBG]		10.000000
+
+Wed Apr  7 23:47:14 2021 [DBG]		15.000000
+
+Log Ended
+Wed Apr  7 23:47:23 2021 [DBG]	Worker Pool Died
+Wed Apr  7 23:47:23 2021 [DBG]	Post Office Deleted

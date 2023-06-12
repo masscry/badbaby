@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.10)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
-set(CMAKE_C_STANDARD 99)
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_C_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 project(badbaby
   VERSION 0.4.0
@@ -50,8 +50,8 @@ find_package(Threads REQUIRED)
 add_library(badbaby INTERFACE)
 
 target_compile_options(badbaby INTERFACE
-  $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra -Wconversion -fdiagnostics-color=always>
-  $<$<CXX_COMPILER_ID:Clang>:-Wall -Wextra -Wconversion -fcolor-diagnostics>
+  $<$<CXX_COMPILER_ID:GNU>:-Werror -Wall -Wextra -Wconversion -fdiagnostics-color=always>
+  $<$<CXX_COMPILER_ID:Clang>:-Werror -Wall -Wextra -Wconversion -fcolor-diagnostics>
 )
 
 if (BB_WINDOWS)
@@ -88,6 +88,7 @@ add_subdirectory(obj2mesh)
 add_subdirectory(cqc)
 add_subdirectory(star.rg)
 add_subdirectory(tac.war)
+add_subdirectory(magic.revolver)
 
 install(DIRECTORY runtime/sub3000
   DESTINATION share

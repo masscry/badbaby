@@ -55,7 +55,7 @@ namespace bb
   {
     if ((src.ByteSize() == 0) || (src.Data() == nullptr))
     { // programmer's mistake
-      assert(0);
+      BB_PANIC();
       return -1;
     }
 
@@ -86,7 +86,7 @@ namespace bb
     )
     { // some programmer's mistake
       bb::Error("%s", "Trying to append buffers of different types");
-      assert(0);
+      BB_PANIC();
       return -1;
     }
 

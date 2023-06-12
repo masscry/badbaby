@@ -80,7 +80,7 @@ namespace bb
     if (!meshDesc.IsGood())
     {
       bb::Error("%s", "GenerateMesh from bad description!");
-      assert(0);
+      BB_PANIC();
       return bb::mesh_t();
     }
 
@@ -91,7 +91,7 @@ namespace bb
       if (dataBuffer->Size() < maxIndex)
       {
         bb::Error("Data buffer smaller than available indecies (%lu < " BBsize_t ")", dataBuffer->Size(), maxIndex);
-        assert(0);
+        BB_PANIC();
         return bb::mesh_t();
       }
     }

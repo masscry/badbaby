@@ -389,7 +389,7 @@ int main(int argc, char* argv[])
         bb::Error("Unknown message: %s", "Invalid Message");
       }
 
-      assert(0);
+      BB_PANIC();
     }
   }
 

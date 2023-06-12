@@ -221,7 +221,7 @@ namespace bb
     {
       // Programmer's error!
       bb::Error("Can't append buffer to itself");
-      assert(0);
+      BB_PANIC();
       return -1;
     }
 
@@ -233,7 +233,7 @@ namespace bb
     {
       // Programmer's error!
       bb::Error("Trying to append vertex buffer of different kind");
-      assert(0);
+      BB_PANIC();
       return -1;
     }
 

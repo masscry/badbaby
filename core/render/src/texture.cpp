@@ -107,8 +107,8 @@ namespace bb
   texture_t::texture_t(int width, int height, int depth, const uint8_t* data)
   :self(0)
   {
-    assert((depth == 3) || (depth == 4));
-    assert((data != nullptr) && (width != 0) && (height != 0));
+    BB_ASSERT((depth == 3) || (depth == 4));
+    BB_ASSERT((data != nullptr) && (width != 0) && (height != 0));
 
     glGenTextures(1, &this->self);
     glBindTexture(GL_TEXTURE_2D, this->self);
@@ -128,7 +128,7 @@ namespace bb
 
   texture_t::texture_t(int width, int height, const float* data)
   {
-    assert((data != nullptr) && (width != 0) && (height != 0));
+    BB_ASSERT((data != nullptr) && (width != 0) && (height != 0));
 
     glGenTextures(1, &this->self);
     glBindTexture(GL_TEXTURE_2D, this->self);
@@ -140,7 +140,7 @@ namespace bb
 
   void texture_t::SetFilter(GLint minFiler, GLint magFilter)
   {
-    assert(this->self != 0);
+    BB_ASSERT(this->self != 0);
     glBindTexture(GL_TEXTURE_2D, this->self);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFiler);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
@@ -149,7 +149,7 @@ namespace bb
 
   void texture_t::GenerateMipmaps()
   {
-    assert(this->self != 0);
+    BB_ASSERT(this->self != 0);
     glBindTexture(GL_TEXTURE_2D, this->self);
     glGenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, 0);

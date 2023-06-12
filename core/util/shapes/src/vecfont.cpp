@@ -994,7 +994,7 @@ namespace bb
   {
     if (pSize == nullptr)
     { // programmer's error
-      assert(0);
+      BB_PANIC();
       return nullptr;
     }
 

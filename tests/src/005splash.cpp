@@ -121,7 +121,7 @@ int main(int argc, char* argv[])
       break;
     default:
       // can't happen!
-      assert(0);
+      BB_PANIC();
       break;
     }
 

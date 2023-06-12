@@ -99,7 +99,7 @@ namespace bb
     dst(dst),
     fboSize(fboSize)
   {
-    assert((src != nullptr) && (dst != nullptr));
+    BB_ASSERT((src != nullptr) && (dst != nullptr));
   }
 
   blur_t::~blur_t()

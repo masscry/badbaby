@@ -1,0 +1,12 @@
+Log Started
+Mon Apr 19 15:45:29 2021 [INF]	OpenGL:
+	Vendor: Intel
+	Renderer: Mesa Intel(R) HD Graphics 5500 (BDW GT2)
+	Version: 4.6 (Core Profile) Mesa 20.2.6
+	GLSL Version: 4.60
+Mon Apr 19 15:45:29 2021 [DBG]	Post Office Created
+Mon Apr 19 15:45:29 2021 [DBG]	Worker Pool Created
+Mon Apr 19 15:45:29 2021 [INF]	Total Worker Count: 1
+Log Ended
+Mon Apr 19 15:45:32 2021 [DBG]	Worker Pool Died
+Mon Apr 19 15:45:32 2021 [DBG]	Post Office Deleted

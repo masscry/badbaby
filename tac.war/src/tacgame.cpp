@@ -28,7 +28,8 @@ class levelVM_t final: public bb::vm_t
             glm::radians(angle),
             this->curTeam,
             0,
-            8.0f
+            8.0f,
+            nullptr
           }
         );
         break;
@@ -267,12 +268,12 @@ namespace tac
         {
           this->newPos = mouse;
           auto dir = this->newPos - this->sel->pos;
-          this->finalDir = atan2(dir.y, dir.x) - M_PI_2;
+          this->finalDir = static_cast<float>(atan2(dir.y, dir.x) - M_PI_2);
         }
         else
         {
           auto dir = glm::normalize(mouse - this->sel->pos);
-          this->finalDir = atan2(dir.y, dir.x) - M_PI_2;
+          this->finalDir = static_cast<float>(atan2(dir.y, dir.x) - M_PI_2);
           this->newPos = this->sel->pos + dir * this->sel->maxDist;
         }
 
@@ -282,7 +283,7 @@ namespace tac
         this->timeMult = 1.0;
 
         auto dir = mouse - this->sel->pos;
-        this->unitDir = atan2(dir.y, dir.x) - M_PI_2;
+        this->unitDir = static_cast<float>(atan2(dir.y, dir.x) - M_PI_2);
       }
       break;
     case gameMode_t::dir:
@@ -293,7 +294,7 @@ namespace tac
         {
           dir = this->newPos - this->oldPos;
         }
-        this->finalDir = atan2(dir.y, dir.x) - M_PI_2;
+        this->finalDir = static_cast<float>(atan2(dir.y, dir.x) - M_PI_2);
         this->mode = gameMode_t::move;
 
         this->time = 0.0;
@@ -308,7 +309,7 @@ namespace tac
       }
       break;
     default:
-      assert(0);
+      BB_PANIC();
     }
   }
 
@@ -383,7 +384,7 @@ namespace tac
 
         glm::vec2 newUnitPos;
         auto dir = glm::normalize(mouse - this->sel->pos);
-        auto newFinalDir = atan2(dir.y, dir.x) - M_PI_2;
+        auto newFinalDir =  static_cast<float>(atan2(dir.y, dir.x) - M_PI_2);
 
         if (glm::distance(mouse, this->sel->pos) <= this->sel->maxDist)
         {
@@ -446,7 +447,7 @@ namespace tac
         {
           dir = this->newPos - this->oldPos;
         }
-        auto newDir = atan2(dir.y, dir.x) - M_PI_2;
+        auto newDir = static_cast<float>(atan2(dir.y, dir.x) - M_PI_2);
         if (newDir != this->finalDir)
         {
           this->finalDir = newDir;
@@ -460,7 +461,9 @@ namespace tac
         this->showShade = true;
         this->time = glm::min(this->time + dt*this->timeMult*2.0, this->fulltime);
         this->sel->pos = glm::mix(this->oldPos, this->newPos, this->time/this->fulltime);
-        this->sel->angle = this->unitDir + sinf(this->time*15.0f)*0.10f;
+        this->sel->angle = this->unitDir + static_cast<float>(
+          sin(this->time*15.0)*0.10
+        );
       }
       else
       {
@@ -505,7 +508,7 @@ namespace tac
     return newPotOffset - this->tableOffset;
   }
 
-  void game_t::OnMouse(int btn, int press)
+  void game_t::OnMouse(int, int press)
   {
     if (press != 0)
     {
@@ -532,7 +535,7 @@ namespace tac
     }
   }
 
-  void game_t::OnAction(int action)
+  void game_t::OnAction(int)
   {
 
   }

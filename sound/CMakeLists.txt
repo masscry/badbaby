@@ -4,24 +4,22 @@ if(WIN32)
   set(BASS_ARCHIVE_URL "http://us.un4seen.com/files/bass24.zip")
   set(BASS_ARCHIVE_HASH e46b1718fb62bbdc8add935c52fc6e48d43b6d99)
   set(BASS_ROOT_PATH ${CMAKE_CURRENT_BINARY_DIR}/contrib/bass)
-  set(BASS_DLL_PATH x64/mp3-free/bass.dll)
-  set(BASS_LIB_PATH c/x64/bass.lib)
+  set(BASS_DLL_PATH bass.dll)
+  set(BASS_LIB_PATH bass.lib)
   set(BASS_INCLUDE_PATH c)
 endif(WIN32)
 
 if(UNIX)
-  set(BASS_ARCHIVE_URL "http://us.un4seen.com/files/bass24-linux.zip")
-  set(BASS_ARCHIVE_HASH 75d38ecc27f195c033380d0f5621d42b1a6351ae)
+  set(BASS_ARCHIVE_URL "http://uk.un4seen.com/files/bass24-linux.zip")
+  set(BASS_ARCHIVE_HASH a23ad5323ae3d25ee180ff6fd43f9bf15df4e38f)
   set(BASS_ROOT_PATH ${CMAKE_CURRENT_BINARY_DIR}/contrib/bass)
-  set(BASS_DLL_PATH x64/mp3-free/libbass.so)
+  set(BASS_DLL_PATH libbass.so)
   set(BASS_LIB_PATH ${BASS_DLL_PATH})
   set(BASS_INCLUDE_PATH .)
 endif(UNIX)
 
-set(BASS_LIB_FULLPATH ${BASS_ROOT_PATH}/${BASS_LIB_PATH})
-set(BASS_DLL_FULLPATH ${BASS_ROOT_PATH}/${BASS_DLL_PATH})
+if (NOT EXISTS ${BASS_ROOT_PATH})
 
-if (NOT EXISTS ${BASS_LIB_FULLPATH})
   file(DOWNLOAD ${BASS_ARCHIVE_URL} ${CMAKE_CURRENT_BINARY_DIR}/bass24.zip
     TIMEOUT 60
     EXPECTED_HASH SHA1=${BASS_ARCHIVE_HASH}
@@ -35,7 +33,33 @@ if (NOT EXISTS ${BASS_LIB_FULLPATH})
     COMMAND ${CMAKE_COMMAND} -E tar -xf ${CMAKE_CURRENT_BINARY_DIR}/bass24.zip
     WORKING_DIRECTORY ${BASS_ROOT_PATH}
   )
+
 endif()
+
+find_file(BASS_DLL_FULLPATH
+  NAMES
+    ${BASS_DLL_PATH}
+  PATHS
+    ${BASS_ROOT_PATH}
+  PATH_SUFFIXES
+    libs/x86_64
+  DOC "Path to bass dll"
+  NO_DEFAULT_PATH
+  REQUIRED
+)
+
+
+find_file(BASS_LIB_FULLPATH
+  NAMES
+    ${BASS_LIB_PATH}
+  PATHS
+    ${BASS_ROOT_PATH}
+  PATH_SUFFIXES
+    libs/x86_64
+  DOC "Path to bass library"
+  NO_DEFAULT_PATH
+  REQUIRED
+)
 
 add_library(bass SHARED IMPORTED)
 set_target_properties(bass

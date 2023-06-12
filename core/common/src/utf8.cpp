@@ -2,6 +2,7 @@
 #include <stdexcept>
 #include <cwctype>
 
+#include <common.hpp>
 #include <utf8.hpp>
 
 namespace
@@ -31,7 +32,7 @@ namespace
         cursor = static_cast<uint32_t>(*str++);
         if (bb::utf8SymbolLength(static_cast<int>(cursor)) != bb::UTF8_TAIL)
         { // Bad UTF8 symbol
-          assert(0);
+          BB_PANIC();
           return 0xFFFFFFFF;
         }
         result <<= 6;
@@ -75,7 +76,7 @@ namespace bb
         return UTF8_FOUR;
     }
     // invalid character
-    assert(0);
+    BB_PANIC();
     return UTF8_ERROR;
   }
 
@@ -93,7 +94,7 @@ namespace bb
       int len = utf8SymbolLength(*cursor);
       if (len <= 0)
       { // hit non utf8 character
-        assert(0);
+        BB_PANIC();
         return result;
       }
       cursor += len;
@@ -144,7 +145,7 @@ namespace bb
       return false;
     }
 
-    assert(0);
+    BB_PANIC();
     return false;
   }
 
@@ -165,7 +166,7 @@ namespace bb
       return false;
     }
 
-    assert(0);
+    BB_PANIC();
     return false;
   }
 

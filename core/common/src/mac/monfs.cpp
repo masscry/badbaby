@@ -97,7 +97,7 @@ namespace bb
       {
         // Programmer's error!
         // No need to create monitor without processor
-        assert(0);
+        BB_PANIC();
         return monitor_t();
       }
 

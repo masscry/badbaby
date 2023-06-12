@@ -100,7 +100,7 @@ namespace sub3000
     }
 
     bb::Error("Unknown message %s", typeid(msg).name());
-    assert(0);
+    BB_PANIC();
     return bb::msg::result_t::error;
   }
 
@@ -224,7 +224,7 @@ namespace sub3000
         bb::Error("Unknown message: %s", "Invalid Message!");
       }
 
-      assert(0);
+      BB_PANIC();
     }
   }
 

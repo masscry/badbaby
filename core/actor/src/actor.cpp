@@ -118,7 +118,7 @@ namespace bb
 
   actor_t::~actor_t()
   {
-    assert(this->mailbox->Empty());
+    BB_ASSERT(this->mailbox->Empty());
   }
 
 } // namespace bb

@@ -73,7 +73,7 @@ namespace bb
 
     if (lockMap.find(key) != lockMap.end())
     {
-      assert(0);
+      BB_PANIC();
     }
     lockMap.insert(key);
   }
@@ -86,7 +86,7 @@ namespace bb
     auto item = lockMap.find(key);
     if (item == lockMap.end())
     {
-      assert(0);
+      BB_PANIC();
     }
     lockMap.erase(item);
 
@@ -164,7 +164,7 @@ namespace bb
         // code won't go here
         return -1;
       default:
-        assert(0);
+        BB_PANIC();
       }
     }
 

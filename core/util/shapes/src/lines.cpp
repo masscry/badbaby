@@ -53,7 +53,7 @@ namespace bb
     if ((linePoints.size() < 2) || (linePoints.size()*2 > std::numeric_limits<uint16_t>::max()))
     { // Programmer's error!
       // Can't be so few or so many points
-      assert(0);
+      BB_PANIC();
       return bb::meshDesc_t();
     }
 
@@ -128,7 +128,7 @@ namespace bb
     if ((totalPoints == 0) || (totalPoints*9 >= std::numeric_limits<uint16_t>::max()))
     { // Programmer's error!
       // Can't be so few or so many points
-      assert(0);
+      BB_PANIC();
       return bb::meshDesc_t();
     }
 

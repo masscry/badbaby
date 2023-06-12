@@ -52,7 +52,7 @@ int main(int argc, char* argv[])
         bb::Error("Unknown action type: %s", "Invalid Message");
       }
       loop = false;
-      assert(0);
+      BB_PANIC();
     }
 
     lastTick = nowTick;

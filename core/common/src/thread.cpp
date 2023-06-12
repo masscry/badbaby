@@ -1,6 +1,7 @@
 #include <common.hpp>
 
 #include <string>
+#include <array>
 
 #ifdef _WIN32
 

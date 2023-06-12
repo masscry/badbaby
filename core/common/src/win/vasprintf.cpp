@@ -9,7 +9,7 @@ extern "C" int vasprintf(char** strp, const char* fmt, va_list ap)
 {
   if ((strp == nullptr) || (fmt == nullptr))
   { // programmer's mistake
-    assert(0);
+    BB_PANIC();
     return -1;
   }
 

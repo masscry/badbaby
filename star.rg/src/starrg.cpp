@@ -73,7 +73,7 @@ void starrg_t::Update(double dt)
       continue;
     }
     // Unknown message!
-    assert(0);
+    BB_PANIC();
   }
 
   if (!this->logText.empty())
@@ -160,7 +160,9 @@ starrg_t::starrg_t(bb::context_t& context)
   tileset(bb::texture_t::LoadConfig("tiles.config")),
   box(bb::postOffice_t::Instance().New("StarView"))
 {
-  auto len = static_cast<int>(context.Height()/tileSize.y);
+  auto len = static_cast<int>(
+    static_cast<float>(context.Height())/tileSize.y
+  );
 
   this->world = bb::workerPool_t::Instance().Register<world_t>(glm::ivec2(len));
   this->context.RegisterActorCallback(

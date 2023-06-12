@@ -144,8 +144,8 @@ namespace bb
           dataSize(0)
     {
       // programmer's mistakes
-      assert(this->om != openMode_t::undef);
-      assert(this->stream != nullptr);
+      BB_ASSERT(this->om != openMode_t::undef);
+      BB_ASSERT(this->stream != nullptr);
       if (fgetpos(this->stream, &this->headPos) != 0)
       {
         char errorbuf[1024];
@@ -165,7 +165,7 @@ namespace bb
           this->GetHeader();
           break;
         default: // programmer's mistake
-          assert(0);
+          BB_PANIC();
       }
     }
 
@@ -385,7 +385,7 @@ namespace bb
     {
       if (this->dirty)
       {
-        assert(this->stream != nullptr);
+        BB_ASSERT(this->stream != nullptr);
 
         fpos_t filePos;
         if (fgetpos(this->stream, &filePos) != 0)

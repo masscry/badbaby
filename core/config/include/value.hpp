@@ -119,7 +119,7 @@ namespace bb
       ;
     }
 
-    bool operator == (const ref_t& ref)
+    bool operator == (const ref_t& ref) const
     {
       if ((this->Type() == type_t::none) || (ref.Type() == type_t::none))
       {
@@ -128,7 +128,7 @@ namespace bb
       return this->val->operator==(*ref.val);
     }
 
-    bool operator != (const ref_t& ref)
+    bool operator != (const ref_t& ref) const
     {
       return !this->operator==(ref);
     }

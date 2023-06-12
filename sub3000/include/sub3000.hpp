@@ -114,8 +114,8 @@ namespace sub3000
         ;
       }
 
-      watch_t(const watch_t&) = default;
-      watch_t& operator=(const watch_t&) = default;
+      watch_t(const watch_t&) = delete;
+      watch_t& operator=(const watch_t&) = delete;
       watch_t(watch_t&&) = default;
       watch_t& operator=(watch_t&&) = default;
       ~watch_t() override = default;

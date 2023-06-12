@@ -16,6 +16,7 @@
 #include <memory>
 #include <mutex>
 #include <condition_variable>
+#include <iostream>
 
 //#define BB_DOUBLE_LOCK_ASSERT
 
@@ -298,5 +299,21 @@ namespace bb
 #ifndef BBsize_t
 #error "Unsupported platform! Must defined BBsize_t for size_t types"
 #endif /* BBsize_t */
+
+#define BB_ASSERT(COND) \
+  do { if (!(COND)) { \
+    std::cerr << \
+      __FILE__ << ":" << __LINE__ << \
+      ": assert failed: " << #COND << std::endl; \
+    abort(); \
+  } } while(false)
+
+#define BB_PANIC() \
+  do { \
+    std::cerr << \
+      __FILE__ << ":" << __LINE__ << \
+      ": paniced!" << std::endl; \
+    abort(); \
+  } while(false)
 
 #endif /* __BB_COMMON_HEADER__ */

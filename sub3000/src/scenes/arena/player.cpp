@@ -66,7 +66,7 @@ namespace sub3000
     {
       if ((data == nullptr) || (!std::isfinite(dt)))
       { // programmer's mistake
-        assert(0);
+        BB_PANIC();
         return;
       }
 
@@ -138,7 +138,7 @@ namespace sub3000
         bb::vec2_t linForce = shipDir * data->engineOutput * rudderDir.y 
           + dragForce;
 
-        assert(std::isfinite(linForce.x) && std::isfinite(linForce.y));
+        BB_ASSERT(std::isfinite(linForce.x) && std::isfinite(linForce.y));
 
         float aVelLen = data->aVel*data->aVel;
         if (std::isinf(aVelLen))
@@ -167,7 +167,7 @@ namespace sub3000
         float rotForce = (data->engineOutput + rotFromLinVel*10.0f) * rudderDir.x
           + rotDragForce;
 
-        assert(std::isfinite(rotForce));
+        BB_ASSERT(std::isfinite(rotForce));
 
         auto newPos = data->pos + data->vel * dt;
         auto newAngle = data->angle + data->aVel * dt;
@@ -191,14 +191,14 @@ namespace sub3000
                 glm::dot(normal2D, normalVel)
               );
 
-              assert(std::isfinite(normal2D.x) && std::isfinite(normal2D.y));
-              assert(std::isfinite(theta));
+              BB_ASSERT(std::isfinite(normal2D.x) && std::isfinite(normal2D.y));
+              BB_ASSERT(std::isfinite(theta));
 
               linForce += normal2D * velLen*100.0f;
               rotForce += theta * 100.0f;
 
-              assert(std::isfinite(linForce.x) && std::isfinite(linForce.y));
-              assert(std::isfinite(rotForce));
+              BB_ASSERT(std::isfinite(linForce.x) && std::isfinite(linForce.y));
+              BB_ASSERT(std::isfinite(rotForce));
             }
           }
         }
@@ -207,8 +207,8 @@ namespace sub3000
           data->hasCollision = false;
         }
 
-        assert(std::isfinite(newPos.x) && std::isfinite(newPos.y));
-        assert(std::isfinite(newAngle));
+        BB_ASSERT(std::isfinite(newPos.x) && std::isfinite(newPos.y));
+        BB_ASSERT(std::isfinite(newAngle));
 
         data->pos = newPos;
         data->vel += linForce/data->mass * dt;
@@ -216,8 +216,8 @@ namespace sub3000
         data->angle = newAngle;
         data->aVel += rotForce/data->rotMoment * dt;
 
-        assert(std::isfinite(data->vel.x) && std::isfinite(data->vel.y));
-        assert(std::isfinite(data->aVel));
+        BB_ASSERT(std::isfinite(data->vel.x) && std::isfinite(data->vel.y));
+        BB_ASSERT(std::isfinite(data->aVel));
 
         // force angle in 0 - 2*PI
         data->angle = fmodf(
@@ -296,7 +296,7 @@ namespace sub3000
     {
       if (data == nullptr)
       {
-        assert(0);
+        BB_PANIC();
         return -1;
       }
 

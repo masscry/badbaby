@@ -56,7 +56,7 @@ namespace sub3000
         case full_astern:
           return "Full Astern";
         default:
-          assert(0);
+          BB_PANIC();
           return "???";
       }
     }
@@ -82,7 +82,7 @@ namespace sub3000
           return this->output[mode];
         default:
           // Programmer's mistake!
-          assert(0);
+          BB_PANIC();
           return 0.0f;
         }
       }
@@ -136,7 +136,7 @@ namespace sub3000
       case right_40:
         return "RIGHT 40°";
       default:
-        assert(0);
+        BB_PANIC();
         return "???";
       }
     }
@@ -161,7 +161,7 @@ namespace sub3000
           return static_cast<float>(-40.0*M_PI/180.0);
         default:
           // Programmer's mistake!
-          assert(0);
+          BB_PANIC();
           return 0.0f;
       }
     }
@@ -194,7 +194,7 @@ namespace sub3000
       case half_pump: return "PUMP/2";
       case pump: return "PUMP";
       default:
-        assert(0);
+        BB_PANIC();
         return "???";
       }
     }
@@ -211,7 +211,7 @@ namespace sub3000
         case half_pump: return -0.5f;
         case pump: return -1.0f;
         default:
-          assert(0);
+          BB_PANIC();
           return 0.0f;
       }
     }

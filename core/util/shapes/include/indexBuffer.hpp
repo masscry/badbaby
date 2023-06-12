@@ -161,7 +161,7 @@ namespace bb
     {
       // programmer's mistake
       bb::Error("Can't append buffer to itself");
-      assert(0);
+      BB_PANIC();
       return -1;
     }
 
@@ -169,7 +169,7 @@ namespace bb
     {
       // Programmer's error!
       bb::Error("Trying to append index buffer of different kind");
-      assert(0);
+      BB_PANIC();
       return -1;
     }
 
@@ -191,7 +191,7 @@ namespace bb
       if (newIndex >= breakIndex)
       {
         bb::Error("Too many indecies for buffer!");
-        assert(0);
+        BB_PANIC();
         return -1;
       }
       this->self.emplace_back(
